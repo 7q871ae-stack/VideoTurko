@@ -1,0 +1,148 @@
+# VideoTurko
+
+[English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · Tiếng Việt · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
+
+![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Tóm tắt trong 30 giây:** một card đồ họa 4 GB có thể tạo video MiniMax H3 dài 209 khung hình (8,7 giây) trong một lượt chạy duy nhất. Đã kiểm chứng trên một máy (GTX 1050 Ti 4 GB); việc cài đặt đầy đủ bằng `kur.ps1` trong một thư mục trống thì chưa được kiểm chứng từ đầu đến cuối [đã đo: 209 khung hình với bản nhị phân release qua `uret.ps1`, lần chạy U209; latent giống hệt từng byte so với lần chạy bản build phát triển; khung hình và âm thanh trong video giống hệt nhau, sha của tệp khác vì container; bằng chứng do tác giả giữ, không có trong repo này]; với `-InitImg` (image-to-video) tối đa 192 khung hình (8,0 giây) [đã đo: lần chạy B192]; 209 khung hình mất khoảng 57 phút, giới hạn thời gian mặc định là 80 phút [đã đo: lần chạy U209]; 3 bước bên dưới là cách chạy.
+
+VideoTurko: các bản vá bộ nhớ cho stable-diffusion.cpp cùng công thức chạy MiniMax H3 text-to-video trên GTX 1050 Ti 4 GB, tối đa 209 khung hình (8,7 giây) trong một lượt; image-to-video (`-InitImg`) tối đa 192 khung hình (8,0 giây) (209 khung hình được kiểm chứng bằng chuỗi byte; giống hệt từng byte so với lần chạy chưa vá ở các phép kiểm tra 56 và 141 khung hình).
+
+## Bắt đầu nhanh (Windows, 3 bước)
+**Trạng thái: các script cài đặt/chạy bên dưới đang được hoàn thiện và bài kiểm tra clean-root chưa được thực hiện; chưa có nội dung nào ở đây được khẳng định là hoạt động cho đến khi bài kiểm tra đó đạt (xem "Trạng thái và giới hạn").**
+
+1. **Tải về** repo này (nút **Code** màu xanh lá, rồi **Download ZIP**) và giải nén vào một thư mục có đường dẫn NGẮN, ví dụ `C:\vt`.
+2. **Cài đặt**: mở PowerShell trong thư mục đó (gõ `powershell` vào thanh địa chỉ của Explorer) và chạy
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
+   ```
+   Thư mục gốc cài đặt là thư mục bạn đã giải nén (engine nằm trong `engine\bin`, mô hình nằm trong `model`); nếu muốn dùng chỗ khác, hãy đặt biến môi trường `VT_ROOT` trước. Script kiểm tra GPU, driver, RAM và ổ đĩa, tải engine và các mô hình (tệp zip của engine và các tệp mô hình mới tải được kiểm tra sha256; tệp mô hình đã có sẵn với kích thước đúng chỉ được kiểm tra kích thước, còn `scripts\modelleri_indir.ps1 -Dogrula` sẽ chạy kiểm tra sha256 đầy đủ), chạy một phép kiểm tra thực ngắn, và chỉ in READY nếu phép kiểm tra đó đạt [thiết kế: `kur.ps1` chưa từng được chạy đầy đủ trong một thư mục sạch; câu này sẽ được cập nhật sau bài kiểm tra thư mục sạch]. `-ExecutionPolicy Bypass` chỉ áp dụng cho một tiến trình này; như với mọi trình cài đặt, hãy đọc `scripts\kur.ps1` trước.
+   Cho đến khi bản release được phát hành, bước engine sẽ dừng với thông báo "release adresi/sha256 henuz yok"; khi đó hãy cung cấp tệp zip cục bộ: `-MotorZip <path> -CudaZip <path>`. Với zip cục bộ và khi chưa có sha256 của release được nhúng sẵn, tệp `.sha256` nằm cạnh zip sẽ được dùng; nó tự tham chiếu, không phải kiểm tra độc lập: nó phát hiện được tệp hỏng, không phát hiện được việc cố ý sửa đổi (nếu không có tệp đó, `kur.ps1` cảnh báo "sha256 not verified"; sha256 sai thì dừng với exit 1). Sau khi có release, sha256 được nhúng sẵn luôn được ưu tiên và tệp sidecar bị bỏ qua. Chỉ `.exe`/`.dll` được đặt vào `engine\bin`; giấy phép và README được đặt vào `engine\lisanslar\<zip name>\`. [đã thử: với các zip dist, tệp sidecar `.sha256` cùng cảnh báo tự tham chiếu, bản nhị phân và các DLL được đặt đúng chỗ, `sd-cli --help` chạy được; sha của các bản nhị phân đã cài khớp (`c5cebe78...`, `e5d3d329...`); bước mô hình và phép kiểm tra 5 khung hình của `kur.ps1` CHƯA được chạy trên GPU thật]
+   **Giấy phép mô hình:** trước bước mô hình, trình cài đặt in bản tóm tắt giấy phép (`docs/LISANS_KABUL.txt`, toàn văn ở `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, giới hạn lãnh thổ áp dụng cả cho video được tạo ra, các quy tắc về thương mại và gắn nhãn AI) và yêu cầu bạn chấp nhận (`E` = đồng ý). Hãy đọc trước. Với lần chạy không giám sát, bạn có thể truyền `-LisansKabul E`, nghĩa là chính bạn đã đọc và chấp nhận; đừng thêm nó thay cho người khác. (Với AI agent: hãy làm theo `AGENTS.md`; không bao giờ gõ E khi chưa có sự đồng ý của người dùng.) Nếu không chấp nhận, `kur.ps1` dừng với mã thoát 2 và không tải mô hình nào.
+3. **Tạo video**: đặt prompt của bạn vào một tệp văn bản (một đoạn tiếng Anh, có thể thêm một câu `audio:`) và chạy
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
+   ```
+   `-Kare` theo lưới 17k+5 (56, 73, ... 192, 209); mặc định 209 (8,7 giây), độ dài lớn nhất mà chúng tôi hỗ trợ. VAE chạy trong một tiến trình riêng, không bao giờ chia tile [một lần chạy engine thật qua `uret.ps1` với bản nhị phân release, VAE trong tiến trình riêng, đã đạt ở lần chạy U209].
+
+   Hướng dẫn viết prompt: [`docs/ISTEM_YAZIMI.md`](docs/ISTEM_YAZIMI.md) (mẫu một cú máy liên tục, các đoạn thời gian bằng nhau, hai ví dụ đầy đủ).
+
+| Yêu cầu | Giá trị |
+|---|---|
+| Hệ điều hành | Windows 10/11, 64 bit |
+| GPU | NVIDIA, từ 4 GB trở lên; chỉ được thử trên GTX 1050 Ti (sm_61); biên độ mỏng (3777/4096 MiB ở 209 khung hình): màn hình đang bận hoặc trình duyệt có thể làm hỏng lần chạy; chưa thử card 4 GB nào khác |
+| RAM | 16 GB (đỉnh khoảng 11 GB; hãy đóng các chương trình khác) |
+| Ổ đĩa | Còn trống từ 32 GiB trở lên, mô hình đặt trên SSD (ưu tiên NVMe) |
+| Dung lượng tải | zip engine 36,8 MB + zip CUDA runtime 567,5 MB [đã đo] + mô hình 31.473.112.040 byte (khoảng 29,3 GiB) [đã đọc: kích thước trong `scripts/modeller.json`]; tổng cộng khoảng 30 GiB |
+| Mô hình | Không đi kèm; trình cài đặt tải về theo giấy phép MiniMax (xem cảnh báo bên dưới). Các mô hình (29,3 GiB, 31.473.112.040 byte trong `scripts/modeller.json`) không nằm trong repo hay release này: giới hạn kích thước tệp/release của GitHub áp dụng, và `kur.ps1` tải chúng từ nguồn chính thức kèm xác minh sha256. |
+
+Mã thoát của `kur.ps1`: 0 READY, 1 lỗi, 2 cần người dùng nhập (giấy phép, hoặc chưa có release/zip), 3 phần cứng hoặc ổ đĩa không đủ, 4 đã dừng (tệp DUR). `uret.ps1` chỉ chấp nhận một lần chạy nếu tệp `.avi` tồn tại, số khung hình đúng và log sạch [đã đo: một lần chạy thật qua `uret.ps1` trên bản nhị phân release, lần chạy U209, 209 khung hình, cổng kiểm tra đạt]. Mã thoát của `uret.ps1`: 0 DONE (cổng chất lượng đạt), 1 lỗi hoặc đầu ra không hợp lệ (kể cả video không có luồng âm thanh), 2 đã dừng (tệp DUR), 5 `KAPI RED` (cổng chất lượng không đạt: clip không được chấp nhận, quyết định thuộc về bạn), 6 không chạy được cổng kiểm tra (clip không được chấp nhận). Chi tiết trong AGENTS.md. [đã đo: các mã thoát 0, 1 (video không có tiếng), 5 và 6 trong các kịch bản dùng engine giả và cổng kiểm tra giả; engine thật: mã thoát 0 ở lần chạy U209]
+
+### Khắc phục sự cố (chi tiết: `docs/SIK_HATALAR.md`)
+| Bạn thấy | Ý nghĩa và cách xử lý |
+|---|---|
+| `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Đừng tự khởi động `sd-cli.exe`; hãy chạy `scripts\kur.ps1`, script này sẽ đặt các DLL CUDA đúng chỗ. |
+| `failed during weight preparation` tại `blocks.0` (#1, #3, #5) | Không đủ VRAM ở cổng bộ nhớ: dùng số khung hình nhỏ hơn trên lưới 17k+5, đóng các chương trình GPU khác, giữ nguyên các cờ đi kèm. |
+| `retrying with temporal tiling` (#6) | VAE đã chuyển sang chia tile; đầu ra không hợp lệ cho mục đích đánh giá chất lượng. Hãy chạy lại. |
+| Lần chạy kết thúc vì hết giới hạn thời gian, không có video (#7) | Tăng `-TavanDk` cho các clip dài (giới hạn thời gian mặc định: 80 phút cho 209 khung hình, do `uret.ps1` đặt; lần chạy 209 khung hình của chúng tôi mất 57 phút [đã đo: lần chạy U209]). |
+| Mã thoát trống nhưng hiển thị "finished" (#14) | Script bao ngoài đọc mã thoát quá sớm; hãy chạy lại và kiểm tra tệp video có tồn tại. |
+| Hệ thống chậm đi, bị swap (#18) | Engine dùng khoảng 10-11 GB RAM; hãy đóng trình duyệt và các chương trình khác. |
+| sha256 không khớp / tải thất bại | Thường là do tải bị ngắt giữa chừng: chạy lại đúng lệnh đó, các tệp đã được xác minh sẽ được bỏ qua. |
+
+## Đây là gì
+Một bộ các bản vá nhỏ về bộ nhớ/lập lịch cho stable-diffusion.cpp, cùng công thức chạy, các phép kiểm tra và số liệu đo, giúp MiniMax H3 (DiT 33B; chúng tôi chạy bản GGUF HyperFlow Flash 13.7B Q4_K_M; bộ mã hóa văn bản Qwen3-VL 32B là phần riêng) chạy được trên GPU Pascal 4 GB (GTX 1050 Ti, RAM hệ thống 16 GB).
+- Các độ dài một lượt mà chúng tôi thực sự đã tạo ra và vượt qua các cổng chất lượng: 56, 141, 158, 175, 192, 209 khung hình ở 640x384, 24 fps (209 khung hình = 8,7 giây), kèm âm thanh do chính H3 tạo ra [đã đo: 209 khung hình với bản nhị phân release qua `uret.ps1`, lần chạy U209; latent giống hệt từng byte so với lần chạy bản build phát triển; khung hình và âm thanh trong video giống hệt nhau, sha của tệp khác vì container; bằng chứng do tác giả giữ, không có trong repo này]. 209 là độ dài dài nhất mà chúng tôi đã xem và thấy mượt [người dùng báo cáo, 2026-11-19, đã xem toàn bộ video; tệp: đầu ra F209V2, 8,708 giây].
+- **Tuyên bố giống hệt từng byte, nêu đúng phạm vi:** đầu ra chỉ được kiểm tra là giống hệt từng byte so với bản tham chiếu chưa vá ở 56 và 141 khung hình. Với 158/175/192/209 khung hình, chúng tôi dùng cùng các cờ và cùng chuỗi nhị phân; không có tham chiếu byte trực tiếp (bản build chưa vá không thể chạy các độ dài đó trên GPU này).
+- Cài đặt chất lượng không bao giờ bị hạ: cùng mô hình/lượng tử hóa, 6 bước, cfg 1, 640x384, cùng seed, VAE không chia tile.
+- Chúng tôi không tự nhận là đầu tiên: chúng tôi đã tìm và không thấy ví dụ bên ngoài nào làm được điều này trên 4 GB, nhưng đó không phải là bằng chứng rằng chưa có.
+
+## Cấu trúc thư mục
+- `patches/` các bản vá cho một commit stable-diffusion.cpp đã được cố định (xem ghi chú ở đó)
+- `scripts/` build, chạy, VAE trong tiến trình riêng, các công cụ hỗ trợ cổng kiểm tra/độ nhất quán (`doku_norm.py`: xem ghi chú về thang đo bên dưới)
+- `docs/KURULUM.md` phần cứng, các bước build và chạy (EN+TR)
+- `docs/YAMALAR.md` danh sách bản vá, `docs/KANITLAR.md` bằng chứng, `docs/KAPILAR.md` bảng các cổng chất lượng, `docs/OLCUMLER.md` các số đo, `docs/SIK_HATALAR.md` các lỗi thường gặp, `docs/LISANS_UYARISI.md` toàn bộ các mục giấy phép
+- Mục lục ngắn của `scripts/`: `hiz_kos3.ps1` script bao ngoài để chạy (`-Kuru` in ra đúng lệnh), `uretim_kapi.ps1` cổng chất lượng, `dikis_denetim.py` kiểm tra đường nối, `doku_norm.py` nhiễu chuẩn hóa theo kết cấu, `bayt_kiyas.py` so sánh byte, `derleme_sablonu.ps1` mẫu build (chỉ dừng tiến trình trợ giúp telemetry của Visual Studio `vctip.exe` được khởi động sau khi chính lần build đó bắt đầu, vì nếu không nó giữ tiến trình build bị treo thêm vài phút; các tiến trình `vctip.exe` khác được để yên)
+
+## Các cổng chất lượng (cách chấp nhận một kết quả)
+
+Cổng này không kiểm tra tính nhất quán của chuyển động (nhảy về kích thước hoặc vị trí của vật thể): hãy xem toàn bộ video trước khi chấp nhận.
+1. Số khung hình và âm thanh có mặt; không có dòng dự phòng bộ nhớ hay ALLOC_FAILED trong log.
+2. Cổng nhiễu thô: phần dư của bộ lọc trung vị <= 1,5 (thang 0-255).
+3. Nhiễu chuẩn hóa theo kết cấu, `scripts/doku_norm.py` (phiên bản của repo này): N = phần dư trung vị / kết cấu Sobel, mỗi 6 khung hình lấy một. **Lưu ý về thang đo:** trong phiên bản này, 10 clip đã đo cho N = 0,034-0,052 (bảng trong `docs/KAPILAR.md`; một phần tư cuối của F192/F209V2 đạt 0,062) và ngưỡng của cổng bổ sung là N <= 0,065. Một cách triển khai khác đo được 0,028-0,036 trên cùng các clip, nên các ngưỡng KHÔNG thể hoán đổi giữa các phiên bản. Với kết cấu rất mịn (các hàng cỏ), N của ảnh sạch là 0,075, nên ngưỡng được đặt theo từng họ cảnh. Một bộ ước lượng tần số cao bền vững (sigma-HH <= 1,5; ảnh sạch 0,74-1,19, thêm nhiễu s=2 cho 2,2-3,0) là cổng bổ sung được khuyến nghị.
+
+Phạm vi: VideoTurko chỉ nói về MỘT lượt chạy (tối đa 209 khung hình, khoảng 8,7 giây). Chúng tôi đã thử nối nhiều đoạn thành một clip dài hơn; đường nối nhìn thấy được (cảnh không tiếp nối gọn gàng), nên việc đó không thuộc dự án này. Nếu bạn muốn clip dài hơn, hãy tự thiết kế cách làm của riêng bạn.
+Cài đặt là của bạn: 209 khung hình là mặc định chúng tôi đã thử trên card 4 GB, không phải giới hạn bạn buộc phải dùng. Hãy chọn bất kỳ số khung hình nào trên lưới 17k+5 (56, 73, ... 192, 209; xem `docs/KURULUM.md`), đổi prompt, seed, độ phân giải hoặc bất kỳ cờ nào tùy ý. Clip ngắn hơn cần ít bộ nhớ và thời gian hơn; GPU lớn hơn có thể chứa được nhiều hơn.
+
+## Cảnh báo giấy phép mô hình
+**VideoTurko chỉ chứa các bản vá và script (MIT); ai sử dụng mô hình và đầu ra của nó phải tự chịu trách nhiệm về giấy phép MiniMax.** Đây không phải là tư vấn pháp lý. Bên dưới là các điều khoản của MiniMax H3 Community License (ngày 2 tháng 8 năm 2026) được tóm tắt kèm số điều; bản giấy phép mới là văn bản có giá trị ràng buộc: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
+
+Repo này KHÔNG chứa trọng số mô hình nào (không có tệp MiniMax H3, GGUF HyperFlow-H3-Flash hay VAE). Dự án này không liên kết với MiniMax và không được MiniMax chứng thực. Việc sử dụng thương mại KHÔNG bị cấm (đây không phải giấy phép phi thương mại); các điều kiện nằm bên dưới.
+
+**Lãnh thổ (Applicable Territory)**
+- **Lời mở đầu, I.3, I.5:** Toàn thế giới, TRỪ Liên minh châu Âu, Vương quốc Anh, Hàn Quốc (Republic of Korea) và Hoa Kỳ. Việc sử dụng mô hình được coi là chấp nhận giấy phép.
+- **II:** Giấy phép giới hạn, miễn phí bản quyền, không thể chuyển nhượng để sử dụng, sao chép, phân phối, tạo tác phẩm phái sinh và sửa đổi, chỉ trong lãnh thổ và tuân thủ thỏa thuận cùng Exhibit A. Những người ở lãnh thổ bị loại trừ có thể xin MiniMax một giấy phép riêng.
+- **V.4:** Việc sử dụng, sao chép, sửa đổi, phân phối hoặc hiển thị mô hình, các tác phẩm phái sinh của nó VÀ ĐẦU RA (video/âm thanh được tạo ra) bên ngoài lãnh thổ là không được ủy quyền. **Vì vậy, việc đăng hoặc trình chiếu video được tạo ra tại EU/Anh/Hàn Quốc/Hoa Kỳ nằm ngoài phạm vi giấy phép.**
+- **Exhibit A-1:** Sử dụng bên ngoài lãnh thổ vi phạm Acceptable Use Policy.
+
+**Phân phối (III)** (repo này không phân phối mô hình; nếu bạn phân phối)
+- **III.1:** Cung cấp cho mọi người nhận một bản sao giấy phép. **III.2:** Đánh dấu các tệp đã sửa đổi bằng thông báo nổi bật.
+- **III.3:** Được khuyến khích (không bắt buộc): thông báo "Powered by MiniMax H3", dấu hiệu nhận biết nội dung do AI tạo ra trên các tệp đã tạo, một bài viết công khai.
+- **III.4:** Các bản phân phối PHẢI kèm theo một tệp NOTICE với nội dung: "MiniMax H3 is licensed under the MiniMax H3 Community License Agreement, Copyright © 2026 MiniMax. All Rights Reserved."
+- **Exhibit A-12:** cấm đăng nội dung lên bất kỳ môi trường công khai nào mà không công bố rõ ràng rằng nội dung do máy tạo ra: hãy gắn nhãn các video do AI tạo ra khi đăng (danh sách đầy đủ: `docs/LISANS_UYARISI.md`).
+- **III (đoạn cuối):** Bạn có thể thêm bản quyền của riêng mình cho các phần sửa đổi của bạn nhưng không được áp đặt các điều khoản bổ sung hoặc khác về sử dụng/phân phối; các quy tắc về lãnh thổ vẫn áp dụng.
+
+**Điều khoản thương mại (IV)**
+- **IV.1:** Nếu sản phẩm/dịch vụ thương mại của bạn tạo ra doanh thu hằng năm trên 20 million USD (hoặc giá trị tương đương), hãy xin TRƯỚC văn bản ủy quyền từ api@minimax.io (tiêu đề "MiniMax H3 licensing - authorization request").
+- **IV.2:** Giao diện (UI) của sản phẩm/dịch vụ thương mại sử dụng mô hình phải hiển thị nổi bật "MiniMax H3".
+
+**Hạn chế sử dụng (V)**
+- **V.1:** Tuân thủ pháp luật hiện hành (bao gồm tuân thủ thương mại) và Exhibit A. **V.2:** Ràng buộc mọi người mà bạn cấp quyền truy cập bằng các điều khoản bảo vệ ít nhất tương đương các hạn chế này và thông báo cho họ.
+- **V.3:** Bạn không được dùng mô hình hoặc ĐẦU RA của nó để cải thiện bất kỳ mô hình AI nào khác (ngoài MiniMax H3 và các phái sinh của nó). (I.11: chưng cất và huấn luyện trên đầu ra tổng hợp khiến một mô hình trở thành "phái sinh"; bản thân đầu ra không phải là phái sinh.)
+- **V.5:** Nếu bạn cung cấp cho bên thứ ba một sản phẩm/dịch vụ/dịch vụ lưu trữ tạo ra đầu ra bằng mô hình: trước và trong suốt quá trình vận hành, phải có các biện pháp bảo vệ kỹ thuật và tổ chức hợp lý, cơ chế báo cáo, điều tra kịp thời, và gỡ bỏ/vô hiệu hóa/đình chỉ những người vi phạm lặp lại.
+
+**Nhãn hiệu và quyền (VI)**
+- **VI.1:** Bạn sở hữu các tác phẩm phái sinh và phái sinh của mô hình mà bạn tạo ra (tùy thuộc vào quyền của MiniMax). **VI.2:** Tên/nhãn hiệu của MiniMax không được cấp phép (ngoài mức cần thiết để mô tả và phân phối); nhãn hiệu "MiniMax H3" chỉ được dùng để tuân thủ III.3, trong phạm vi lãnh thổ; không được ngụ ý có liên kết.
+- **VI.3:** Nếu bạn kiện MiniMax hoặc bất kỳ ai với cáo buộc rằng các tài liệu/đầu ra xâm phạm quyền của bạn, mọi giấy phép của bạn chấm dứt ngay trong ngày hôm đó; bạn phải bảo vệ và bồi thường cho MiniMax trước các khiếu nại của bên thứ ba phát sinh từ việc sử dụng/phân phối của bạn hoặc của người khác.
+- **VI.4:** MiniMax không đòi quyền nào đối với đầu ra; bạn và người dùng của bạn chịu trách nhiệm về đầu ra và việc sử dụng chúng.
+
+**Tuyên bố miễn trừ trách nhiệm và chấm dứt (VII, VIII, IX)**
+- **VII.1:** Không có nghĩa vụ hỗ trợ/cập nhật. **VII.2:** Mô hình và đầu ra được cung cấp "NGUYÊN TRẠNG" ("AS IS"), không có bảo đảm nào; bạn tự quyết định mức độ phù hợp và chấp nhận rủi ro. **VII.3:** MiniMax và các công ty liên kết không chịu trách nhiệm về bất kỳ thiệt hại nào (trong phạm vi pháp luật cho phép).
+- **VIII.1:** Có hiệu lực khi chấp nhận/truy cập. **VIII.2:** Khi vi phạm, MiniMax có thể chấm dứt; bạn phải ngừng sử dụng/phân phối, xóa các bản sao và thông báo cho người nhận (VI.1, VI.3, VII, IX vẫn còn hiệu lực).
+- **IX:** Luật của Đặc khu Hành chính Hồng Kông; thẩm quyền xét xử độc quyền của tòa án Hồng Kông (loại trừ CISG của Liên Hợp Quốc).
+- **Ghi chú bổ sung:** bộ mã hóa của MiniMax H3 dùng Qwen3-VL-32B (Apache 2.0).
+
+**Chính sách sử dụng chấp nhận được (Acceptable Use Policy, Exhibit A)** (KHÔNG dùng mô hình, các phái sinh hoặc đầu ra cho những mục đích sau)
+- A-1 sử dụng bên ngoài lãnh thổ; A-2 vi phạm pháp luật hoặc sở hữu trí tuệ của bên thứ ba; A-3 gây hại cho bản thân hoặc người khác; A-4 dùng lại/phân phối đầu ra để gây hại; A-5 vượt qua các biện pháp bảo vệ; A-6 bóc lột/gây hại cho trẻ vị thành niên; A-7 thông tin sai sự thật có thể kiểm chứng nhằm gây hại cho người khác hoặc tác động đến bầu cử; A-8 tương tác trực tuyến giả (đánh giá giả, v.v.); A-9 phỉ báng, bôi nhọ, quấy rối; A-10 phần mềm độc hại; A-11 dữ liệu cá nhân dùng để gây hại cho người khác; **A-12 đăng nội dung lên bất kỳ môi trường công khai nào (kể cả bài đăng của bot) mà không công bố rõ ràng và nổi bật rằng nội dung do máy tạo ra**; A-13 mạo danh khi không có sự đồng ý; A-14 các quyết định tự động có rủi ro cao trong các lĩnh vực trọng yếu (thực thi pháp luật, nhập cư, y tế, hạ tầng trọng yếu, tín dụng, việc làm, nhà ở, giáo dục, chấm điểm xã hội, bảo hiểm, v.v.); A-15 vi phạm các chuẩn mực xã hội, đạo đức, luân lý của các quốc gia/khu vực khác; A-16 chủ nghĩa cực đoan bạo lực/khủng bố; A-17 phân biệt đối xử/gây hại dựa trên các đặc điểm được bảo vệ; A-18 bóc lột các nhóm dễ bị tổn thương; **A-19 mục đích quân sự**; A-20 hoạt động chuyên môn không được phép/không có giấy phép (tài chính, pháp lý, y tế, v.v.).
+- Lưu ý: đây là bản tóm tắt bằng ngôn ngữ thông thường; nếu có nghi ngờ, văn bản giấy phép tiếng Anh được ưu tiên.
+
+## Nhãn bằng chứng
+
+Một bộ nhãn dùng chung cho mọi tài liệu (cách viết cũ trong ngoặc):
+- **[đã đo]** (tiếng Anh: measured, TR: ölçtüm, olctum): đã chạy trong dự án này, có đường dẫn bằng chứng.
+- **[đã đọc]** (tiếng Anh: read, TR: okudum yol, okudum): đã đọc mã nguồn hoặc script, chưa chạy.
+- **[thiết kế]** (tiếng Anh: design, TR: tasarım, tasarim): đã thiết kế, chưa thấy trong một lần chạy thật.
+- **[phỏng đoán]** (tiếng Anh: guess, TR: tahmin): chưa được xác minh.
+- **[chưa thử]** (tiếng Anh: not tried, TR: denenmedi): chưa từng chạy.
+- **[người dùng báo cáo]** (tiếng Anh: user-reported, TR: kullanıcı bildirdi): do người dùng nêu, có ghi ngày; không được đo độc lập.
+- **[tính toán]** (tiếng Anh: computed, TR: hesap; cách viết cũ: calculated, hesap): một con số suy ra từ các đầu vào đã đo, bản thân nó không phải là số đo; phép suy ra được viết ngay bên cạnh. [đề xuất] / [öneri] trong văn bản cũ = [phỏng đoán].
+
+Tên các lần chạy được dùng trong ngoặc vuông (là tên lần chạy của riêng chúng tôi, không phải tệp trong repo này): U209 = 209 khung hình với bản nhị phân release qua `uret.ps1`; B209 và B192 = các lần chạy image-to-video (`-InitImg`) ở 209 và 192 khung hình; B56VT2 = bản nhị phân release, 56 khung hình, so với tham chiếu byte 56 khung hình R0; F209b, F209V2, F209V2K = các lần chạy 209 khung hình trên bản build phát triển (chi tiết: `docs/OLCUMLER.md`).
+
+## Hạn chế đã biết
+- **Bằng chứng byte** (cách tự tái tạo: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; đã xác minh trên card sm_61 của chúng tôi, các GPU khác có thể không giống hệt từng byte [phỏng đoán]): với chuỗi bản vá của chúng tôi (bật các cờ bộ nhớ), một lần chạy 56 khung hình cho sha256 `0979f156d548169b...`, giống hệt bản tham chiếu [đã đo]; ở 141 khung hình, sha256 của latent `E5D028F8632BE4FE...` giống hệt (với các cờ 0013/0014). Các khung hình từ 158 đến 209 không có tham chiếu byte trực tiếp; chuỗi các cổng kiểm tra là bằng chứng. Vượt qua các cổng số học không bảo đảm clip tốt: tính nhất quán của chuyển động theo thời gian được kiểm tra bằng mắt (xem `docs/KAPILAR.md`).
+- **209 khung hình, dùng bộ cờ nào:** bằng chứng chuỗi byte ở 209 khung hình được lấy với bộ cờ F209V2 trên bản build phát triển (không có cờ block-tail, build không có các bản vá 0019/0020); `uret.ps1` dùng công thức này cho 209 khung hình [đã đọc: script; một lần chạy engine thật qua `uret.ps1` đã đạt ở lần chạy U209].
+- Đã xác minh trên một card (GTX 1050 Ti 4 GB); các card khác chưa được thử.
+- **Đã đo bản nhị phân nào:** latent 141 khung hình và chuỗi byte được đo bằng các bản build phát triển của chúng tôi. Bản nhị phân release bạn tải về là một bản build mới: cổng byte 56 khung hình của nó đã đạt (mục tiếp theo) và một lần chạy 209 khung hình qua `uret.ps1` đã vượt qua cổng kiểm tra (lần chạy U209, 3414 giây, đỉnh VRAM 3777 MiB) [đã đo]; so với lần chạy 209 của bản build phát triển, latent giống hệt từng byte; trong video, các khung hình (md5) và âm thanh giống hệt nhau, sha256 của tệp AVI khác vì container [đã đo] (xem `docs/OLCUMLER.md`, mục 0).
+- **Bản nhị phân release, 56 khung hình:** bản nhị phân release (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) cho kết quả 56 khung hình giống hệt từng byte so với R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 từng khung hình và âm thanh giống hệt), chạy trực tiếp với các cờ mặc định (không có biến `SD_*`), mã thoát 0, 601 giây [đã đo: lần chạy B56VT2, 2026-11-19; bằng chứng do tác giả giữ, không có trong repo này]. Phạm vi: chỉ card sm_61 của chúng tôi và 56 khung hình; không phải bài kiểm tra cài đặt clean-root; latent 141 khung hình và chuỗi 209 được đo bằng bản nhị phân cũ hơn và CHƯA được lặp lại với bản này [chưa thử]. Lần thử đầu tiên (B56VT, qua một script trợ giúp) kết thúc âm thầm sau 58 giây, không rõ nguyên nhân [phỏng đoán: áp lực bộ nhớ]; lần thử thứ hai chạy trực tiếp `sd-cli`.
+- Các script cài đặt và chạy chưa được xác minh từ một thư mục trống (bài kiểm tra clean-root chưa thực hiện).
+- Lộ trình và các bước tiếp theo: `ROADMAP.md`.
+
+## Trạng thái và giới hạn
+- Đã xác minh trên một máy (GTX 1050 Ti 4 GB, RAM 16 GB, i7-7700HQ). Các card 4 GB khác và các dung lượng RAM khác có thể cho kết quả khác.
+- **Mặc định 209 khung hình (8,7 giây):** đã vượt qua các cổng chất lượng của chúng tôi (nhiễu 1,08, lần chạy F209V2K) [đã đo: 209 khung hình với bản nhị phân release qua `uret.ps1`, lần chạy U209; latent giống hệt từng byte so với lần chạy bản build phát triển; khung hình và âm thanh trong video giống hệt nhau, sha của tệp khác vì container; bằng chứng do tác giả giữ, không có trong repo này]. Ở 209 khung hình, đỉnh VRAM của DiT là 3777 MiB trên 4096 MiB (các lần chạy F209b và U209; số đọc `nvidia-smi` của toàn card), biên độ mỏng: tải GPU khác (màn hình, các ứng dụng khác) có thể làm lần chạy thất bại tại `blocks.0`; chỉ được thử trên GTX 1050 Ti. Trạng thái màn hình trong lần chạy đó không được ghi lại; nếu màn hình của bạn chạy trên card này, VRAM khả dụng sẽ ít hơn [phỏng đoán: tải hiển thị của Windows khoảng 100-300 MB]; nếu cần, hãy nối màn hình vào GPU tích hợp [khuyến nghị, chưa kiểm thử]. Quá trình sampling mất 2730 giây (lần chạy U209: các bước 436-483 giây) và giải mã VAE trong tiến trình riêng mất 173 giây (giai đoạn 2 tổng cộng 193 giây gồm cả giải mã âm thanh) [đã đo: bản nhị phân release U209; các lần chạy bản build phát triển trước đó: 2664 giây và 174 giây]. Ở giai đoạn 1, VAE trong tiến trình hết bộ nhớ và chuyển sang temporal tiling (320 giây); đầu ra đó bị loại bỏ, video đến từ giai đoạn 2 không chia tile. Đỉnh RAM không được đo ở U209. Các clip dài hơn 209 khung hình không thuộc bản phát hành này.
+- **Image-to-video (`-InitImg`):** với ảnh khởi tạo, giới hạn trên GPU này là 192 khung hình (8,0 giây ở 24 fps): 209 khung hình không vừa (thiếu khoảng 17,5 MB VRAM tại block 0: cần 2587 MB, khả dụng 2570 MB); 192 khung hình đã chạy qua `uret.ps1` trong 3086 giây với đỉnh VRAM 3783 MiB và cổng kiểm tra đạt [đã đo: các lần chạy B209 và B192, 2026-11-20, một cảnh; bằng chứng do tác giả giữ, không có trong repo này]. Chưa thử trên các GPU khác [chưa thử].
+- **RAM trống quan trọng:** bạn cần khoảng 11 GB RAM TRỐNG (tiến trình engine giữ khoảng 11 GB) [đã đo]. Khi RAM trống quá ít, tiến trình có thể chết mà không có thông báo lỗi [phỏng đoán: chúng tôi đã quan sát một lần khi RAM trống khoảng 300 MB trong lúc `sd-cli` giữ khoảng 10 GB]. Đừng mở các chương trình lớn khác khi đang chạy: trên máy 16 GB chỉ còn trống khoảng 0,3-0,5 GB, và dưới áp lực bộ nhớ, lần chạy có thể chết trong im lặng. Trước khi bắt đầu, hãy đóng trình duyệt, game và các chương trình lớn khác rồi kiểm tra RAM trống.
+- **Bài kiểm tra clean-root chưa thực hiện:** các script cài đặt và chạy chưa được xác minh từ một thư mục trống chỉ bằng các hướng dẫn này; mục này sẽ được cập nhật khi bài kiểm tra đó (gồm cả phép so sánh byte 56 khung hình với bản tham chiếu) được ghi nhận.
+- Không có video được tạo ra nào đi kèm ở đây.
+
+<!-- i18n-source: README.md sha256:a72e4a0b2471 -->

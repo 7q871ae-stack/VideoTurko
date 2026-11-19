@@ -1,0 +1,148 @@
+# VideoTurko
+
+[English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · Português (BR) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
+
+![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Em 30 segundos:** uma placa de vídeo de 4 GB consegue gerar um vídeo MiniMax H3 de 209 quadros (8,7 s) em uma única passada: verificado em uma única máquina (GTX 1050 Ti de 4 GB; a instalação completa com `kur.ps1` em uma pasta vazia ainda não foi verificada de ponta a ponta) [medido: 209 quadros com o binário da versão publicada por meio do `uret.ps1`, execução U209; latente idêntico byte a byte ao da execução com o binário de desenvolvimento; quadros e áudio idênticos no vídeo, o sha do arquivo difere por causa do contêiner; as evidências ficam com os autores, não estão neste repositório]; com `-InitImg` (imagem para vídeo) no máximo 192 quadros (8,0 s) [medido: execução B192]; 209 quadros levam cerca de 57 min, o limite de tempo padrão é de 80 min [medido: execução U209]; os 3 passos abaixo mostram como executar.
+
+VideoTurko: patches de memória para o stable-diffusion.cpp e receitas para rodar o MiniMax H3 de texto para vídeo em uma GTX 1050 Ti de 4 GB, até 209 quadros (8,7 s) em uma única passada; imagem para vídeo (`-InitImg`) até 192 quadros (8,0 s) (209 quadros verificados por uma cadeia de bytes; idêntico byte a byte à execução sem patches nas verificações de 56 e 141 quadros).
+
+## Início rápido (Windows, 3 passos)
+**Status: os scripts de instalação e execução abaixo estão sendo finalizados e o teste em raiz limpa está pendente; nada aqui é dado como funcionando até que esse teste passe (veja "Status e limites").**
+
+1. **Baixe** este repositório (botão verde **Code**, depois **Download ZIP**) e extraia em uma pasta CURTA, por exemplo `C:\vt`.
+2. **Instale**: abra o PowerShell nessa pasta (digite `powershell` na barra de endereços do Explorador de Arquivos) e execute
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
+   ```
+   A raiz da instalação é a pasta que você extraiu (o motor vai para `engine\bin`, os modelos para `model`); para usar outro local, defina antes a variável de ambiente `VT_ROOT`. O script verifica GPU, driver, RAM e disco, baixa o motor e os modelos (os zips do motor e os arquivos de modelo recém-baixados são verificados com sha256; um arquivo de modelo já presente com o tamanho certo é verificado apenas pelo tamanho, `scripts\modelleri_indir.ps1 -Dogrula` executa a verificação sha256 completa), roda uma rápida verificação real e imprime READY somente se essa verificação passou [projeto: o `kur.ps1` não foi executado por inteiro em uma pasta limpa; esta frase será atualizada depois do teste em pasta limpa]. O `-ExecutionPolicy Bypass` vale apenas para este processo; leia o `scripts\kur.ps1` antes, como com qualquer instalador.
+   Enquanto não houver uma versão publicada, a etapa do motor para com "release adresi/sha256 henuz yok"; informe zips locais: `-MotorZip <path> -CudaZip <path>`. Com um zip local e ainda sem o sha256 da versão embutido, usa-se o `.sha256` ao lado do zip; ele é autorreferente, não independente: detecta corrupção, não adulteração deliberada (sem esse arquivo o `kur.ps1` avisa "sha256 not verified"; um sha256 errado para com exit 1). Após a publicação, o sha256 embutido sempre prevalece e o arquivo ao lado é ignorado. Apenas `.exe`/`.dll` vão para `engine\bin`; licenças e README vão para `engine\lisanslar\<zip name>\`. [testado com os zips de dist: o `.sha256` ao lado mais o aviso autorreferente, binário e DLLs colocados, `sd-cli --help` rodou; os sha dos binários instalados bateram (`c5cebe78...`, `e5d3d329...`); a etapa dos modelos e a verificação de 5 quadros do `kur.ps1` AINDA NÃO foram executadas em uma GPU real]
+   **Licença do modelo:** antes da etapa dos modelos o instalador mostra o resumo da licença (`docs/LISANS_KABUL.txt`, texto completo `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, limites territoriais que também cobrem os vídeos gerados, regras comerciais e de rotulagem de IA) e pede que você aceite (`E` = sim). Leia antes. Para execuções sem supervisão você pode passar `-LisansKabul E`, o que significa que você mesmo leu e aceitou; não o adicione por outra pessoa. (Agentes de IA: sigam o `AGENTS.md`; nunca digitem E sem o consentimento do usuário.) Sem aceite, o `kur.ps1` para com código de saída 2 e não baixa nenhum modelo.
+3. **Gere**: coloque seu prompt em um arquivo de texto (um parágrafo em inglês, com uma frase opcional `audio:`) e execute
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
+   ```
+   O `-Kare` segue a grade 17k+5 (56, 73, ... 192, 209); o padrão é 209 (8,7 s), a duração mais longa que cobrimos. O VAE roda em um processo separado, nunca em blocos (tiling) [uma execução real do motor por meio do `uret.ps1` com o binário da versão publicada, VAE em processo separado, passou na execução U209].
+
+   Guia para escrever o prompt: [`docs/ISTEM_YAZIMI.md`](docs/ISTEM_YAZIMI.md) (padrão de uma tomada contínua, fatias de tempo iguais, dois exemplos completos).
+
+| Requisito | Valor |
+|---|---|
+| SO | Windows 10/11, 64 bits |
+| GPU | NVIDIA, 4 GB ou mais; testado apenas em GTX 1050 Ti (sm_61); margem estreita (3777/4096 MiB com 209 quadros): uma tela ou um navegador carregado pode quebrar a execução; nenhuma outra placa de 4 GB foi testada |
+| RAM | 16 GB (pico de cerca de 11 GB; feche outros programas) |
+| Disco | 32 GiB ou mais livres, modelos em um SSD (de preferência NVMe) |
+| Download | zip do motor 36,8 MB + zip do runtime CUDA 567,5 MB [medido] + modelos 31.473.112.040 bytes (cerca de 29,3 GiB) [lido: tamanhos em `scripts/modeller.json`]; cerca de 30 GiB no total |
+| Modelos | não incluídos; baixados pelo instalador sob a licença da MiniMax (veja o aviso abaixo). Os modelos (29,3 GiB, 31.473.112.040 bytes em `scripts/modeller.json`) não estão neste repositório nem na versão publicada: valem os limites de tamanho de arquivos e releases do GitHub, e o `kur.ps1` os baixa da fonte oficial com verificação sha256. |
+
+Códigos de saída do `kur.ps1`: 0 READY, 1 erro, 2 é preciso uma ação do usuário (licença, ou ainda não há versão/zip), 3 hardware ou disco insuficientes, 4 interrompido (arquivo DUR). O `uret.ps1` só aceita uma execução se o `.avi` existir, o número de quadros estiver certo e os logs estiverem limpos [medido: uma execução real por meio do `uret.ps1` com o binário da versão publicada, execução U209, 209 quadros, portão aprovado]. Códigos de saída do `uret.ps1`: 0 DONE (portão de qualidade aprovado), 1 erro ou saída inválida (inclusive vídeo sem faixa de áudio), 2 interrompido (arquivo DUR), 5 `KAPI RED` (portão de qualidade reprovado: o clipe não é aceito, a decisão é sua), 6 o portão não pôde ser executado (clipe não aceito). Detalhes no AGENTS.md. [medido: códigos de saída 0, 1 (vídeo sem áudio), 5 e 6 em cenários com um motor falso e um portão falso; motor real: exit 0 na execução U209]
+
+### Solução de problemas (detalhes: `docs/SIK_HATALAR.md`)
+| O que você vê | O que significa e o que fazer |
+|---|---|
+| `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Não inicie o `sd-cli.exe` manualmente; execute `scripts\kur.ps1`, que coloca as DLLs do CUDA no lugar. |
+| `failed during weight preparation` em `blocks.0` (#1, #3, #5) | VRAM insuficiente no portão de memória: use menos quadros na grade 17k+5, feche outros programas que usam a GPU e mantenha as opções que acompanham o projeto. |
+| `retrying with temporal tiling` (#6) | O VAE recorreu ao tiling; a saída é inválida para fins de qualidade. Execute de novo. |
+| A execução termina no limite de tempo, sem vídeo (#7) | Aumente o `-TavanDk` para clipes longos (limite de tempo padrão: 80 min para 209 quadros, definido pelo `uret.ps1`; nossa execução de 209 quadros levou 57 min [medido: execução U209]). |
+| Código de saída vazio, mas "terminou" (#14) | O wrapper leu o código de saída cedo demais; execute de novo e confira se o arquivo de vídeo existe. |
+| O sistema fica lento, usando swap (#18) | O motor usa cerca de 10-11 GB de RAM; feche navegadores e outros programas. |
+| sha256 não confere / o download falhou | Normalmente um download interrompido: execute o mesmo comando de novo, os arquivos já verificados são pulados. |
+
+## O que é isto
+Um conjunto de pequenos patches de memória e agendamento para o stable-diffusion.cpp, mais a receita de execução, as verificações e as medições que permitem rodar o MiniMax H3 (DiT de 33B; rodamos o GGUF HyperFlow Flash 13.7B Q4_K_M; o codificador de texto Qwen3-VL de 32B é separado) em uma GPU Pascal de 4 GB (GTX 1050 Ti, 16 GB de RAM do sistema).
+- Durações em uma única passada que de fato produzimos e que passaram em nossos portões de qualidade: 56, 141, 158, 175, 192, 209 quadros em 640x384, 24 fps (209 quadros = 8,7 s), com o áudio gerado pelo próprio H3 [medido: 209 quadros com o binário da versão publicada por meio do `uret.ps1`, execução U209; latente idêntico byte a byte ao da execução com o binário de desenvolvimento; quadros e áudio idênticos no vídeo, o sha do arquivo difere por causa do contêiner; as evidências ficam com os autores, não estão neste repositório]. 209 é a duração mais longa que assistimos e achamos fluida [relatado pelo usuário, 2026-11-19, vídeo assistido por inteiro; arquivo: saída do F209V2, 8,708 s].
+- **Afirmação de identidade byte a byte, com o escopo real:** as saídas foram verificadas como idênticas byte a byte à referência sem patches apenas com 56 e 141 quadros. Com 158/175/192/209 quadros usamos as mesmas opções e a mesma cadeia de binários; não há referência direta byte a byte (a versão sem patches não consegue rodar essas durações nesta GPU).
+- As configurações de qualidade nunca são reduzidas: mesmo modelo/quantização, 6 passos, cfg 1, 640x384, mesma seed, VAE sem tiling.
+- Não afirmamos ser os primeiros: pesquisamos e não achamos nenhum exemplo externo disto em 4 GB, o que não prova que não exista.
+
+## Estrutura
+- `patches/` patches sobre um commit fixo do stable-diffusion.cpp (veja as notas lá)
+- `scripts/` compilação, execução, VAE em processo separado, auxiliares de portão/consistência (`doku_norm.py`: veja a nota de escala abaixo)
+- `docs/KURULUM.md` hardware, etapas de compilação e execução (EN+TR)
+- `docs/YAMALAR.md` lista de patches, `docs/KANITLAR.md` evidências, `docs/KAPILAR.md` tabela de portões de qualidade, `docs/OLCUMLER.md` medições, `docs/SIK_HATALAR.md` erros comuns, `docs/LISANS_UYARISI.md` todos os itens da licença
+- `scripts/` índice curto: `hiz_kos3.ps1` wrapper de execução (`-Kuru` imprime o comando exato), `uretim_kapi.ps1` portão de qualidade, `dikis_denetim.py` verificação de emendas, `doku_norm.py` ruído normalizado por textura, `bayt_kiyas.py` comparação byte a byte, `derleme_sablonu.ps1` modelo de compilação (encerra apenas o auxiliar de telemetria do Visual Studio `vctip.exe` que iniciou depois da sua própria compilação, o qual, de outro modo, mantém o processo de compilação preso por minutos; os demais processos `vctip.exe` são deixados em paz)
+
+## Portões de qualidade (como um resultado é aceito)
+
+Este portão não verifica a consistência do movimento (saltos de escala ou de posição de objetos): assista ao vídeo inteiro antes de aceitá-lo.
+1. Número de quadros e áudio presente; sem fallback de memória nem linhas ALLOC_FAILED no log.
+2. Portão de ruído bruto: resíduo do filtro de mediana <= 1,5 (escala 0-255).
+3. Ruído normalizado por textura, `scripts/doku_norm.py` (a versão deste repositório): N = resíduo mediano / textura de Sobel, a cada 6º quadro. **Nota de escala:** nesta versão os 10 clipes medidos dão N = 0,034-0,052 (tabela em `docs/KAPILAR.md`; o último quarto de F192/F209V2 chega a 0,062) e o limiar do portão extra é N <= 0,065. Outra implementação mediu 0,028-0,036 nos mesmos clipes, então os limiares NÃO são intercambiáveis entre versões. Em texturas muito finas (fileiras de grama) o N limpo foi 0,075, então o limiar é por família de cenas. Um estimador robusto de alta frequência (sigma-HH <= 1,5; limpo 0,74-1,19, com ruído adicionado s=2 dá 2,2-3,0) é o portão extra recomendado.
+
+Escopo: o VideoTurko trata de UMA única passada (até 209 quadros, cerca de 8,7 s). Encadear várias partes em um clipe mais longo foi testado; as emendas ficaram visíveis (a cena não continua de forma limpa), então isso não faz parte deste projeto. Se você quiser clipes mais longos, projete sua própria abordagem.
+Suas configurações são suas: 209 quadros é o nosso padrão testado em uma placa de 4 GB, não um limite que você precise usar. Escolha qualquer número de quadros da grade 17k+5 (56, 73, ... 192, 209; veja `docs/KURULUM.md`), mude o prompt, a seed, a resolução ou qualquer opção como quiser. Clipes mais curtos usam menos memória e tempo; GPUs maiores podem comportar mais.
+
+## Aviso sobre a licença do modelo
+**O VideoTurko contém apenas patches e scripts (MIT); quem usa o modelo e suas saídas é quem responde pela licença da MiniMax.** Não é aconselhamento jurídico. Abaixo estão as cláusulas da MiniMax H3 Community License (2 de agosto de 2026) resumidas com a numeração; a licença em si é a que vale: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
+
+Este repositório NÃO contém pesos de modelo (nenhum arquivo do MiniMax H3, do GGUF HyperFlow-H3-Flash nem do VAE). Este projeto não é afiliado à MiniMax nem endossado por ela. O uso comercial NÃO é proibido (não é uma licença não comercial); as condições estão abaixo.
+
+**Território (Applicable Territory)**
+- **Preâmbulo, I.3, I.5:** No mundo todo, EXCETO a União Europeia, o Reino Unido, a República da Coreia e os Estados Unidos. Usar o modelo conta como aceitar a licença.
+- **II:** Licença limitada, intransferível e isenta de royalties para usar, reproduzir, distribuir, criar obras derivadas e modificar, apenas dentro do território e em conformidade com o contrato e o Exhibit A. Pessoas em territórios excluídos podem pedir à MiniMax uma licença separada.
+- **V.4:** Usar, reproduzir, modificar, distribuir ou exibir o modelo, seus derivados E SUAS SAÍDAS (vídeo/áudio gerado) fora do território não é autorizado. **Portanto, publicar ou exibir vídeos gerados na UE, no Reino Unido, na Coreia do Sul ou nos EUA está fora da licença.**
+- **Exhibit A-1:** O uso fora do território viola a Acceptable Use Policy.
+
+**Distribuição (III)** (este repositório não distribui o modelo; caso você distribua)
+- **III.1:** Entregue a cada destinatário uma cópia da licença. **III.2:** Marque os arquivos modificados com avisos bem visíveis.
+- **III.3:** Recomendado (não obrigatório): um aviso "Powered by MiniMax H3", um identificador de geração por IA nos arquivos produzidos, um texto público sobre o trabalho.
+- **III.4:** As distribuições DEVEM vir acompanhadas de um arquivo NOTICE com: "MiniMax H3 is licensed under the MiniMax H3 Community License Agreement, Copyright © 2026 MiniMax. All Rights Reserved."
+- **Exhibit A-12:** é proibido publicar conteúdo em qualquer ambiente público sem declarar claramente que ele foi gerado por máquina: rotule como gerados por IA os vídeos que você publicar (lista completa: `docs/LISANS_UYARISI.md`).
+- **III (último parágrafo):** Você pode adicionar seu próprio copyright às suas modificações, mas não pode impor termos adicionais ou diferentes sobre o uso/distribuição; as regras territoriais continuam valendo.
+
+**Condições comerciais (IV)**
+- **IV.1:** Se seus produtos/serviços comerciais geram mais de 20 milhões de USD (ou o equivalente) de receita anual, obtenha autorização PRÉVIA por escrito em api@minimax.io (assunto "MiniMax H3 licensing - authorization request").
+- **IV.2:** A interface de um produto/serviço comercial que use o modelo deve exibir de forma destacada "MiniMax H3".
+
+**Restrições de uso (V)**
+- **V.1:** Cumpra a lei aplicável (inclusive a de conformidade comercial) e o Exhibit A. **V.2:** Obrigue todos a quem você der acesso por meio de termos ao menos tão protetivos quanto estas restrições e avise-os.
+- **V.3:** Você não pode usar o modelo nem suas SAÍDAS para melhorar nenhum outro modelo de IA (exceto o MiniMax H3 e seus derivados). (I.11: a destilação e o treinamento com saídas sintéticas tornam um modelo um "derivado"; as saídas em si não são derivados.)
+- **V.5:** Se você oferecer a terceiros um produto/serviço/serviço hospedado que gere saídas com o modelo: antes e durante toda a operação, salvaguardas técnicas e organizacionais razoáveis, um mecanismo de denúncia, apuração imediata e remoção/desativação/suspensão de infratores reincidentes.
+
+**Marca e direitos (VI)**
+- **VI.1:** Você é dono das obras derivadas e dos derivados do modelo que criar (sujeito aos direitos da MiniMax). **VI.2:** Os nomes/marcas da MiniMax não são licenciados (além do necessário para descrever e distribuir); a marca "MiniMax H3" só pode ser usada para cumprir o III.3, dentro do território; não sugira afiliação.
+- **VI.3:** Se você processar a MiniMax ou qualquer pessoa alegando que os materiais/saídas violam seus direitos, todas as suas licenças terminam nesse dia; você defende e indeniza a MiniMax contra reclamações de terceiros decorrentes do uso/distribuição por você ou por outros.
+- **VI.4:** A MiniMax não reivindica direitos sobre as saídas; você e seus usuários são responsáveis pelas saídas e pelo uso delas.
+
+**Isenções de responsabilidade e rescisão (VII, VIII, IX)**
+- **VII.1:** Sem obrigação de dar suporte/atualizar. **VII.2:** O modelo e as saídas são fornecidos "AS IS", sem garantias; você decide se servem e assume o risco. **VII.3:** A MiniMax e suas afiliadas não respondem por nenhum dano (na medida em que a lei permitir).
+- **VIII.1:** Vigora a partir do aceite/acesso. **VIII.2:** Em caso de violação a MiniMax pode rescindir; você deve parar de usar/distribuir, apagar as cópias e avisar os destinatários (VI.1, VI.3, VII, IX continuam valendo).
+- **IX:** Lei da RAE de Hong Kong; jurisdição exclusiva dos tribunais de Hong Kong (a CISG da ONU é excluída).
+- **Observação adicional:** o codificador do MiniMax H3 usa o Qwen3-VL-32B (Apache 2.0).
+
+**Política de Uso Aceitável (Exhibit A)** (NÃO use o modelo, os derivados nem as saídas para)
+- A-1 uso fora do território; A-2 violar leis ou a propriedade intelectual de terceiros; A-3 prejudicar a si mesmo ou a outros; A-4 reaproveitar/distribuir saídas para causar dano; A-5 burlar salvaguardas; A-6 explorar/prejudicar menores; A-7 informação comprovadamente falsa para prejudicar outros ou influenciar eleições; A-8 engajamento falso on-line (avaliações falsas etc.); A-9 difamação, depreciação, assédio; A-10 malware; A-11 dados pessoais para prejudicar outros; **A-12 publicar conteúdo em qualquer ambiente público (inclusive postagens de bots) sem declarar de forma clara e destacada que foi gerado por máquina**; A-13 falsa identidade sem consentimento; A-14 decisões automatizadas de alto risco em áreas críticas (aplicação da lei, imigração, saúde, infraestrutura crítica, crédito, emprego, moradia, educação, pontuação social, seguros etc.); A-15 violar padrões sociais, éticos e morais de outros países/regiões; A-16 extremismo violento/terrorismo; A-17 discriminação/dano com base em características protegidas; A-18 explorar populações vulneráveis; **A-19 fins militares**; A-20 atividade profissional não autorizada/sem licença (financeira, jurídica, médica etc.).
+- Observação: este é um resumo em linguagem simples; em caso de dúvida, prevalece o texto da licença em inglês.
+
+## Rótulos de evidência
+
+Um único conjunto para todos os documentos (entre colchetes, as grafias antigas):
+- **[medido]** (TR: ölçtüm, olctum): executado neste projeto, o caminho da evidência existe.
+- **[lido]** (TR: okudum yol, okudum): a fonte ou o script foi lido, não executado.
+- **[projeto]** (TR: tasarım, tasarim): projetado, ainda não visto em uma execução real.
+- **[estimativa]** (TR: tahmin): não verificado.
+- **[não testado]** (TR: denenmedi): nunca executado.
+- **[relatado pelo usuário]** (TR: kullanıcı bildirdi): declarado pelo usuário, com data; não medido de forma independente.
+- **[calculado]** (TR: hesap; grafias antigas: calculated, hesap): um número derivado de entradas medidas, não medido em si; a derivação está escrita ao lado. [proposal] / [öneri] em textos antigos = [estimativa].
+
+Nomes de execução usados entre colchetes (nossos próprios nomes de execução, não arquivos deste repositório): U209 = 209 quadros com o binário da versão publicada por meio do `uret.ps1`; B209 e B192 = execuções de imagem para vídeo (`-InitImg`) com 209 e 192 quadros; B56VT2 = binário da versão publicada, 56 quadros, comparado com a referência byte a byte de 56 quadros R0; F209b, F209V2, F209V2K = execuções de 209 quadros no build de desenvolvimento (detalhes: `docs/OLCUMLER.md`).
+
+## Limitações conhecidas
+- **Prova byte a byte** (como reproduzi-la você mesmo: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verificada em nossa placa sm_61, outras GPUs podem não ser idênticas byte a byte [estimativa]): com nossa série de patches (opções de memória ligadas) uma execução de 56 quadros deu sha256 `0979f156d548169b...`, idêntico à referência [medido]; com 141 quadros o sha256 do latente `E5D028F8632BE4FE...` foi idêntico (com as opções 0013/0014). Os quadros de 158 a 209 não têm referência direta byte a byte; a cadeia de portões é a evidência. Passar nos portões numéricos não garante um bom clipe: a consistência do movimento ao longo do tempo é conferida a olho (veja `docs/KAPILAR.md`).
+- **209 quadros, com qual conjunto de opções:** a evidência da cadeia de bytes de 209 quadros foi obtida com o conjunto de opções F209V2 no build de desenvolvimento (sem opções de cauda de bloco, compilado sem os patches 0019/0020); o `uret.ps1` usa essa receita para 209 quadros [lido: o script; uma execução real do motor por meio do `uret.ps1` passou na execução U209].
+- Verificado em uma única placa (GTX 1050 Ti de 4 GB); outras placas não foram testadas.
+- **Qual binário foi medido:** o latente de 141 quadros e a cadeia de bytes foram medidos com nossos builds de desenvolvimento. O binário da versão publicada que você baixa é um build novo: seu portão byte a byte de 56 quadros passou (próximo item) e uma execução de 209 quadros por meio do `uret.ps1` passou no portão (execução U209, 3414 s, pico de VRAM 3777 MiB) [medido]; em relação à execução de 209 com o binário de desenvolvimento o latente é idêntico byte a byte; no vídeo os quadros (md5) e o áudio são idênticos, o sha256 do arquivo AVI difere por causa do contêiner [medido] (veja `docs/OLCUMLER.md`, seção 0).
+- **Binário da versão publicada, 56 quadros:** o binário da versão publicada (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) deu um resultado de 56 quadros idêntico byte a byte ao R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 por quadro e áudio idênticos), executado diretamente com as opções padrão (sem variáveis `SD_*`), código de saída 0, 601 s [medido: execução B56VT2, 2026-11-19; as evidências ficam com os autores, não estão neste repositório]. Escopo: apenas nossa placa sm_61 e 56 quadros; não é um teste de instalação em raiz limpa; o latente de 141 quadros e a cadeia de 209 foram medidos com o binário anterior e NÃO foram repetidos com este [não testado]. Uma primeira tentativa (B56VT, por meio de um script auxiliar) terminou em silêncio após 58 s, causa desconhecida [estimativa: pressão de memória]; a segunda tentativa executou o `sd-cli` diretamente.
+- Os scripts de instalação e execução ainda não foram verificados a partir de uma pasta vazia (teste em raiz limpa pendente).
+- Roteiro e próximos passos: `ROADMAP.md`.
+
+## Status e limites
+- Verificado em uma única máquina (GTX 1050 Ti de 4 GB, 16 GB de RAM, i7-7700HQ). Outras placas de 4 GB e outros tamanhos de RAM podem diferir.
+- **209 quadros por padrão (8,7 s):** passou em nossos portões de qualidade (ruído 1,08, execução F209V2K) [medido: 209 quadros com o binário da versão publicada por meio do `uret.ps1`, execução U209; latente idêntico byte a byte ao da execução com o binário de desenvolvimento; quadros e áudio idênticos no vídeo, o sha do arquivo difere por causa do contêiner; as evidências ficam com os autores, não estão neste repositório]. Com 209 quadros o pico de VRAM do DiT foi de 3777 MiB de 4096 MiB (execuções F209b e U209; leitura do `nvidia-smi` da placa inteira), uma margem estreita: outra carga na GPU (a tela, outros aplicativos) pode fazer a execução falhar em `blocks.0`; testado apenas em uma GTX 1050 Ti. O estado da tela durante essa execução não foi registrado; se a sua tela roda nesta placa, há menos VRAM disponível [estimativa: uma carga de tela do Windows de cerca de 100-300 MB]; se preciso, conecte a tela a uma GPU integrada [conselho, não testado]. A amostragem levou 2730 s (execução U209: passos de 436-483 s) e a decodificação do VAE em processo separado 173 s (a etapa 2 no total 193 s com a decodificação do áudio) [medido: U209 binário da versão publicada; execuções de desenvolvimento anteriores: 2664 s e 174 s]. Na etapa 1 o VAE dentro do processo ficou sem memória e recorreu ao tiling temporal (320 s); essa saída é descartada, o vídeo vem da etapa 2 sem tiling. O pico de RAM não foi medido no U209. Clipes mais longos que 209 quadros não fazem parte desta versão.
+- **Imagem para vídeo (`-InitImg`):** com uma imagem inicial o limite é de 192 quadros (8,0 s a 24 fps) nesta GPU: 209 quadros não couberam (faltaram cerca de 17,5 MB de VRAM no bloco 0: necessários 2587 MB, disponíveis 2570 MB); 192 quadros rodaram por meio do `uret.ps1` em 3086 s com pico de VRAM de 3783 MiB e o portão foi aprovado [medido: execuções B209 e B192, 2026-11-20, uma cena; as evidências ficam com os autores, não estão neste repositório]. Não testado em outras GPUs [não testado].
+- **A RAM livre importa:** você precisa de cerca de 11 GB de RAM LIVRE (o processo do motor ocupa cerca de 11 GB) [medido]. Com pouca RAM livre o processo pode morrer sem mensagem de erro [estimativa: observamos isso uma vez com cerca de 300 MB de RAM livre enquanto o `sd-cli` ocupava cerca de 10 GB]. Não abra outros programas grandes enquanto roda: em uma máquina de 16 GB sobram livres apenas cerca de 0,3-0,5 GB, e sob pressão de memória a execução pode morrer em silêncio. Antes de começar, feche navegadores, jogos e outros programas grandes e confira a RAM livre.
+- **Teste em raiz limpa pendente:** os scripts de instalação e execução ainda não foram verificados a partir de uma pasta vazia usando só estas instruções; esta seção será atualizada quando esse teste (incluindo uma comparação byte a byte de 56 quadros com a referência) for registrado.
+- Nenhum vídeo gerado é distribuído aqui.
+
+<!-- i18n-source: README.md sha256:a72e4a0b2471 -->

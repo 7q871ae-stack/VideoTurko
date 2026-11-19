@@ -1,0 +1,148 @@
+# VideoTurko
+
+[English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · Svenska · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
+
+![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Kort version (30 sekunder):** ett grafikkort med 4 GB kan göra en MiniMax H3-video på 209 bildrutor (8,7 s) i ett enda pass: verifierat på en dator (GTX 1050 Ti 4 GB; en fullständig `kur.ps1`-installation i en tom mapp är ännu inte verifierad från början till slut) [uppmätt: 209 bildrutor med release-binären via `uret.ps1`, körning U209; latenten är byte-identisk med körningen på utvecklingsbygget; bildrutor och ljud är identiska i videon, filens sha skiljer sig på grund av containern; underlaget förvaras av skaparna och finns inte i det här repot]; med `-InitImg` (image-to-video) högst 192 bildrutor (8,0 s) [uppmätt: körning B192]; 209 bildrutor tar ungefär 57 min, standardgräns för körtid 80 min [uppmätt: körning U209]; de 3 stegen nedan visar hur du kör det.
+
+VideoTurko: minnespatchar för stable-diffusion.cpp och recept för att köra MiniMax H3 text-to-video på ett GTX 1050 Ti med 4 GB, upp till 209 bildrutor (8,7 s) i ett enda pass; image-to-video (`-InitImg`) upp till 192 bildrutor (8,0 s) (209 bildrutor verifierade med en bytekedja; byte-identiska med den opatchade körningen i kontrollerna med 56 och 141 bildrutor).
+
+## Snabbstart (Windows, 3 steg)
+**Status: installations- och körskripten nedan färdigställs fortfarande och testet i tom rotmapp (clean-root) återstår; inget här påstås fungera förrän det testet har gått igenom (se "Status och begränsningar").**
+
+1. **Ladda ner** det här repot (den gröna knappen **Code**, sedan **Download ZIP**) och packa upp det i en KORT sökväg, till exempel `C:\vt`.
+2. **Installera**: öppna PowerShell i den mappen (skriv `powershell` i Utforskarens adressfält) och kör
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
+   ```
+   Installationsroten är mappen du packade upp (motorn hamnar i `engine\bin`, modellerna i `model`); vill du använda en annan plats, sätt miljövariabeln `VT_ROOT` först. Skriptet kontrollerar GPU, drivrutin, RAM och disk, hämtar motorn och modellerna (motor-zippar och nyligen nedladdade modellfiler sha256-kontrolleras; en modellfil som redan finns med rätt storlek storlekskontrolleras bara, `scripts\modelleri_indir.ps1 -Dogrula` kör den fullständiga sha256-kontrollen), kör en kort riktig kontroll och skriver ut READY bara om kontrollen gick igenom [upplägg: `kur.ps1` har inte körts i sin helhet i en ren mapp; den här meningen uppdateras efter testet i ren mapp]. `-ExecutionPolicy Bypass` gäller bara den här ena processen; läs `scripts\kur.ps1` först, som med vilket installationsprogram som helst.
+   Tills en release är publicerad stannar motorsteget med "release adresi/sha256 henuz yok"; ange lokala zippar: `-MotorZip <path> -CudaZip <path>`. Med en lokal zip och ännu ingen inbyggd release-sha256 används `.sha256` bredvid zippen; den är självrefererande, inte oberoende: den fångar upp korruption, inte avsiktlig manipulering (utan den filen varnar `kur.ps1` med "sha256 not verified"; en felaktig sha256 stoppar med exit 1). Efter release gäller alltid den inbyggda sha256 och sidofilen ignoreras. Bara `.exe`/`.dll` hamnar i `engine\bin`; licenser och README hamnar i `engine\lisanslar\<zip name>\`. [provat med dist-zippar: sidofilen `.sha256` plus varningen om självreferens, binär och DLL-filer lades på plats, `sd-cli --help` kördes; de installerade binärernas sha stämde (`c5cebe78...`, `e5d3d329...`); modellsteget och 5-bildrutorskontrollen i `kur.ps1` har ännu INTE körts på ett riktigt GPU]
+   **Modelllicens:** före modellsteget skriver installationsprogrammet ut en sammanfattning av licensen (`docs/LISANS_KABUL.txt`, hela texten `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, territoriella begränsningar som även omfattar genererade videor, regler för kommersiell användning och AI-märkning) och ber dig godkänna (`E` = ja). Läs den först. För obevakade körningar kan du ange `-LisansKabul E`, vilket betyder att du själv har läst och godkänt den; lägg inte till det åt någon annan. (AI-agenter: följ `AGENTS.md`; skriv aldrig E utan användarens samtycke.) Utan godkännande stoppar `kur.ps1` med exit-kod 2 och laddar inte ner någon modell.
+3. **Generera**: lägg din prompt i en textfil (ett engelskt stycke, valfri `audio:`-mening) och kör
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
+   ```
+   `-Kare` följer 17k+5-rastret (56, 73, ... 192, 209); standard 209 (8,7 s), den längsta längd vi täcker. VAE körs i en separat process, aldrig tiled [en riktig motorkörning via `uret.ps1` med release-binären, VAE i separat process, gick igenom i körning U209].
+
+   Guide för att skriva prompten: [`docs/ISTEM_YAZIMI.md`](docs/ISTEM_YAZIMI.md) (mönster för en enda obruten tagning, lika långa tidsavsnitt, två fullständiga exempel).
+
+| Krav | Värde |
+|---|---|
+| OS | Windows 10/11, 64-bitars |
+| GPU | NVIDIA, 4 GB eller mer; testad bara på GTX 1050 Ti (sm_61); smal marginal (3777/4096 MiB vid 209 bildrutor): en belastad skärm eller webbläsare kan få körningen att misslyckas; inget annat 4 GB-kort har provats |
+| RAM | 16 GB (topp på cirka 11 GB; stäng andra program) |
+| Disk | 32 GiB eller mer ledigt, modellerna på en SSD (helst NVMe) |
+| Nedladdning | motor-zip 36,8 MB + CUDA-runtime-zip 567,5 MB [uppmätt] + modeller 31 473 112 040 byte (cirka 29,3 GiB) [läst: storlekar i `scripts/modeller.json`]; cirka 30 GiB totalt |
+| Modeller | ingår inte; hämtas av installationsprogrammet under MiniMax-licensen (se varningen nedan). Modellerna (29,3 GiB, 31 473 112 040 byte i `scripts/modeller.json`) finns inte i det här repot eller i releasen: GitHubs gränser för fil- och releasestorlek gäller, och `kur.ps1` laddar ner dem från den officiella källan med sha256-verifiering. |
+
+Exit-koder för `kur.ps1`: 0 READY, 1 fel, 2 användarinmatning behövs (licens, eller ännu ingen release/zip), 3 otillräcklig hårdvara eller disk, 4 stoppad (DUR-fil). `uret.ps1` godkänner en körning bara om `.avi`-filen finns, antalet bildrutor stämmer och loggarna är rena [uppmätt: en riktig körning via `uret.ps1` på release-binären, körning U209, 209 bildrutor, grinden passerades]. Exit-koder för `uret.ps1`: 0 DONE (kvalitetsgrinden passerades), 1 fel eller ogiltig utdata (inklusive en video utan ljudspår), 2 stoppad (DUR-fil), 5 `KAPI RED` (kvalitetsgrinden underkände: klippet är inte godkänt, beslutet är ditt), 6 grinden kunde inte köras (klippet är inte godkänt). Detaljer i AGENTS.md. [uppmätt: exit-koderna 0, 1 (ljudlös video), 5 och 6 i scenarier med en låtsasmotor och en låtsasgrind; riktig motor: exit 0 i körning U209]
+
+### Felsökning (detaljer: `docs/SIK_HATALAR.md`)
+| Du ser | Vad det betyder, vad du gör |
+|---|---|
+| `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Starta inte `sd-cli.exe` för hand; kör `scripts\kur.ps1`, som lägger CUDA-DLL-filerna på plats. |
+| `failed during weight preparation` vid `blocks.0` (#1, #3, #5) | Inte tillräckligt med VRAM vid minnesgrinden: använd ett lägre antal bildrutor på 17k+5-rastret, stäng andra GPU-program, behåll de medföljande flaggorna. |
+| `retrying with temporal tiling` (#6) | VAE föll tillbaka på tiling; utdatan är ogiltig för kvalitetsändamål. Kör igen. |
+| Körningen slutar vid tidsgränsen, ingen video (#7) | Höj `-TavanDk` för långa klipp (standardgräns: 80 min för 209 bildrutor, satt av `uret.ps1`; vår körning med 209 bildrutor tog 57 min [uppmätt: körning U209]). |
+| Exit-koden är tom men "finished" (#14) | Wrappern läste exit-koden för tidigt; kör igen och kontrollera att videofilen finns. |
+| Systemet blir segt, swappar (#18) | Motorn använder cirka 10-11 GB RAM; stäng webbläsare och andra program. |
+| sha256-avvikelse / nedladdningen misslyckades | Oftast en avbruten nedladdning: kör samma kommando igen, verifierade filer hoppas över. |
+
+## Vad det här är
+En uppsättning små minnes- och schemaläggningspatchar för stable-diffusion.cpp samt körrecept, kontroller och mätningar som gör att MiniMax H3 (33B DiT; vi kör HyperFlow Flash 13.7B Q4_K_M GGUF; textencodern Qwen3-VL på 32B är separat) kan köras på ett Pascal-GPU med 4 GB (GTX 1050 Ti, 16 GB systemminne).
+- Längder i ett enda pass som vi faktiskt har producerat och som passerade våra kvalitetsgrindar: 56, 141, 158, 175, 192, 209 bildrutor i 640x384, 24 fps (209 bildrutor = 8,7 s), med H3:s eget genererade ljud [uppmätt: 209 bildrutor med release-binären via `uret.ps1`, körning U209; latenten är byte-identisk med körningen på utvecklingsbygget; bildrutor och ljud är identiska i videon, filens sha skiljer sig på grund av containern; underlaget förvaras av skaparna och finns inte i det här repot]. 209 är den längsta längd vi har tittat på och funnit jämn [användarrapporterat, 2026-11-19, videon sedd i sin helhet; fil: F209V2-utdata, 8,708 s].
+- **Byte-identiskt påstående, ärligt avgränsat:** utdata kontrollerades som byte-identisk med den opatchade referensen bara för 56 och 141 bildrutor. För 158/175/192/209 bildrutor använde vi samma flaggor och samma binärkedja; det finns ingen direkt byte-referens (det opatchade bygget kan inte köra de längderna på det här GPU:t).
+- Kvalitetsinställningarna sänks aldrig: samma modell/kvantisering, 6 steg, cfg 1, 640x384, samma seed, VAE utan tiling.
+- Vi påstår inte att vi är först: vi sökte och hittade inget externt exempel på detta med 4 GB, vilket inte är något bevis för att inget sådant finns.
+
+## Struktur
+- `patches/` patchar mot en låst stable-diffusion.cpp-commit (se anteckningarna där)
+- `scripts/` bygg-, kör- och separat-process-VAE-skript samt hjälpmedel för grind och konsekvens (`doku_norm.py`: se skalanteckningen nedan)
+- `docs/KURULUM.md` hårdvara, bygg- och körsteg (EN+TR)
+- `docs/YAMALAR.md` patchlista, `docs/KANITLAR.md` underlag, `docs/KAPILAR.md` tabell över kvalitetsgrindar, `docs/OLCUMLER.md` mätningar, `docs/SIK_HATALAR.md` vanliga misstag, `docs/LISANS_UYARISI.md` licenspunkterna i sin helhet
+- `scripts/` kort index: `hiz_kos3.ps1` körwrapper (`-Kuru` skriver ut det exakta kommandot), `uretim_kapi.ps1` kvalitetsgrind, `dikis_denetim.py` skarvkontroll, `doku_norm.py` texturnormaliserat brus, `bayt_kiyas.py` bytejämförelse, `derleme_sablonu.ps1` byggmall (stoppar bara Visual Studios telemetrihjälpare `vctip.exe` som startade efter att det egna bygget började och som annars håller byggprocessen kvar i flera minuter; andra `vctip.exe`-processer lämnas ifred)
+
+## Kvalitetsgrindar (hur ett resultat godkänns)
+
+Grinden kontrollerar inte rörelsekonsekvens (hopp i objektets skala eller position): titta på hela videon innan du godkänner den.
+1. Antal bildrutor och ljud finns; inga minnesfallback- eller ALLOC_FAILED-rader i loggen.
+2. Grind för rått brus: medianfilterrester <= 1,5 (skala 0-255).
+3. Texturnormaliserat brus, `scripts/doku_norm.py` (det här repots version): N = medianrest / Sobel-textur, var 6:e bildruta. **Skalanteckning:** i den här versionen ger de 10 uppmätta klippen N = 0,034-0,052 (tabell i `docs/KAPILAR.md`; sista kvartalet av F192/F209V2 når 0,062) och tröskeln för extragrinden är N <= 0,065. En annan implementation mätte 0,028-0,036 på samma klipp, så trösklar är INTE utbytbara mellan versioner. På mycket fina texturer (gräsrader) var rent N 0,075, så tröskeln gäller per scenfamilj. En robust högfrekvensskattare (sigma-HH <= 1,5; rent 0,74-1,19, tillagt brus s=2 ger 2,2-3,0) är den rekommenderade extragrinden.
+
+Omfattning: VideoTurko gäller ETT enda pass (upp till 209 bildrutor, cirka 8,7 s). Att kedja ihop flera delar till ett längre klipp provades; skarvarna syntes (scenen fortsätter inte rent), så det ingår inte i det här projektet. Vill du ha längre klipp får du utforma ett eget upplägg.
+Dina inställningar är dina: 209 bildrutor är vår testade standard på ett 4 GB-kort, inte en gräns du måste följa. Välj valfritt antal bildrutor på 17k+5-rastret (56, 73, ... 192, 209; se `docs/KURULUM.md`), ändra prompt, seed, upplösning eller vilken flagga du vill. Kortare klipp kräver mindre minne och tid; större GPU:er kan rymma mer.
+
+## Varning för modelllicensen
+**VideoTurko innehåller bara patchar och skript (MIT); den som använder modellen och dess utdata ansvarar själv för MiniMax-licensen.** Inte juridisk rådgivning. Nedan sammanfattas klausulerna i MiniMax H3 Community License (2 augusti 2026) med deras nummer; själva licensen är den bindande: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
+
+Det här repot innehåller INGA modellvikter (inga filer för MiniMax H3, HyperFlow-H3-Flash GGUF eller VAE). Projektet är inte knutet till eller godkänt av MiniMax. Kommersiell användning är INTE förbjuden (det är inte en licens för enbart icke-kommersiellt bruk); villkoren står nedan.
+
+**Territorium (Applicable Territory)**
+- **Preambel, I.3, I.5:** Hela världen, UTOM Europeiska unionen, Storbritannien, Republiken Korea och USA. Att använda modellen räknas som att godta licensen.
+- **II:** Royaltyfri, icke överlåtbar, begränsad licens att använda, reproducera, distribuera, skapa derivat och ändra, enbart inom territoriet och i enlighet med avtalet och Exhibit A. Personer i undantagna territorier kan be MiniMax om en separat licens.
+- **V.4:** Att använda, reproducera, ändra, distribuera eller visa modellen, dess derivat OCH UTDATA (genererad video/genererat ljud) utanför territoriet är inte tillåtet. **Att publicera eller visa genererade videor i EU/Storbritannien/Sydkorea/USA ligger alltså utanför licensen.**
+- **Exhibit A-1:** Användning utanför territoriet strider mot Acceptable Use Policy.
+
+**Distribution (III)** (det här repot distribuerar inte modellen; om du gör det)
+- **III.1:** Ge varje mottagare en kopia av licensen. **III.2:** Märk ändrade filer med tydliga meddelanden.
+- **III.3:** Uppmuntras (inte obligatoriskt): notisen "Powered by MiniMax H3", en identifierare för AI-generering på producerade filer, en offentlig beskrivning.
+- **III.4:** Distributioner MÅSTE åtföljas av en NOTICE-fil med: "MiniMax H3 is licensed under the MiniMax H3 Community License Agreement, Copyright © 2026 MiniMax. All Rights Reserved."
+- **Exhibit A-12:** att publicera innehåll i någon offentlig miljö utan att tydligt ange att det är maskingenererat är förbjudet: märk AI-genererade videor när du publicerar dem (hela listan: `docs/LISANS_UYARISI.md`).
+- **III (sista stycket):** Du får lägga till din egen upphovsrätt för dina ändringar men får inte ställa ytterligare eller avvikande villkor för användning/distribution; territoriereglerna gäller fortfarande.
+
+**Kommersiella villkor (IV)**
+- **IV.1:** Om dina kommersiella produkter/tjänster genererar mer än 20 miljoner USD (eller motsvarande) i årlig omsättning, inhämta FÖRE användning skriftligt tillstånd från api@minimax.io (ämne "MiniMax H3 licensing - authorization request").
+- **IV.2:** Gränssnittet i en kommersiell produkt/tjänst som använder modellen måste tydligt visa "MiniMax H3".
+
+**Användningsbegränsningar (V)**
+- **V.1:** Följ tillämplig lag (inklusive handelsregler) och Exhibit A. **V.2:** Bind alla du ger åtkomst genom villkor som är minst lika skyddande som dessa begränsningar och underrätta dem.
+- **V.3:** Du får inte använda modellen eller dess UTDATA för att förbättra någon annan AI-modell (annan än MiniMax H3 och dess derivat). (I.11: destillering och träning på syntetiska utdata gör en modell till ett "derivat"; utdatan i sig är inte derivat.)
+- **V.5:** Om du erbjuder tredje part en produkt/tjänst/värdtjänst som genererar utdata med modellen: före och under hela driften rimliga tekniska och organisatoriska skyddsåtgärder, en rapporteringsmekanism, skyndsam utredning samt borttagning/avaktivering/avstängning av upprepade överträdare.
+
+**Varumärke och rättigheter (VI)**
+- **VI.1:** Du äger de derivatverk och modellderivat du skapar (med förbehåll för MiniMax rättigheter). **VI.2:** MiniMax namn/märken licensieras inte (utöver vad som behövs för att beskriva och distribuera); märket "MiniMax H3" får bara användas för att följa III.3, inom territoriet; antyd ingen anknytning.
+- **VI.3:** Om du stämmer MiniMax eller någon annan och hävdar att materialet/utdatan gör intrång i dina rättigheter upphör alla dina licenser samma dag; du försvarar och håller MiniMax skadeslöst mot tredjepartskrav som följer av din eller andras användning/distribution.
+- **VI.4:** MiniMax gör inga anspråk på utdatan; du och dina användare ansvarar för utdatan och dess användning.
+
+**Friskrivningar och upphörande (VII, VIII, IX)**
+- **VII.1:** Ingen skyldighet att ge support/uppdatera. **VII.2:** Modellen och utdatan tillhandahålls "AS IS", utan garantier; du avgör lämpligheten och bär risken. **VII.3:** MiniMax och närstående bolag ansvarar inte för några skador (i den utsträckning lagen tillåter).
+- **VIII.1:** Gäller från godkännande/åtkomst. **VIII.2:** Vid brott kan MiniMax säga upp avtalet; du måste sluta använda/distribuera, radera kopior och underrätta mottagare (VI.1, VI.3, VII, IX gäller fortfarande).
+- **IX:** Hongkongs SAR:s lag; exklusiv behörighet för domstolarna i Hongkong (FN:s köplag CISG undantagen).
+- **Ytterligare anmärkning:** MiniMax H3:s encoder använder Qwen3-VL-32B (Apache 2.0).
+
+**Acceptable Use Policy (Exhibit A)** (använd INTE modellen, derivaten eller utdatan för)
+- A-1 användning utanför territoriet; A-2 brott mot lagar eller tredje parts immateriella rättigheter; A-3 att skada dig själv eller andra; A-4 att omvandla/distribuera utdata i skadligt syfte; A-5 att kringgå skyddsåtgärder; A-6 att utnyttja/skada minderåriga; A-7 verifierbart falsk information för att skada andra eller påverka val; A-8 falskt engagemang på nätet (falska recensioner med mera); A-9 förtal, nedvärdering, trakasserier; A-10 skadlig kod; A-11 personuppgifter för att skada andra; **A-12 att publicera innehåll i någon offentlig miljö (inklusive botinlägg) utan att tydligt och framträdande ange att det är maskingenererat**; A-13 att utge sig för att vara någon annan utan samtycke; A-14 automatiserade beslut med hög risk inom kritiska områden (brottsbekämpning, migration, hälsa, kritisk infrastruktur, kredit, anställning, bostad, utbildning, social poängsättning, försäkring med mera); A-15 att bryta mot andra länders/regioners sociala, etiska och moraliska normer; A-16 våldsbejakande extremism/terrorism; A-17 diskriminering/skada på grund av skyddade egenskaper; A-18 att utnyttja sårbara grupper; **A-19 militära ändamål**; A-20 obehörig/olicensierad yrkesverksamhet (finansiell, juridisk, medicinsk med mera).
+- Obs: det här är en sammanfattning på vanligt språk, inte ett juridiskt utlåtande; den engelska licenstexten gäller vid tvekan.
+
+## Underlagsetiketter
+
+En uppsättning för alla dokument (äldre stavningar inom parentes):
+- **[uppmätt]** (TR: ölçtüm, olctum): körd i det här projektet, underlagssökväg finns.
+- **[läst]** (TR: okudum yol, okudum): källa eller skript lästes, kördes inte.
+- **[upplägg]** (TR: tasarım, tasarim): utformat, ännu inte sett i en riktig körning.
+- **[gissning]** (TR: tahmin): inte verifierat.
+- **[ej provat]** (TR: denenmedi): aldrig körd.
+- **[användarrapporterat]** (TR: kullanıcı bildirdi): uppgivet av användaren, med datum; inte oberoende uppmätt.
+- **[beräknat]** (TR: hesap; äldre stavningar: calculated, hesap): ett tal som härletts ur uppmätta indata, inte uppmätt i sig; härledningen står bredvid. [förslag] / [öneri] i äldre text = [gissning].
+
+Körningsnamn som används inom hakparentes (våra egna körningsnamn, inte filer i det här repot): U209 = 209 bildrutor med release-binären via `uret.ps1`; B209 och B192 = image-to-video-körningar (`-InitImg`) med 209 och 192 bildrutor; B56VT2 = release-binär, 56 bildrutor, jämförd med byte-referensen R0 för 56 bildrutor; F209b, F209V2, F209V2K = körningar med 209 bildrutor på utvecklingsbygget (detaljer: `docs/OLCUMLER.md`).
+
+## Kända begränsningar
+- **Bytebevis** (så reproducerar du det själv: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verifierat på vårt sm_61-kort, andra GPU:er är kanske inte byte-identiska [gissning]): med vår patchserie (minnesflaggor på) gav en körning med 56 bildrutor sha256 `0979f156d548169b...`, identisk med referensen [uppmätt]; vid 141 bildrutor var latentens sha256 `E5D028F8632BE4FE...` identisk (med flaggorna 0013/0014). För 158 till 209 bildrutor finns ingen direkt byte-referens; grindkedjan är underlaget. Att de numeriska grindarna passeras garanterar inte ett bra klipp: rörelsekonsekvens över tid kontrolleras med ögat (se `docs/KAPILAR.md`).
+- **209 bildrutor, vilken flaggsats:** bytekedjans underlag för 209 bildrutor togs med flaggsatsen F209V2 på utvecklingsbygget (inga block-tail-flaggor, byggt utan patchar 0019/0020); `uret.ps1` använder det receptet för 209 bildrutor [läst: skriptet; en riktig motorkörning via `uret.ps1` gick igenom i körning U209].
+- Verifierat på ett kort (GTX 1050 Ti 4 GB); andra kort har inte provats.
+- **Vilken binär som mättes:** latenten för 141 bildrutor och bytekedjan mättes med våra utvecklingsbyggen. Release-binären du laddar ner är ett nytt bygge: dess byte-grind för 56 bildrutor passerades (nästa punkt) och en körning med 209 bildrutor via `uret.ps1` passerade grinden (körning U209, 3414 s, VRAM-topp 3777 MiB) [uppmätt]; mot utvecklingsbyggets körning med 209 bildrutor är latenten byte-identisk; i videon är bildrutorna (md5) och ljudet identiska, AVI-filens sha256 skiljer sig på grund av containern [uppmätt] (se `docs/OLCUMLER.md`, avsnitt 0).
+- **Release-binär, 56 bildrutor:** release-binären (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) gav ett resultat för 56 bildrutor som var byte-identiskt med R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 per bildruta och ljud identiska), körd direkt med standardflaggor (inga `SD_*`-variabler), exit-kod 0, 601 s [uppmätt: körning B56VT2, 2026-11-19; underlaget förvaras av skaparna och finns inte i det här repot]. Omfattning: bara vårt sm_61-kort och 56 bildrutor; inte ett installationstest i tom rotmapp; latenten för 141 bildrutor och 209-kedjan mättes med den äldre binären och upprepades INTE med den här [ej provat]. Ett första försök (B56VT, via ett hjälpskript) tog slut tyst efter 58 s, orsak okänd [gissning: minnestryck]; det andra försöket körde `sd-cli` direkt.
+- Installations- och körskripten har ännu inte verifierats från en tom mapp (test i tom rotmapp återstår).
+- Färdplan och nästa steg: `ROADMAP.md`.
+
+## Status och begränsningar
+- Verifierat på en dator (GTX 1050 Ti 4 GB, 16 GB RAM, i7-7700HQ). Andra 4 GB-kort och andra RAM-storlekar kan skilja sig åt.
+- **Standard 209 bildrutor (8,7 s):** passerade våra kvalitetsgrindar (brus 1,08, körning F209V2K) [uppmätt: 209 bildrutor med release-binären via `uret.ps1`, körning U209; latenten är byte-identisk med körningen på utvecklingsbygget; bildrutor och ljud är identiska i videon, filens sha skiljer sig på grund av containern; underlaget förvaras av skaparna och finns inte i det här repot]. Vid 209 bildrutor låg DiT:s VRAM-topp på 3777 MiB av 4096 MiB (körningarna F209b och U209; avläsning av hela kortet med `nvidia-smi`), en smal marginal: annan GPU-belastning (skärmen, andra program) kan få körningen att misslyckas vid `blocks.0`; testad bara på ett GTX 1050 Ti. Skärmens tillstånd under den körningen noterades inte; om din skärm körs på det här kortet finns mindre VRAM tillgängligt [gissning: en Windows-skärmbelastning på cirka 100-300 MB]; vid behov, anslut skärmen till ett integrerat GPU [råd, ej testat]. Samplingen tog 2730 s (körning U209: steg på 436-483 s) och VAE-avkodningen i separat process 173 s (steg 2 totalt 193 s med ljudavkodningen) [uppmätt: U209 release-binär; äldre utvecklingskörningar: 2664 s och 174 s]. I steg 1 fick VAE i processen slut på minne och föll tillbaka på temporal tiling (320 s); den utdatan kasseras, videon kommer från steg 2 utan tiling. Högsta RAM-användning mättes inte i U209. Längre klipp än 209 bildrutor ingår inte i den här releasen.
+- **Image-to-video (`-InitImg`):** med en startbild är taket 192 bildrutor (8,0 s vid 24 fps) på det här GPU:t: 209 bildrutor fick inte plats (cirka 17,5 MB VRAM saknades vid block 0: behov 2587 MB, tillgängligt 2570 MB); 192 bildrutor kördes via `uret.ps1` på 3086 s med en VRAM-topp på 3783 MiB och grinden passerades [uppmätt: körningarna B209 och B192, 2026-11-20, en scen; underlaget förvaras av skaparna och finns inte i det här repot]. Inte provat på andra GPU:er [ej provat].
+- **Ledigt RAM spelar roll:** du behöver cirka 11 GB LEDIGT RAM (motorprocessen håller cirka 11 GB) [uppmätt]. Med för lite ledigt RAM kan processen dö utan felmeddelande [gissning: vi såg det en gång med cirka 300 MB ledigt RAM medan `sd-cli` höll cirka 10 GB]. Öppna inga andra stora program medan den körs: på en dator med 16 GB blir bara cirka 0,3-0,5 GB över, och under minnestryck kan körningen dö tyst. Innan du startar, stäng webbläsare, spel och andra stora program och kontrollera hur mycket RAM som är ledigt.
+- **Test i tom rotmapp återstår:** installations- och körskripten har ännu inte verifierats från en tom mapp med enbart de här instruktionerna; det här avsnittet uppdateras när det testet (inklusive en byte-jämförelse med 56 bildrutor mot referensen) är dokumenterat.
+- Inga genererade videor levereras här.
+
+<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
