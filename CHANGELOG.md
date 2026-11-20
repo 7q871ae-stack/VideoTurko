@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.1 (Unreleased)
+## v0.1.1 (2026-11-20)
 Scripts and docs only: the engine zip, its sha256 and the `kur.ps1` download address stay at v0.1.0. Without the new options the GTX 1050 Ti command is unchanged except the flash-attention flag spelling. Thanks to @SinanC73 for the RTX 4070 Ti report and the elimination tests (#1).
 
 - Fixed: all-black (NaN) video at 141+ frames on compute capability 7.0+ GPUs. `uret.ps1` sets `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` there unless you set it yourself; nothing changes on 6.1 (GTX 1050 Ti). Reported by @SinanC73 (#1).
