@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · Magyar · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+A fordítások ezt az angol README-t követik. Ha egy fordítás eltér vagy lemarad, az angol szöveg az irányadó, különösen a licenc- és biztonsági szövegnél (a [`SECURITY.md`](SECURITY.md) és a [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) csak angolul és törökül van karbantartva).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Mielőtt elkezded (licenc, terület):** ez a tárhely MIT licencű, és csak patcheket és szkripteket tartalmaz. A letöltött MiniMax H3 modell a MiniMax H3 Community License hatálya alatt áll: a hatályából ki van zárva az Európai Unió, az Egyesült Királyság, Dél-Korea és az Egyesült Államok, és a modellt, a származékokat **és a kimeneteket (az általad generált videókat)** ott nem szabad használni, terjeszteni vagy megjeleníteni (V.4). Kereskedelmi használat a licenc feltételein belül megengedett. Telepítés előtt olvasd el a [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) fájlt; ez nem jogi tanács.
 
 > **30 másodpercben:** egy 4 GB-os videókártya egyetlen menetben el tud készíteni egy 209 képkockás (8.7 s) MiniMax H3 videót: egy gépen ellenőrizve (GTX 1050 Ti 4 GB; a `kur.ps1` teljes telepítése üres mappában még nincs végigellenőrizve) [mért: 209 képkocka a kiadási binárissal a `uret.ps1`-en keresztül, U209 futás; a latent bájtra azonos a fejlesztői build futásával; a képkockák és a hang a videóban azonosak, a fájl sha-ja a konténer miatt eltér; a bizonyítékokat a szerzők őrzik, ebben a tárolóban nincsenek]; `-InitImg` mellett (kép videóvá) legfeljebb 192 képkocka (8.0 s) [mért: B192 futás]; 209 képkocka kb. 57 percig tart, az alapértelmezett időkorlát 80 perc [mért: U209 futás]; a futtatást az alábbi 3 lépés mutatja.
 
@@ -12,14 +16,18 @@ VideoTurko: stable-diffusion.cpp memóriapatchek és receptek a MiniMax H3 (szö
 **Állapot: az alábbi telepítő és futtató szkriptek még készülnek, a tiszta mappás teszt még hátravan; amíg ez nem sikerül, nem állítjuk, hogy bármi működik (lásd: „Állapot és korlátok”).**
 
 1. **Töltsd le** ezt a tárolót (zöld **Code** gomb, majd **Download ZIP**), és csomagold ki egy RÖVID útvonalra, például `C:\vt`.
-2. **Telepítsd**: nyiss egy PowerShellt ebben a mappában (írd be a `powershell` szót a Fájlkezelő címsorába), és futtasd:
+2. **Telepítés: kattints duplán a `kur.cmd` fájlra** (egy fekete ablak nyílik, és megmutatja az egyes lépéseket; bezárása leállítja a telepítést, az újbóli futtatás ott folytatja, ahol abbamaradt: a félig letöltött modellfájl folytatódik [elolvasva: a letöltő szkript egy `.part` fájlt őriz, és abból folytatja; a teljes 29 GiB-os folytatást nem mértük]). Ha a Windows figyelmeztet a letöltött fájlra, használd helyette az alábbi PowerShell-parancsot [tanács, letöltött ZIP-pel nem tesztelve]. A parancssort szereted jobban? Nyiss PowerShellt abban a mappában (írd be: `powershell` az Intéző címsorába), és futtasd ugyanezt a telepítést:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    A telepítés gyökere a mappa, ahová kicsomagoltad az archívumot (a motor az `engine\bin` mappába kerül, a modellek a `model` mappába); más hely használatához előbb állítsd be a `VT_ROOT` környezeti változót. A szkript ellenőrzi a GPU-t, az illesztőprogramot, a RAM-ot és a lemezt, letölti a motort és a modelleket (a motor zip-jeit és az újonnan letöltött modellfájlokat sha256-tal ellenőrzi; az a modellfájl, amely már ott van és a mérete helyes, csak méretre van ellenőrizve, a teljes sha256-ellenőrzést a `scripts\modelleri_indir.ps1 -Dogrula` végzi), lefuttat egy rövid valódi próbát, és csak akkor írja ki a READY-t, ha az átment [tervezett: a `kur.ps1` még nem futott végig tiszta mappában; ezt a mondatot a tiszta mappás teszt után frissítjük]. Az `-ExecutionPolicy Bypass` csak erre az egy folyamatra érvényes; mint minden telepítőt, előbb olvasd el a `scripts\kur.ps1`-et.
    A motor zip-fájlja a GitHubon közzétett v0.1.0 kiadásból töltődik le (közzétéve: 2026-11-19; a sha256-ja rögzítve van a `kur.ps1`-ben). Internet nélkül vagy saját builddel adj meg helyi zip-fájlokat: `-MotorZip <path> -CudaZip <path>`. A helyi zip-fájlt ugyanazzal a rögzített sha256-tal ellenőrzi (a mellette lévő `.sha256` fájlt figyelmen kívül hagyja), ezért a kiadási zipnek kell lennie; saját buildhez előbb állítsd be a `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` változót annak sha256-jára. Rossz sha256 esetén a szkript 1-es kóddal leáll. Az `engine\bin` mappába csak `.exe` és `.dll` kerül; a licencek és a README az `engine\lisanslar\<zip name>\` mappába. [a kiadás előtt kipróbálva a dist zip-ekkel: a melletti `.sha256` és az önhivatkozásra figyelmeztetés, a bináris és a DLL-ek a helyükre kerültek, az `sd-cli --help` lefutott; a telepített binárisok sha-ja egyezett (`c5cebe78...`, `e5d3d329...`); a modelllépést és a `kur.ps1` 5 képkockás próbáját valódi GPU-n MÉG NEM futtattuk]
    **A modell licence:** a modelllépés előtt a telepítő kiírja a licenc összefoglalóját (`docs/LISANS_KABUL.txt`, teljes szöveg: `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, a generált videókra is kiterjedő területi korlátok, kereskedelmi és MI-jelölési szabályok), és elfogadást kér (`E` = igen). Előbb olvasd el. Felügyelet nélküli futtatáshoz megadhatod a `-LisansKabul E` kapcsolót, ami azt jelenti, hogy te magad elolvastad és elfogadtad a licencet; ne add meg más helyett. (MI-ügynököknek: kövessétek az `AGENTS.md`-t; soha ne írjatok E-t a felhasználó beleegyezése nélkül.) Elfogadás nélkül a `kur.ps1` 2-es kilépési kóddal leáll, és nem tölt le modellt.
-3. **Generálj**: tedd a promptot egy szövegfájlba (egy angol bekezdés, opcionálisan egy `audio:` mondat), és futtasd:
+3. **Az első videód (56 képkocka, kb. 11 perc a mi GTX 1050 Ti kártyánkon** [mért: 641 mp, futás R0, `docs/OLCUMLER.md`; más kártyákat nem mértünk]**)**: amikor a telepítő kiírja: `HAZIR / READY`, futtasd
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (gyorsítás: húzz egy prompt-szövegfájlt az `uret.cmd` fájlra, vagy futtasd: `uret.cmd docs\ornek_istem_R0.txt`; ugyanaz az 56 képkockás futás). A videó a `runs\` mappában van. Ezután írd meg a saját promptodat egy szövegfájlba (egy angol bekezdés, opcionális `audio:` mondat), és futtasd a leghosszabb klipet, amelyet lefedünk (alapértelmezett, kb. 57 perc [mért: futás U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: stable-diffusion.cpp memóriapatchek és receptek a MiniMax H3 (szö
 | Operációs rendszer | Windows 10/11, 64 bites |
 | GPU | NVIDIA, 4 GB vagy több; csak GTX 1050 Ti-n (sm_61) tesztelve; kicsi a tartalék (3777/4096 MiB 209 képkockánál): egy terhelt képernyő vagy böngésző megszakíthatja a futást; más 4 GB-os kártyát nem próbáltunk |
 | RAM | 16 GB (csúcs kb. 11 GB; zárd be a többi programot) |
-| Lemez | 32 GiB vagy több szabad hely, a modellek SSD-n (lehetőleg NVMe) |
+| Lemez | legalább 32 GiB szabad hely (40 GiB vagy több ajánlott: 32 és 40 között a telepítő figyelmeztetést ír ki, `[VT-W-DISK-PAY]` [mért: `-Kuru` futások szimulált lemezzel]), a modellek SSD-n (lehetőleg NVMe) |
 | Letöltés | motor zip 36.8 MB + CUDA futtatókörnyezet zip 567.5 MB [mért] + modellek 31,473,112,040 bájt (kb. 29.3 GiB) [elolvasva: a méretek a `scripts/modeller.json`-ban]; összesen kb. 30 GiB |
 | Modellek | nem tartozékok; a telepítő a MiniMax licenc alapján tölti le őket (lásd az alábbi figyelmeztetést). A modellek (29.3 GiB, 31,473,112,040 bájt a `scripts/modeller.json`-ban) sem ebben a tárolóban, sem a kiadásban nincsenek: a GitHub fájl- és kiadásméret-korlátai érvényesek, a `kur.ps1` pedig a hivatalos forrásból tölti le őket sha256-ellenőrzéssel. |
 
 A `kur.ps1` kilépési kódjai: 0 READY, 1 hiba, 2 felhasználói beavatkozás kell (licenc, vagy még nincs kiadás/zip), 3 nincs elég hardver vagy lemezhely, 4 leállítva (DUR fájl). A `uret.ps1` csak akkor fogad el egy futást, ha az `.avi` létezik, a képkockák száma helyes és a naplók tiszták [mért: egy valódi futás a `uret.ps1`-en keresztül a kiadási binárissal, U209 futás, 209 képkocka, az ellenőrzés átment]. A `uret.ps1` kilépési kódjai: 0 DONE (a minőségi ellenőrzés átment), 1 hiba vagy érvénytelen kimenet (beleértve a hangsáv nélküli videót), 2 leállítva (DUR fájl), 5 `KAPI RED` (a minőségi ellenőrzés megbukott: a klipet nem fogadtuk el, a döntés a tiéd), 6 az ellenőrzést nem sikerült lefuttatni (a klipet nem fogadtuk el). Részletek az AGENTS.md-ben. [mért: 0, 1 (néma videó), 5 és 6 kilépési kód hamis motorral és hamis ellenőrzéssel készült forgatókönyvekben; valódi motorral: 0-s kilépési kód az U209 futásban]
 
 ### Hibaelhárítás (részletek: `docs/SIK_HATALAR.md`)
+A szkriptjeink hibasorai állandó kódot viselnek, például `HATA: [VT-E-DLL] ...` vagy `UYARI: [VT-W-DISK-PAY] ...`. Keresd meg a kódot a [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) fájlban (horgonypélda `#vt-e-dll`) vagy a `docs/hata_imzalari.json` fájlban, és írd be a kódot az issue-dba. Az alábbi táblázat első oszlopa úgy marad, ahogy kiíródik (a kódokat és a naplószöveget nem fordítjuk).
+
 | Ezt látod | Mit jelent, mit tegyél |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Ne indítsd kézzel az `sd-cli.exe`-t; futtasd a `scripts\kur.ps1`-et, amely a helyére teszi a CUDA DLL-eket. |
@@ -48,6 +58,8 @@ A `kur.ps1` kilépési kódjai: 0 READY, 1 hiba, 2 felhasználói beavatkozás k
 | A kilépési kód üres, de „finished” áll (#14) | A burkoló szkript túl korán olvasta a kilépési kódot; futtasd újra, és ellenőrizd, hogy a videófájl létezik. |
 | A rendszer lelassul, lapozás van (#18) | A motor kb. 10-11 GB RAM-ot használ; zárd be a böngészőket és a többi programot. |
 | sha256-eltérés / a letöltés sikertelen | Általában megszakadt a letöltés: futtasd újra ugyanazt a parancsot, az ellenőrzött fájlokat kihagyja. |
+
+**Elakadtál, vagy kíváncsi vagy?** [`SUPPORT.md`](SUPPORT.md) (hol kérdezz; a válaszidők célok, nem vállalások) · [`PRIVACY.md`](PRIVACY.md) (nincs telemetria; a hálózatot csak a motor és a modellek letöltésére használjuk, a felsorolt gazdákról) · [`SECURITY.md`](SECURITY.md) (privát bejelentés) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (az első pull request 5 lépésben; dokumentumokhoz és szkriptekhez nem kell GPU).
 
 ### Újdonságok a v0.1.1-ben: további kapcsolók (részletek: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Ezek nélkül a kapcsolók nélkül 4 GB-os kártyán semmi sem változik (a referenciánkhoz mért 56 képkockás bájtellenőrzés a v0.1.1-gyel is újra átment [mért]). Ha látni szeretnéd, mi futna le, add hozzá a `-Kuru` kapcsolót bármelyik parancshoz.
@@ -95,7 +107,7 @@ A beállítások a tieid: a 209 képkocka a mi tesztelt alapértelmezésünk egy
 ## Figyelmeztetés a modell licencéről
 **A VideoTurko csak patcheket és szkripteket tartalmaz (MIT); aki a modellt és a kimeneteit használja, maga felel a MiniMax licenc betartásáért.** Ez nem jogi tanács. Az alábbiakban a MiniMax H3 Community License (2026. augusztus 2.) kikötései szerepelnek összefoglalva, számozással; a licenc maga a kötelező érvényű: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Ez a tároló NEM tartalmaz modellsúlyokat (sem MiniMax H3, sem HyperFlow-H3-Flash GGUF, sem VAE fájlokat). A projekt nem áll kapcsolatban a MiniMax-szal, és a MiniMax nem támogatja. A kereskedelmi felhasználás NEM tiltott (ez nem kizárólag nem kereskedelmi célú licenc); a feltételek alább olvashatók.
+A tárhely MIT licence nem terjed ki a modellsúlyokra; lásd: [`NOTICE`](NOTICE). Ez a tároló NEM tartalmaz modellsúlyokat (sem MiniMax H3, sem HyperFlow-H3-Flash GGUF, sem VAE fájlokat). A projekt nem áll kapcsolatban a MiniMax-szal, és a MiniMax nem támogatja. A kereskedelmi felhasználás NEM tiltott (ez nem kizárólag nem kereskedelmi célú licenc); a feltételek alább olvashatók.
 
 **Terület (Applicable Territory)**
 - **Preambulum, I.3, I.5:** az egész világ, KIVÉVE az Európai Uniót, az Egyesült Királyságot, a Koreai Köztársaságot és az Egyesült Államokat. A modell használata a licenc elfogadásának minősül.
@@ -164,4 +176,4 @@ A szögletes zárójelben használt futásnevek (saját elnevezéseink, nem a t�
 - **A tiszta mappás teszt hátravan:** a telepítő és futtató szkripteket még nem ellenőriztük üres mappából kizárólag ezen útmutató alapján; ezt a szakaszt frissítjük, amikor a teszt (köztük az 56 képkockás bájtösszehasonlítás a referenciával) rögzítésre kerül.
 - Generált videókat itt nem mellékelünk.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

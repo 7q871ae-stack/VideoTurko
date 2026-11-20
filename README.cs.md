@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · Čeština · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Překlady následují tento anglický README. Pokud se překlad liší nebo zaostává, platí anglický text, zejména u textu o licenci a bezpečnosti ([`SECURITY.md`](SECURITY.md) a [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) se udržují jen v angličtině a turečtině).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Než začnete (licence, území):** tento repozitář je pod licencí MIT a obsahuje jen záplaty a skripty. Model MiniMax H3, který stahuje, podléhá MiniMax H3 Community License: její území vylučuje Evropskou unii, Spojené království, Jižní Koreu a Spojené státy a model, odvozená díla **i výstupy (videa, která vytvoříte)** se tam nesmějí používat, šířit ani zobrazovat (V.4). Komerční použití je povoleno v rámci podmínek licence. Před instalací si přečtěte [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md); toto není právní porada.
 
 > **Ve 30 sekundách:** grafická karta se 4 GB paměti dokáže na jeden průchod vytvořit video MiniMax H3 o 209 snímcích (8.7 s): ověřeno na jednom počítači (GTX 1050 Ti 4 GB; úplná instalace `kur.ps1` do prázdné složky zatím není ověřena od začátku do konce) [změřeno: 209 snímků s vydanou binárkou přes `uret.ps1`, běh U209; latent shodný bajt po bajtu s během na vývojovém sestavení; snímky a zvuk ve videu shodné, sha souboru se liší kvůli kontejneru; důkazy uchovávají autoři, v tomto repozitáři nejsou]; s `-InitImg` (obrázek na video) nejvýše 192 snímků (8.0 s) [změřeno: běh B192]; 209 snímků se počítá asi 57 min, výchozí časový limit je 80 min [změřeno: běh U209]; jak to spustit, ukazují 3 kroky níže.
 
@@ -12,14 +16,18 @@ VideoTurko: záplaty paměti pro stable-diffusion.cpp a postupy ke spuštění M
 **Stav: níže uvedené instalační a spouštěcí skripty se teprve dokončují a test v čisté složce nebyl dosud proveden; dokud jím neprojdou, netvrdíme, že zde cokoli funguje (viz „Stav a omezení“).**
 
 1. **Stáhněte** tento repozitář (zelené tlačítko **Code**, pak **Download ZIP**) a rozbalte do KRÁTKÉ cesty, například `C:\vt`.
-2. **Nainstalujte**: otevřete PowerShell v této složce (do adresního řádku Průzkumníka napište `powershell`) a spusťte
+2. **Instalace: dvakrát klikněte na `kur.cmd`** (otevře se černé okno a ukáže každý krok; zavřením se instalace zastaví a opětovným spuštěním pokračuje tam, kde skončila: napůl stažený soubor modelu se obnoví [přečteno: stahovací skript uchovává soubor `.part` a pokračuje z něj; úplné obnovení 29 GiB nebylo měřeno]). Pokud Windows upozorní na stažený soubor, použijte místo toho příkaz PowerShellu níže [rada, netestováno na staženém ZIPu]. Dáváte přednost příkazové řádce? Otevřete PowerShell v té složce (napište `powershell` do adresního řádku Průzkumníka) a spusťte stejnou instalaci:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Kořenem instalace je složka, do které jste archiv rozbalili (engine jde do `engine\bin`, modely do `model`); chcete-li použít jiné místo, nejdříve nastavte proměnnou prostředí `VT_ROOT`. Skript zkontroluje GPU, ovladač, RAM a disk, stáhne engine a modely (zip archivy enginu a nově stažené soubory modelů se kontrolují sha256; soubor modelu, který už na místě je a má správnou velikost, se kontroluje jen podle velikosti, úplnou kontrolu sha256 spustí `scripts\modelleri_indir.ps1 -Dogrula`), provede krátký skutečný test a vypíše READY, jen když test prošel [dle návrhu: `kur.ps1` nebyl celý spuštěn v čisté složce; tato věta bude po testu v čisté složce aktualizována]. `-ExecutionPolicy Bypass` platí jen pro tento jeden proces; jako u každého instalátoru si nejdříve přečtěte `scripts\kur.ps1`.
    Zip s enginem se stahuje z vydání v0.1.0 na GitHubu (zveřejněno 2026-11-19; jeho sha256 je pevně uvedeno v `kur.ps1`). Bez internetu nebo s vlastním sestavením zadejte lokální zip soubory: `-MotorZip <path> -CudaZip <path>`. Lokální zip se kontroluje stejným pevně uvedeným sha256 (soubor `.sha256` vedle se ignoruje), musí to tedy být zip z vydání; pro vlastní sestavení nejdřív nastavte `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` na jeho sha256. Chybný sha256 skript zastaví s kódem 1. Do `engine\bin` se dostanou jen soubory `.exe` a `.dll`; licence a README jdou do `engine\lisanslar\<zip name>\`. [zkoušeno na dist zipech před vydáním: `.sha256` vedle plus varování o odkazu na sebe samého, binárka a DLL umístěny, `sd-cli --help` proběhlo; sha nainstalovaných binárek souhlasila (`c5cebe78...`, `e5d3d329...`); krok s modely a 5snímkový test v `kur.ps1` na skutečném GPU JEŠTĚ NEBYLY spuštěny]
    **Licence modelu:** před krokem s modely instalátor vypíše shrnutí licence (`docs/LISANS_KABUL.txt`, plný text `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, územní omezení platná i pro vygenerovaná videa, pravidla komerčního použití a označování AI) a požádá o souhlas (`E` = ano). Nejdříve si ji přečtěte. Pro běh bez obsluhy lze předat `-LisansKabul E`, což znamená, že jste licenci sami přečetli a přijali; nepřidávejte tento přepínač za někoho jiného. (AI agenti: řiďte se `AGENTS.md`; nikdy nezadávejte E bez souhlasu uživatele.) Bez souhlasu se `kur.ps1` zastaví s návratovým kódem 2 a nestáhne žádný model.
-3. **Generujte**: prompt uložte do textového souboru (jeden odstavec v angličtině, volitelně věta `audio:`) a spusťte
+3. **Vaše první video (56 snímků, asi 11 min na naší GTX 1050 Ti** [změřeno: 641 s, běh R0, `docs/OLCUMLER.md`; jiné karty neměřeny]**)**: když instalátor vypíše `HAZIR / READY`, spusťte
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (zkratka: přetáhněte textový soubor s promptem na `uret.cmd` nebo spusťte `uret.cmd docs\ornek_istem_R0.txt`: stejný běh o 56 snímcích). Video je v `runs\`. Poté napište vlastní prompt do textového souboru (jeden odstavec anglicky, volitelná věta `audio:`) a spusťte nejdelší klip, který pokrýváme (výchozí, asi 57 min [změřeno: běh U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: záplaty paměti pro stable-diffusion.cpp a postupy ke spuštění M
 | OS | Windows 10/11, 64bitový |
 | GPU | NVIDIA, 4 GB nebo více; testováno jen na GTX 1050 Ti (sm_61); malá rezerva (3777/4096 MiB při 209 snímcích): vytížená obrazovka nebo prohlížeč mohou běh přerušit; jiné karty se 4 GB jsme nezkoušeli |
 | RAM | 16 GB (špička asi 11 GB; zavřete ostatní programy) |
-| Disk | 32 GiB nebo více volného místa, modely na SSD (ideálně NVMe) |
+| Disk | alespoň 32 GiB volných (doporučeno 40 GiB a více: mezi 32 a 40 instalátor vypíše varování, `[VT-W-DISK-PAY]` [změřeno: běhy `-Kuru` se simulovaným diskem]), modely na SSD (nejlépe NVMe) |
 | Stahování | zip enginu 36.8 MB + zip běhového prostředí CUDA 567.5 MB [změřeno] + modely 31,473,112,040 bajtů (asi 29.3 GiB) [přečteno: velikosti v `scripts/modeller.json`]; celkem asi 30 GiB |
 | Modely | nejsou součástí; instalátor je stahuje podle licence MiniMax (viz upozornění níže). Modely (29.3 GiB, 31,473,112,040 bajtů v `scripts/modeller.json`) nejsou ani v tomto repozitáři, ani ve vydání: platí limity GitHubu na velikost souborů a vydání a `kur.ps1` je stahuje z oficiálního zdroje s ověřením sha256. |
 
 Návratové kódy `kur.ps1`: 0 READY, 1 chyba, 2 je potřeba vstup uživatele (licence, nebo zatím chybí vydání/zip), 3 nedostatečný hardware nebo disk, 4 zastaveno (soubor DUR). `uret.ps1` přijme běh, jen pokud existuje `.avi`, počet snímků sedí a logy jsou čisté [změřeno: jeden skutečný běh přes `uret.ps1` s vydanou binárkou, běh U209, 209 snímků, kontrola prošla]. Návratové kódy `uret.ps1`: 0 DONE (kontrola kvality prošla), 1 chyba nebo neplatný výstup (včetně videa bez zvukové stopy), 2 zastaveno (soubor DUR), 5 `KAPI RED` (kontrola kvality neprošla: klip nebyl přijat, rozhodnutí je na vás), 6 kontrolu nešlo provést (klip nebyl přijat). Podrobnosti v AGENTS.md. [změřeno: návratové kódy 0, 1 (video bez zvuku), 5 a 6 ve scénářích s falešným enginem a falešnou kontrolou; se skutečným enginem: kód 0 v běhu U209]
 
 ### Řešení potíží (podrobnosti: `docs/SIK_HATALAR.md`)
+Chybové řádky našich skriptů nesou stálý kód, například `HATA: [VT-E-DLL] ...` nebo `UYARI: [VT-W-DISK-PAY] ...`. Najděte kód v [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (příklad kotvy `#vt-e-dll`) nebo v `docs/hata_imzalari.json` a napište kód do svého issue. První sloupec tabulky níže zůstává tak, jak je vypsán (kódy a text logů se nepřekládají).
+
 | Co vidíte | Co to znamená a co dělat |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Nespouštějte `sd-cli.exe` ručně; spusťte `scripts\kur.ps1`, který DLL knihovny CUDA umístí na správné místo. |
@@ -48,6 +58,8 @@ Návratové kódy `kur.ps1`: 0 READY, 1 chyba, 2 je potřeba vstup uživatele (l
 | Návratový kód prázdný, ale vypsáno „finished“ (#14) | Obalový skript přečetl návratový kód příliš brzy; spusťte znovu a ověřte, že soubor videa existuje. |
 | Systém zpomaluje, probíhá odkládání do swapu (#18) | Engine používá asi 10-11 GB RAM; zavřete prohlížeče a ostatní programy. |
 | Neshoda sha256 / stahování selhalo | Obvykle bylo stahování přerušeno: spusťte stejný příkaz znovu, ověřené soubory se přeskočí. |
+
+**Uvízli jste, nebo vás to zajímá?** [`SUPPORT.md`](SUPPORT.md) (kde se ptát; doby odpovědi jsou cíle, ne závazky) · [`PRIVACY.md`](PRIVACY.md) (žádná telemetrie; síť se používá jen ke stažení enginu a modelů z uvedených hostů) · [`SECURITY.md`](SECURITY.md) (soukromé hlášení) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (první pull request v 5 krocích; pro dokumenty a skripty není potřeba GPU).
 
 ### Novinky ve v0.1.1: další přepínače (podrobnosti: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Bez těchto přepínačů se na kartě se 4 GB nic nemění (bajtová kontrola na 56 snímcích vůči naší referenci s v0.1.1 znovu prošla [změřeno]). Chcete-li vidět, co by se spustilo, přidejte k libovolnému příkazu `-Kuru`.
@@ -95,7 +107,7 @@ Nastavení je vaše: 209 snímků je naše ověřená výchozí hodnota na kart�
 ## Upozornění k licenci modelu
 **VideoTurko obsahuje jen záplaty a skripty (MIT); kdo používá model a jeho výstupy, odpovídá za licenci MiniMax sám.** Nejde o právní poradenství. Níže jsou body MiniMax H3 Community License (2. srpna 2026) ve shrnutí s čísly; závazná je samotná licence: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Tento repozitář NEOBSAHUJE žádné váhy modelů (žádné soubory MiniMax H3, GGUF HyperFlow-H3-Flash ani VAE). Projekt není s MiniMax spojen ani jí podporován. Komerční použití NENÍ zakázáno (nejde o nekomerční licenci); podmínky jsou níže.
+Licence MIT tohoto repozitáře se nevztahuje na váhy modelu; viz [`NOTICE`](NOTICE). Tento repozitář NEOBSAHUJE žádné váhy modelů (žádné soubory MiniMax H3, GGUF HyperFlow-H3-Flash ani VAE). Projekt není s MiniMax spojen ani jí podporován. Komerční použití NENÍ zakázáno (nejde o nekomerční licenci); podmínky jsou níže.
 
 **Území (Applicable Territory)**
 - **Preambule, I.3, I.5:** celý svět, S VÝJIMKOU Evropské unie, Spojeného království, Korejské republiky a Spojených států. Používání modelu se považuje za přijetí licence.
@@ -164,4 +176,4 @@ Názvy běhů použité v hranatých závorkách (naše vlastní názvy, nejsou 
 - **Test v čisté složce teprve čeká:** instalační a spouštěcí skripty zatím nebyly ověřeny z prázdné složky jen podle těchto pokynů; oddíl bude aktualizován, až bude tento test (včetně bajtového porovnání 56 snímků s referencí) zaznamenán.
 - Vygenerovaná videa zde nejsou dodávána.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

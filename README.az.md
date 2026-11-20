@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · Azərbaycanca · [Bahasa Melayu](README.ms.md)
 
+Tərcümələr bu ingilis dilindəki README-ni izləyir. Tərcümə fərqlənərsə və ya geridə qalarsa, xüsusilə lisenziya və təhlükəsizlik mətnində ingilis mətni əsasdır ([`SECURITY.md`](SECURITY.md) və [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) yalnız ingilis və türk dillərində saxlanılır).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Başlamazdan əvvəl (lisenziya, ərazi):** bu repozitoriya MIT-dir və yalnız yamaqlar və skriptlər ehtiva edir. Yüklədiyi MiniMax H3 modeli MiniMax H3 Community License altındadır: onun ərazisinə Avropa İttifaqı, Birləşmiş Krallıq, Cənubi Koreya və Amerika Birləşmiş Ştatları daxil deyil və model, törəmələr **və çıxışlar (yaratdığınız videolar)** orada istifadə edilə, yayıla və ya göstərilə bilməz (V.4). Kommersiya istifadəsinə lisenziya şərtləri daxilində icazə verilir. Quraşdırmadan əvvəl [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) oxuyun; bu hüquqi məsləhət deyil.
 
 > **30 saniyədə:** 4 GB-lıq video kart MiniMax H3 ilə 209 kadrlıq (8,7 san) videonu tək keçidlə hazırlaya bilir: bir kompüterdə yoxlanılıb (GTX 1050 Ti 4 GB; boş qovluqda `kur.ps1` ilə tam quraşdırma hələ başdan sona yoxlanılmayıb) [ölçülüb: `uret.ps1` vasitəsilə buraxılış (release) binarı ilə 209 kadr, U209 işə salınması; latent inkişaf (development) build işə salınması ilə bayt-bayt eynidir; videoda kadrlar və səs eynidir, fayl sha-sı konteynerə görə fərqlənir; sübutu müəlliflər saxlayır, bu repoda yoxdur]; `-InitImg` ilə (şəkildən video) ən çox 192 kadr (8,0 san) [ölçülüb: B192 işə salınması]; 209 kadr təxminən 57 dəq çəkir, standart vaxt həddi 80 dəq [ölçülüb: U209 işə salınması]; aşağıdakı 3 addım onu necə işə salmaq lazım olduğunu göstərir.
 
@@ -12,14 +16,18 @@ VideoTurko: 4 GB-lıq GTX 1050 Ti üzərində MiniMax H3 mətndən-videoya model
 **Vəziyyət: aşağıdakı quraşdırma və işə salma skriptləri tamamlanır, təmiz-kök (clean-root) testi gözlənilir; bu test keçməyincə burada heç nəyin işlədiyi iddia edilmir ("Vəziyyət və məhdudiyyətlər" bölməsinə baxın).**
 
 1. Bu repozitoriyanı **yükləyin** (yaşıl **Code** düyməsi, sonra **Download ZIP**) və QISA bir qovluğa, məsələn `C:\vt` qovluğuna çıxarın.
-2. **Quraşdırın**: həmin qovluqda PowerShell açın (Explorer ünvan sətrinə `powershell` yazın) və bu əmri işə salın:
+2. **Quraşdırma: `kur.cmd` üzərinə iki dəfə klikləyin** (qara pəncərə açılır və hər addımı göstərir; onu bağlamaq quraşdırmanı dayandırır, yenidən işə salmaq qaldığı yerdən davam edir: yarıya qədər yüklənmiş model faylı davam etdirilir [oxunub: yükləmə skripti `.part` faylını saxlayır və ondan davam edir; tam 29 GiB davam ölçülməyib]). Windows yüklənmiş fayl barədə xəbərdarlıq etsə, əvəzinə aşağıdakı PowerShell əmrindən istifadə edin [məsləhət, yüklənmiş ZIP üzərində sınanmayıb]. Əmr sətrini üstün tutursunuz? Həmin qovluqda PowerShell açın (Explorer ünvan çubuğuna `powershell` yazın) və eyni quraşdırmanı işə salın:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Quraşdırma kökü çıxardığınız qovluqdur (mühərrik `engine\bin` qovluğuna, modellər `model` qovluğuna düşür); başqa yer üçün əvvəlcə `VT_ROOT` mühit dəyişənini təyin edin. Skript GPU-nu, sürücünü, RAM-i və diski yoxlayır, mühərriki və modelləri yükləyir (mühərrik zip-ləri və təzə yüklənən model faylları sha256 ilə yoxlanılır; ölçüsü düzgün olan hazır model faylı yalnız ölçüyə görə yoxlanılır, tam sha256 yoxlaması üçün `scripts\modelleri_indir.ps1 -Dogrula` işə salınır), qısa real yoxlama aparır və yalnız bu yoxlama keçərsə READY çıxarır [dizayn: `kur.ps1` təmiz qovluqda tam işə salınmayıb; bu cümlə təmiz-qovluq testindən sonra yenilənəcək]. `-ExecutionPolicy Bypass` yalnız bu bir prosesə aiddir; hər quraşdırıcıda olduğu kimi, əvvəlcə `scripts\kur.ps1` faylını oxuyun.
    Mühərrik zip-i GitHub-dakı v0.1.0 buraxılışından yüklənir (19 noyabr 2026-da dərc olunub; sha256-sı `kur.ps1` faylında sabitlənib). İnternetsiz işləyirsinizsə və ya öz build-inizdən istifadə edirsinizsə, yerli zip-ləri verin: `-MotorZip <path> -CudaZip <path>`. Yerli zip də eyni sabit sha256 ilə yoxlanılır (yanındakı `.sha256` faylı nəzərə alınmır), ona görə də o, buraxılış zip-i olmalıdır; öz build-iniz üçün əvvəlcə `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` dəyişənini onun sha256-sına təyin edin. Yanlış sha256 exit 1 ilə dayandırır. `engine\bin` qovluğuna yalnız `.exe`/`.dll` faylları düşür; lisenziyalar və README `engine\lisanslar\<zip name>\` qovluğuna qoyulur. [sınanıb buraxılışdan əvvəl dist zip-ləri ilə: yanındakı `.sha256` faylı və özünə istinadlı xəbərdarlıq, binar və DLL-lər yerinə qoyuldu, `sd-cli --help` işlədi; quraşdırılan binarların sha-ları üst-üstə düşdü (`c5cebe78...`, `e5d3d329...`); `kur.ps1`-in model addımı və 5 kadrlıq yoxlaması hələ real GPU-da İŞƏ SALINMAYIB]
    **Model lisenziyası:** model addımından əvvəl quraşdırıcı lisenziya xülasəsini çap edir (`docs/LISANS_KABUL.txt`, tam mətn `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, yaradılan videoları da əhatə edən ərazi məhdudiyyətləri, kommersiya və AI-etiket qaydaları) və qəbul etməyinizi istəyir (`E` = bəli). Əvvəlcə oxuyun. Nəzarətsiz işə salmalar üçün `-LisansKabul E` verə bilərsiniz; bu, lisenziyanı özünüzün oxuyub qəbul etdiyiniz mənasına gəlir; başqası üçün əlavə etməyin. (AI agentləri: `AGENTS.md` faylına əməl edin; istifadəçinin razılığı olmadan heç vaxt E yazmayın.) Qəbul olunmasa `kur.ps1` exit kodu 2 ilə dayanır və heç bir model yükləmir.
-3. **Yaradın**: istəyinizi (prompt) mətn faylına yazın (bir ingilis abzası, istəyə görə `audio:` cümləsi) və işə salın:
+3. **İlk videonuz (56 kadr, bizim GTX 1050 Ti-də təxminən 11 dəq** [ölçülüb: 641 san, işə salma R0, `docs/OLCUMLER.md`; digər kartlar ölçülməyib]**)**: quraşdırıcı `HAZIR / READY` yazdıqda işə salın
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (qısayol: prompt mətn faylını `uret.cmd` üzərinə sürükləyin və ya `uret.cmd docs\ornek_istem_R0.txt` işə salın: eyni 56 kadrlıq işə salma). Video `runs\` qovluğundadır. Sonra öz promptunuzu mətn faylına yazın (ingiliscə bir abzas, istəyə görə `audio:` cümləsi) və əhatə etdiyimiz ən uzun klipi işə salın (susmaya görə, təxminən 57 dəq [ölçülüb: işə salma U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: 4 GB-lıq GTX 1050 Ti üzərində MiniMax H3 mətndən-videoya model
 | ƏS | Windows 10/11, 64-bit |
 | GPU | NVIDIA, 4 GB və ya daha çox; yalnız GTX 1050 Ti (sm_61) üzərində sınanıb; ehtiyat payı azdır (209 kadrda 3777/4096 MiB): məşğul ekran və ya brauzer işə salınmanı poza bilər; başqa 4 GB-lıq kart sınanmayıb |
 | RAM | 16 GB (zirvə təxminən 11 GB; digər proqramları bağlayın) |
-| Disk | 32 GiB və ya daha çox boş yer, modellər SSD-də (NVMe üstündür) |
+| Disk | ən azı 32 GiB boş (40 GiB və daha çox tövsiyə olunur: 32 ilə 40 arasında quraşdırıcı xəbərdarlıq yazır, `[VT-W-DISK-PAY]` [ölçülüb: simulyasiya edilmiş diskli `-Kuru` işə salmaları]), modellər SSD-də (NVMe daha yaxşıdır) |
 | Yükləmə | mühərrik zip-i 36,8 MB + CUDA runtime zip-i 567,5 MB [ölçülüb] + modellər 31,473,112,040 bayt (təxminən 29,3 GiB) [oxunub: ölçülər `scripts/modeller.json` faylında]; cəmi təxminən 30 GiB |
 | Modellər | daxil deyil; quraşdırıcı onları MiniMax lisenziyası çərçivəsində yükləyir (aşağıdakı xəbərdarlığa baxın). Modellər (29,3 GiB, `scripts/modeller.json` faylında 31,473,112,040 bayt) bu repozitoriyada və ya buraxılışda yoxdur: GitHub fayl/buraxılış ölçü məhdudiyyətləri tətbiq olunur, `kur.ps1` onları rəsmi mənbədən sha256 yoxlaması ilə yükləyir. |
 
 `kur.ps1` exit kodları: 0 READY, 1 xəta, 2 istifadəçi girişi lazımdır (lisenziya və ya hələ buraxılış/zip yoxdur), 3 avadanlıq və ya disk kifayət deyil, 4 dayandırılıb (DUR faylı). `uret.ps1` nəticəni yalnız `.avi` faylı varsa, kadr sayı düzgündürsə və loglar təmizdirsə qəbul edir [ölçülüb: `uret.ps1` vasitəsilə buraxılış binarında bir real işə salınma, U209 işə salınması, 209 kadr, keçid (gate) keçdi]. `uret.ps1` exit kodları: 0 DONE (keyfiyyət keçidi keçdi), 1 xəta və ya yararsız çıxış (səs axını olmayan video daxil), 2 dayandırılıb (DUR faylı), 5 `KAPI RED` (keyfiyyət keçidi keçilmədi: klip qəbul edilmir, qərar sizindir), 6 keçid işləyə bilmədi (klip qəbul edilmir). Təfərrüatlar AGENTS.md faylındadır. [ölçülüb: saxta mühərrik və saxta keçid ssenarilərində 0, 1 (səssiz video), 5 və 6 exit kodları; real mühərrik: U209 işə salınmasında exit 0]
 
 ### Problemlərin həlli (təfərrüatlar: `docs/SIK_HATALAR.md`)
+Skriptlərimizin xəta sətirləri sabit kod daşıyır, məsələn `HATA: [VT-E-DLL] ...` və ya `UYARI: [VT-W-DISK-PAY] ...`. Kodu [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (lövbər nümunəsi `#vt-e-dll`) və ya `docs/hata_imzalari.json` içində axtarın və kodu issue-nuza yazın. Aşağıdakı cədvəlin birinci sütunu çap olunduğu kimi qalır (kodları və jurnal mətnini tərcümə etməyin).
+
 | Gördüyünüz | Nə deməkdir, nə etməli |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | `sd-cli.exe` faylını əllə işə salmayın; CUDA DLL-lərini yerinə qoyan `scripts\kur.ps1` skriptini işə salın. |
@@ -48,6 +58,8 @@ VideoTurko: 4 GB-lıq GTX 1050 Ti üzərində MiniMax H3 mətndən-videoya model
 | Exit kodu boşdur, amma "finished" yazılıb (#14) | Sarğı (wrapper) exit kodunu çox tez oxuyub; yenidən işə salın və video faylının mövcudluğunu yoxlayın. |
 | Sistem yavaşlayır, swap işləyir (#18) | Mühərrik təxminən 10-11 GB RAM istifadə edir; brauzerləri və digər proqramları bağlayın. |
 | sha256 uyğunsuzluğu / yükləmə uğursuz oldu | Adətən yükləmə yarımçıq qalıb: eyni əmri yenidən işə salın, yoxlanılmış fayllar keçilir. |
+
+**İlişib qaldınız, yoxsa maraqlanırsınız?** [`SUPPORT.md`](SUPPORT.md) (hara sual vermək; cavab müddətləri hədəfdir, öhdəlik deyil) · [`PRIVACY.md`](PRIVACY.md) (telemetriya yoxdur; şəbəkə yalnız mühərriki və modelləri göstərilən hostlardan yükləmək üçün istifadə olunur) · [`SECURITY.md`](SECURITY.md) (məxfi bildiriş) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (5 addımda ilk pull request; sənədlər və skriptlər üçün GPU lazım deyil).
 
 ### v0.1.1-də yeni: əlavə seçimlər (təfərrüatlar: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Bu seçimlərdən istifadə etməsəniz, 4 GB-lıq kartda heç nə dəyişmir (istinadımızla müqayisədə 56 kadrlıq bayt yoxlaması v0.1.1 ilə yenidən keçdi [ölçülüb]). Nəyin işə düşəcəyini görmək üçün istənilən əmrə `-Kuru` əlavə edin.
@@ -95,7 +107,7 @@ Ayarlar sizindir: 209 kadr 4 GB-lıq kartda sınanmış standartımızdır, məc
 ## Model lisenziyası xəbərdarlığı
 **VideoTurko yalnız yamaqlardan və skriptlərdən ibarətdir (MIT); modeldən və onun çıxışlarından istifadə edən hər kəs MiniMax lisenziyasına görə özü məsuliyyət daşıyır.** Hüquqi məsləhət deyil. Aşağıda MiniMax H3 Community License (2 avqust 2026) bəndləri nömrələri ilə xülasə olunub; məcburi olan lisenziyanın özüdür: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Bu repoda model çəkiləri YOXDUR (MiniMax H3, HyperFlow-H3-Flash GGUF və ya VAE faylları yoxdur). Bu layihə MiniMax ilə əlaqəli deyil və MiniMax tərəfindən təsdiqlənməyib. Kommersiya istifadəsi qadağan DEYİL (bu qeyri-kommersiya lisenziyası deyil); şərtlər aşağıdadır.
+Bu repozitoriyanın MIT lisenziyası model çəkilərini əhatə etmir; bax: [`NOTICE`](NOTICE). Bu repoda model çəkiləri YOXDUR (MiniMax H3, HyperFlow-H3-Flash GGUF və ya VAE faylları yoxdur). Bu layihə MiniMax ilə əlaqəli deyil və MiniMax tərəfindən təsdiqlənməyib. Kommersiya istifadəsi qadağan DEYİL (bu qeyri-kommersiya lisenziyası deyil); şərtlər aşağıdadır.
 
 **Ərazi (Applicable Territory)**
 - **Preamble, I.3, I.5:** Avropa İttifaqı, Birləşmiş Krallıq, Koreya Respublikası və Amerika Birləşmiş Ştatları İSTİSNA OLMAQLA bütün dünya. Modeldən istifadə lisenziyanı qəbul etmək sayılır.
@@ -164,4 +176,4 @@ Mötərizələrdə istifadə olunan işə salınma adları (öz adlarımızdır,
 - **Təmiz-kök testi gözlənilir:** quraşdırma və işə salma skriptləri yalnız bu təlimatlarla boş qovluqdan hələ yoxlanılmayıb; bu test (istinada qarşı 56 kadrlıq bayt müqayisəsi daxil) qeyd olunduqda bu bölmə yenilənəcək.
 - Burada heç bir yaradılmış video verilmir.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · 한국어 · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+번역본은 이 영어 README를 따릅니다. 번역이 다르거나 뒤처져 있으면 특히 라이선스와 보안 문구는 영어 텍스트가 기준입니다([`SECURITY.md`](SECURITY.md)와 [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md)는 영어와 터키어로만 관리됩니다).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **시작하기 전에(라이선스, 지역):** 이 저장소는 MIT이며 패치와 스크립트만 포함합니다. 내려받는 MiniMax H3 모델은 MiniMax H3 Community License를 따르며, 적용 지역에서 유럽연합, 영국, 대한민국, 미국이 제외됩니다. 모델, 파생물 **및 출력물(생성한 영상)**은 그곳에서 사용, 배포, 표시할 수 없습니다(V.4). 상업적 사용은 라이선스 조건 안에서 허용됩니다. 설치하기 전에 [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md)를 읽으세요. 이것은 법률 자문이 아닙니다.
 
 > **30초 요약:** 4 GB 그래픽카드로 MiniMax H3의 209 프레임(8.7초) 영상을 한 번의 패스로 만들 수 있습니다. 확인은 한 대의 PC(GTX 1050 Ti 4 GB)에서만 했으며, 빈 폴더에서 `kur.ps1`을 전체 설치하는 과정은 아직 끝까지 검증하지 않았습니다 [측정: 릴리스 바이너리로 `uret.ps1`을 통해 209 프레임, 실행 U209. latent는 개발 빌드 실행과 바이트 단위로 동일. 영상 안의 프레임과 오디오는 동일하며 파일 sha는 컨테이너 때문에 다름. 증거는 작성자가 보관 중이며 이 저장소에는 없음]. `-InitImg`(image-to-video)에서는 최대 192 프레임(8.0초)입니다 [측정: 실행 B192]. 209 프레임에는 약 57분이 걸리고 기본 시간 제한은 80분입니다 [측정: 실행 U209]. 아래 3단계가 실행 방법입니다.
 
@@ -12,14 +16,18 @@ VideoTurko: 4 GB GTX 1050 Ti에서 MiniMax H3 text-to-video를 돌리기 위한 
 **상태: 아래 설치·실행 스크립트는 마무리 중이며 clean-root 테스트가 아직 남아 있습니다. 이 테스트를 통과하기 전까지는 여기 적힌 어떤 것도 동작한다고 주장하지 않습니다(「상태와 한계」 참고).**
 
 1. **다운로드**: 이 저장소를 내려받아(초록색 **Code** 버튼, 이어서 **Download ZIP**) `C:\vt`처럼 경로가 짧은 폴더에 압축을 풉니다.
-2. **설치**: 그 폴더에서 PowerShell을 열고(탐색기 주소창에 `powershell` 입력) 다음을 실행합니다.
+2. **설치: `kur.cmd`를 더블클릭**(검은 창이 열리며 각 단계를 보여 줍니다. 창을 닫으면 설치가 멈추고, 다시 실행하면 멈춘 곳에서 이어집니다. 반쯤 내려받은 모델 파일은 이어받습니다 [읽음: 다운로드 스크립트가 `.part` 파일을 보관하고 거기서 이어받음. 전체 29 GiB 이어받기는 측정하지 않음]). 내려받은 파일에 대해 Windows가 경고하면 아래 PowerShell 명령을 대신 사용하세요 [조언, 내려받은 ZIP에서는 테스트하지 않음]. 명령줄을 선호하시나요? 그 폴더에서 PowerShell을 열고(탐색기 주소 표시줄에 `powershell` 입력) 같은 설치를 실행하세요:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    설치 루트는 압축을 푼 폴더입니다(엔진은 `engine\bin`, 모델은 `model`에 들어갑니다). 다른 위치를 쓰려면 먼저 환경 변수 `VT_ROOT`를 설정하세요. 스크립트는 GPU, 드라이버, RAM, 디스크를 확인하고, 엔진과 모델을 받아 오며(엔진 zip과 새로 받은 모델 파일은 sha256으로 검증합니다. 이미 있는 모델 파일은 크기가 맞으면 크기만 확인하며, `scripts\modelleri_indir.ps1 -Dogrula`로 전체 sha256 검증을 실행할 수 있습니다), 짧은 실제 점검을 실행한 뒤, 그 점검을 통과했을 때만 READY를 출력합니다 [설계: `kur.ps1`은 깨끗한 폴더에서 전체를 실행해 본 적이 없습니다. 이 문장은 clean-folder 테스트 뒤에 갱신합니다]. `-ExecutionPolicy Bypass`는 이 한 프로세스에만 적용됩니다. 어떤 설치 프로그램이든 마찬가지로, 먼저 `scripts\kur.ps1`을 읽어 보세요.
    엔진 zip은 GitHub 릴리스 v0.1.0에서 받습니다(2026년 11월 19일 공개, sha256은 `kur.ps1`에 고정되어 있습니다). 오프라인이거나 직접 빌드한 것을 쓸 때는 로컬 zip을 지정하세요: `-MotorZip <path> -CudaZip <path>`. 로컬 zip도 같은 고정 sha256으로 검사합니다(옆에 있는 `.sha256` 파일은 무시됩니다). 따라서 릴리스 zip이어야 하며, 직접 빌드한 것을 쓸 때는 먼저 `VT_MOTOR_SHA256` / `VT_CUDA_SHA256`에 그 sha256을 설정하세요. sha256이 틀리면 exit 1로 멈춥니다. `engine\bin`에는 `.exe`/`.dll`만 들어가고, 라이선스와 README는 `engine\lisanslar\<zip name>\`에 들어갑니다. [시도: 릴리스 전에 dist zip으로 sidecar `.sha256`과 자기 참조 경고, 바이너리와 DLL 배치, `sd-cli --help` 실행을 확인. 설치된 바이너리의 sha도 일치(`c5cebe78...`, `e5d3d329...`). `kur.ps1`의 모델 단계와 5 프레임 점검은 실제 GPU에서 아직 실행하지 않음]
    **모델 라이선스:** 모델 단계 전에 설치 프로그램이 라이선스 요약(`docs/LISANS_KABUL.txt`, 전문은 `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, 생성된 영상에도 적용되는 지역 제한, 상업적 이용과 AI 표시 규칙)을 출력하고 동의를 묻습니다(`E` = 예). 먼저 읽어 보세요. 무인 실행에서는 `-LisansKabul E`를 넘길 수 있는데, 이는 본인이 직접 읽고 동의했다는 뜻입니다. 다른 사람을 대신해 붙이지 마세요. (AI 에이전트: `AGENTS.md`를 따르고, 사용자의 동의 없이 E를 입력하지 마세요.) 동의하지 않으면 `kur.ps1`은 종료 코드 2로 멈추며 모델을 다운로드하지 않습니다.
-3. **생성**: 프롬프트를 텍스트 파일에 적고(영어 한 문단, 선택적으로 `audio:` 문장 하나) 다음을 실행합니다.
+3. **첫 영상(56프레임, 우리 GTX 1050 Ti에서 약 11분**[측정: 641초, 실행 R0, `docs/OLCUMLER.md`; 다른 카드는 측정하지 않음]**)**: 설치 프로그램이 `HAZIR / READY`를 출력하면 다음을 실행하세요
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (단축 방법: 프롬프트 텍스트 파일을 `uret.cmd` 위로 끌어다 놓거나 `uret.cmd docs\ornek_istem_R0.txt`를 실행하세요. 같은 56프레임 실행입니다). 영상은 `runs\`에 있습니다. 그다음 자신의 프롬프트를 텍스트 파일에 쓰고(영어 한 단락, 선택적 `audio:` 문장) 우리가 지원하는 가장 긴 클립을 실행하세요(기본값, 약 57분 [측정: 실행 U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: 4 GB GTX 1050 Ti에서 MiniMax H3 text-to-video를 돌리기 위한 
 | OS | Windows 10/11, 64비트 |
 | GPU | NVIDIA, 4 GB 이상. GTX 1050 Ti(sm_61)에서만 테스트함. 여유가 적음(209 프레임에서 3777/4096 MiB). 화면 출력이 많거나 브라우저가 열려 있으면 실행이 실패할 수 있음. 다른 4 GB 카드는 시도하지 않음 |
 | RAM | 16 GB(피크 약 11 GB. 다른 프로그램은 종료할 것) |
-| 디스크 | 여유 공간 32 GiB 이상, 모델은 SSD에 두기(NVMe 권장) |
+| 디스크 | 여유 공간 32 GiB 이상(40 GiB 이상 권장: 32~40 사이에서는 설치 프로그램이 경고를 출력, `[VT-W-DISK-PAY]` [측정: 디스크를 가정한 `-Kuru` 실행]), 모델은 SSD에(NVMe 권장) |
 | 다운로드 | 엔진 zip 36.8 MB + CUDA 런타임 zip 567.5 MB [측정] + 모델 31,473,112,040 바이트(약 29.3 GiB) [읽음: 크기는 `scripts/modeller.json`]. 합계 약 30 GiB |
 | 모델 | 포함되어 있지 않음. MiniMax 라이선스에 따라 설치 프로그램이 받아 옴(아래 경고 참고). 모델(29.3 GiB, `scripts/modeller.json`의 31,473,112,040 바이트)은 이 저장소나 릴리스에 없습니다. GitHub의 파일·릴리스 크기 제한이 적용되므로 `kur.ps1`이 공식 배포처에서 sha256 검증과 함께 내려받습니다. |
 
 `kur.ps1` 종료 코드: 0 READY, 1 오류, 2 사용자 입력 필요(라이선스, 또는 아직 릴리스/zip 없음), 3 하드웨어 또는 디스크 부족, 4 중지됨(DUR 파일). `uret.ps1`은 `.avi`가 존재하고, 프레임 수가 맞고, 로그가 깨끗할 때만 실행 결과를 인정합니다 [측정: 릴리스 바이너리로 `uret.ps1`을 통한 실제 실행 1회, 실행 U209, 209 프레임, 게이트 통과]. `uret.ps1` 종료 코드: 0 DONE(품질 게이트 통과), 1 오류 또는 잘못된 출력(오디오 스트림이 없는 영상 포함), 2 중지됨(DUR 파일), 5 `KAPI RED`(품질 게이트 실패: 클립은 인정되지 않으며 판단은 사용자 몫), 6 게이트를 실행하지 못함(클립은 인정되지 않음). 자세한 내용은 AGENTS.md를 참고하세요. [측정: 가짜 엔진과 가짜 게이트를 쓴 시나리오에서 종료 코드 0, 1(무음 영상), 5, 6 확인. 실제 엔진: 실행 U209에서 종료 코드 0]
 
 ### 문제 해결 (자세한 내용: `docs/SIK_HATALAR.md`)
+우리 스크립트의 오류 줄에는 고정된 코드가 붙습니다. 예: `HATA: [VT-E-DLL] ...` 또는 `UYARI: [VT-W-DISK-PAY] ...`. 코드는 [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md)(앵커 예 `#vt-e-dll`) 또는 `docs/hata_imzalari.json`에서 찾고, issue에도 코드를 적어 주세요. 아래 표의 첫 번째 열은 출력된 그대로 둡니다(코드와 로그 문구는 번역하지 않습니다).
+
 | 보이는 증상 | 의미와 대처 |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | `sd-cli.exe`를 직접 실행하지 마세요. `scripts\kur.ps1`을 실행하면 CUDA DLL이 제자리에 놓입니다. |
@@ -48,6 +58,8 @@ VideoTurko: 4 GB GTX 1050 Ti에서 MiniMax H3 text-to-video를 돌리기 위한 
 | 종료 코드는 비어 있는데 "finished"로 표시됨 (#14) | 래퍼가 종료 코드를 너무 일찍 읽었습니다. 다시 실행하고 영상 파일이 있는지 확인하세요. |
 | 시스템이 느려지고 스왑 발생 (#18) | 엔진은 RAM을 약 10-11 GB 사용합니다. 브라우저와 다른 프로그램을 종료하세요. |
 | sha256 불일치 / 다운로드 실패 | 대개 다운로드가 중단된 경우입니다. 같은 명령을 다시 실행하세요. 검증이 끝난 파일은 건너뜁니다. |
+
+**막히셨나요, 궁금하신가요?** [`SUPPORT.md`](SUPPORT.md)(질문할 곳. 답변 시간은 목표이며 약속이 아닙니다) · [`PRIVACY.md`](PRIVACY.md)(텔레메트리 없음. 네트워크는 엔진과 모델을 내려받을 때만, 나열된 호스트에서 사용) · [`SECURITY.md`](SECURITY.md)(비공개 제보) · [`CONTRIBUTING.md`](CONTRIBUTING.md)(5단계로 첫 pull request. 문서와 스크립트에는 GPU가 필요 없음).
 
 ### v0.1.1 새 기능: 옵션 추가 (자세한 내용: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 이 옵션들을 쓰지 않으면 4 GB 카드에서는 아무것도 바뀌지 않습니다(우리 기준과 비교한 56 프레임 바이트 점검은 v0.1.1에서도 다시 통과했습니다 [측정]). 어떤 명령이든 `-Kuru`를 붙이면 무엇이 실행될지 미리 볼 수 있습니다.
@@ -95,7 +107,7 @@ stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시�
 ## 모델 라이선스 경고
 **VideoTurko에는 패치와 스크립트(MIT)만 들어 있습니다. 모델과 그 출력물을 사용하는 사람이 MiniMax 라이선스에 대한 책임을 직접 집니다.** 법률 자문이 아닙니다. 아래는 MiniMax H3 Community License(2026년 8월 2일)의 조항을 번호와 함께 요약한 것입니다. 구속력이 있는 것은 라이선스 원문입니다: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-이 저장소에는 모델 가중치가 전혀 없습니다(MiniMax H3, HyperFlow-H3-Flash GGUF, VAE 파일 없음). 이 프로젝트는 MiniMax와 제휴하거나 승인을 받은 것이 아닙니다. 상업적 이용이 금지되어 있지는 않습니다(비상업 라이선스가 아닙니다). 조건은 아래와 같습니다.
+이 저장소의 MIT 라이선스는 모델 가중치를 포함하지 않습니다. [`NOTICE`](NOTICE)를 참고하세요. 이 저장소에는 모델 가중치가 전혀 없습니다(MiniMax H3, HyperFlow-H3-Flash GGUF, VAE 파일 없음). 이 프로젝트는 MiniMax와 제휴하거나 승인을 받은 것이 아닙니다. 상업적 이용이 금지되어 있지는 않습니다(비상업 라이선스가 아닙니다). 조건은 아래와 같습니다.
 
 **지역 (Applicable Territory)**
 - **전문, I.3, I.5:** 전 세계. 단 유럽연합, 영국, 대한민국, 미국은 제외. 모델을 사용하면 라이선스에 동의한 것으로 봅니다.
@@ -164,4 +176,4 @@ stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시�
 - **clean-root 테스트 대기 중:** 설치와 실행 스크립트는 이 안내만으로 빈 폴더에서 검증한 적이 아직 없습니다. 그 테스트(기준에 대한 56 프레임 바이트 비교 포함)를 기록하면 이 섹션을 갱신하겠습니다.
 - 생성된 영상은 여기에 포함되어 있지 않습니다.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

@@ -2,7 +2,11 @@
 
 [English](README.md) · Türkçe · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Çeviriler bu İngilizce README'yi izler. Bir çeviri farklıysa ya da geride kalmışsa, özellikle lisans ve güvenlik metninde İngilizce metin esastır ([`SECURITY.md`](SECURITY.md) ve [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) yalnız İngilizce ve Türkçe tutulur).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Başlamadan önce (lisans, bölge):** bu depo MIT'tir ve yalnız yama ve betik içerir. İndirdiği MiniMax H3 modeli MiniMax H3 Community License altındadır: bölgesi Avrupa Birliği, Birleşik Krallık, Güney Kore ve Amerika Birleşik Devletleri'ni dışarıda bırakır; model, türevleri **ve çıktıları (ürettiğiniz videolar)** orada kullanılamaz, dağıtılamaz, gösterilemez (V.4). Ticari kullanım lisans koşulları içinde serbesttir. Kurmadan önce [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) okuyun; bu hukuki tavsiye değildir.
 
 > **30 saniyede:** 4 GB bir ekran kartı 209 karelik (8,7 sn) MiniMax H3 videosunu tek geçişte üretebiliyor: tek makinede doğrulandı (GTX 1050 Ti 4 GB; boş klasörde tam `kur.ps1` kurulumu uçtan uca henüz doğrulanmadı) [ölçtüm: 209 kare, sürüm ikilisiyle, `uret.ps1` üzerinden, koşu U209; latent bayt-aynı; videoda kareler ve ses aynı, dosya sha'sı konteyner nedeniyle farklı; kanıt yazarlarda, bu depoda yok]; `-InitImg` (resimden video) ile en çok 192 kare (8,0 sn) [ölçtüm: koşu B192]; 209 kare yaklaşık 57 dk sürer, varsayılan süre tavanı 80 dk [ölçtüm: koşu U209]; aşağıdaki 3 adım nasıl çalıştırılacağını gösterir.
 
@@ -12,14 +16,18 @@ VideoTurko: 4 GB GTX 1050 Ti'de MiniMax H3 ile metinden videoyu tek seferde 209 
 **Durum: aşağıdaki kurulum/çalıştırma betikleri tamamlanıyor ve temiz kök testi bekliyor; bu test geçene kadar burada hiçbir şeyin çalıştığı iddia edilmez ("Durum ve sınırlar").**
 
 1. **İndir**: bu depoyu indirin (yeşil **Code** düğmesi, **Download ZIP**) ve KISA bir klasöre açın, örneğin `C:\vt`.
-2. **Kur**: o klasörde PowerShell açın (Gezgin adres çubuğuna `powershell` yazın) ve çalıştırın:
+2. **Kur: `kur.cmd` dosyasına çift tıklayın** (siyah bir pencere açılır ve her adımı gösterir; kapatırsanız kurulum durur, yeniden çalıştırırsanız kaldığı yerden sürer: yarım inen model dosyası devam ettirilir [okudum: indirme betiği bir `.part` dosyası tutar ve ondan sürdürür; tam 29 GiB'lik devam ölçülmedi]). İndirilen dosya için Windows uyarı verirse aşağıdaki PowerShell komutunu kullanın [öneri, indirilmiş ZIP'te denenmedi]. Komut satırını mı tercih edersiniz? O klasörde PowerShell açın (Gezgin adres çubuğuna `powershell` yazın) ve aynı kurulumu çalıştırın:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Kurulum kökü açtığınız klasördür (motor `engine\bin`, modeller `model` altına gider); başka yer için önce `VT_ROOT` ortam değişkenini ayarlayın. GPU, sürücü, RAM ve disk kontrol edilir; motor ve modeller indirilir (motor zipleri ve yeni indirilen model dosyaları sha256 ile doğrulanır; boyutu doğru olan mevcut model dosyası yalnız boyutla denetlenir, tam sha256 için `scripts\modelleri_indir.ps1 -Dogrula`); kısa gerçek bir kontrol koşulur ve yalnız o geçerse HAZIR yazar [tasarım: `kur.ps1` temiz klasörde baştan sona koşulmadı; temiz kök testinden sonra bu cümle güncellenir]. `-ExecutionPolicy Bypass` yalnız bu sürece uygulanır; her kurulum betiğinde olduğu gibi önce `scripts\kur.ps1`'i okuyun.
-   Motor zip'i GitHub release v0.1.0'dan iner (2026-11-19'da yayınlandı; sha256'sı `kur.ps1` içinde sabit). İnternetsiz ya da kendi derlemenizle yerel zip verin: `-MotorZip <path> -CudaZip <path>`. Yerel zip de aynı sabit sha256 ile denetlenir (yanındaki `.sha256` dosyası yok sayılır), yani release zip'i olmalıdır; kendi derlemeniz için önce `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` değişkenine onun sha256'sını verin. Yanlış sha256 çıkış 1 ile durur. `engine\bin`'e yalnız `.exe`/`.dll` gider; lisanslar ve README `engine\lisanslar\<zip name>\` altına yazılır. [release öncesi dist zipleriyle denendi: yan `.sha256` ve kendine dayalı olduğu uyarısı, ikili ve DLL'ler yerleşti, `sd-cli --help` çalıştı; kurulu ikili sha'ları eşleşti (`c5cebe78...`, `e5d3d329...`); `kur.ps1`'in model adımı ve 5 karelik kontrolü gerçek GPU'da HENÜZ denenmedi]
+   Motor zip'i GitHub release v0.1.0'dan iner (2026-11-19'da yayınlandı; sha256'sı `kur.ps1` içinde sabit). İnternetsiz ya da kendi derlemenizle yerel zip verin: `-MotorZip <path> -CudaZip <path>`. Yerel zip de aynı sabit sha256 ile denetlenir (yanındaki `.sha256` dosyası yok sayılır), yani release zip'i olmalıdır; kendi derlemeniz için önce `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` değişkenine onun sha256'sını verin. Yanlış sha256 çıkış 1 ile durur. `engine\bin`'e yalnız `.exe`/`.dll` gider; lisanslar ve README `engine\lisanslar\<zip name>\` altına yazılır. [release öncesi dist zipleriyle denendi: yan `.sha256` dosyası ve kendine atıf yapan uyarı, ikili ve DLL'ler yerleşti, `sd-cli --help` çalıştı; kurulu ikili sha'ları eşleşti (`c5cebe78...`, `e5d3d329...`); `kur.ps1`'in model adımı ve 5 karelik kontrolü gerçek GPU'da HENÜZ denenmedi]
    **Model lisansı:** model adımından önce kurulum lisans özetini (`docs/LISANS_KABUL.txt`, tam metin `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, üretilen videoları da kapsayan bölge sınırları, ticari kullanım ve yapay zekâ etiketi kuralları) yazar ve kabul etmenizi ister (`E` = evet). Önce okuyun. Gözetimsiz çalıştırmada `-LisansKabul E` verebilirsiniz; bu, lisansı kendinizin okuyup kabul ettiğiniz anlamına gelir, başkası adına eklemeyin. (Yapay zekâ ajanları: `AGENTS.md`; kullanıcı onayı olmadan E vermeyin.) Kabul yoksa `kur.ps1` çıkış kodu 2 ile durur ve model indirmez.
-3. **Üret**: istemi bir metin dosyasına yazın (tek paragraf İngilizce, isteğe bağlı `audio:` cümlesi) ve çalıştırın:
+3. **İlk videonuz (56 kare, GTX 1050 Ti'mizde yaklaşık 11 dk** [ölçtüm: 641 sn, koşu R0, `docs/OLCUMLER.md`; başka kartlar ölçülmedi]**)**: kurulum `HAZIR / READY` yazdığında şunu çalıştırın:
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (kısayol: bir istem metin dosyasını `uret.cmd` üzerine sürükleyin ya da `uret.cmd docs\ornek_istem_R0.txt` çalıştırın: aynı 56 karelik koşu). Video `runs\` içindedir. Sonra kendi isteminizi bir metin dosyasına yazın (tek paragraf İngilizce, isteğe bağlı `audio:` cümlesi) ve kapsadığımız en uzun klibi çalıştırın (varsayılan, yaklaşık 57 dk [ölçtüm: koşu U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: 4 GB GTX 1050 Ti'de MiniMax H3 ile metinden videoyu tek seferde 209 
 | İşletim sistemi | Windows 10/11, 64 bit |
 | Ekran kartı | NVIDIA, 4 GB ya da üstü; yalnız GTX 1050 Ti (sm_61) ile denendi; pay ince (209 karede 3777/4096 MiB): meşgul ekran ya da tarayıcı koşuyu bozabilir; başka 4 GB kart denenmedi |
 | RAM | 16 GB (tepe yaklaşık 11 GB; diğer programları kapatın) |
-| Disk | 32 GiB ya da fazlası boş, modeller SSD'de (NVMe tercih) |
+| Disk | en az 32 GiB boş (40 GiB ve üzeri önerilir: 32 ile 40 arasında kurulum uyarı yazar, `[VT-W-DISK-PAY]` [ölçtüm: sahte diskli `-Kuru` koşuları]), modeller SSD'de (NVMe tercih edilir) |
 | İndirme | motor zip 36,8 MB + CUDA çalışma zamanı zip 567,5 MB [ölçtüm] + modeller 31.473.112.040 bayt (yaklaşık 29,3 GiB) [okudum: `scripts/modeller.json` boyutları]; toplam yaklaşık 30 GiB |
 | Modeller | dahil değil; MiniMax lisansı altında kurulum betiği indirir (aşağıdaki uyarı). Modeller (29,3 GiB, `scripts/modeller.json`'da 31.473.112.040 bayt) bu depoda ya da release'te yok: GitHub dosya/release boyut sınırları geçerli ve `kur.ps1` onları resmi kaynaktan sha256 doğrulamasıyla indirir. |
 
 `kur.ps1` çıkış kodları: 0 HAZIR, 1 hata, 2 kullanıcı girdisi gerekli (lisans ya da henüz release/zip yok), 3 donanım ya da disk yetersiz, 4 durduruldu (DUR dosyası). `uret.ps1` bir koşuyu yalnız `.avi` var, kare sayısı doğru ve loglar temizse kabul eder [ölçtüm: sürüm ikilisiyle `uret.ps1` üzerinden bir gerçek koşu, koşu U209, 209 kare, kapı geçti]. `uret.ps1` çıkış kodları: 0 TAMAM (kalite kapısı geçti), 1 hata ya da geçersiz çıktı (ses akışı olmayan video dahil), 2 durduruldu (DUR dosyası), 5 `KAPI RED` (kalite kapısı geçmedi: klip kabul edilmez, karar sizin), 6 kapı çalışamadı (klip kabul edilmez). Ayrıntı AGENTS.md'de. [ölçtüm: çıkış kodları 0, 1 (sessiz video), 5 ve 6 sahte motor ve sahte kapıyla senaryolarda; gerçek motor: U209 koşusunda çıkış 0]
 
 ### Sorun giderme (ayrıntı: `docs/SIK_HATALAR.md`)
+Betiklerimizin hata satırları sabit bir kod taşır, örneğin `HATA: [VT-E-DLL] ...` ya da `UYARI: [VT-W-DISK-PAY] ...`. Kodu [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) içinde (bağlantı örneği `#vt-e-dll`) ya da `docs/hata_imzalari.json` içinde arayın ve kodu issue'nuza yazın. Aşağıdaki tablonun ilk sütunu basıldığı gibi kalır (kodlar ve günlük metni çevrilmez).
+
 | Ne görüyorsunuz | Ne demek, ne yapılır |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | `sd-cli.exe`'yi elle başlatmayın; CUDA DLL'lerini yerine koyan `scripts\kur.ps1`'i çalıştırın. |
@@ -48,6 +58,8 @@ VideoTurko: 4 GB GTX 1050 Ti'de MiniMax H3 ile metinden videoyu tek seferde 209 
 | Çıkış kodu boş ama "bitti" yazdı (#14) | Sarmalayıcı çıkış kodunu erken okudu; yeniden çalıştırın ve video dosyasının varlığına bakın. |
 | Sistem yavaşladı, takas (#18) | Motor yaklaşık 10-11 GB RAM kullanır; tarayıcı ve diğer programları kapatın. |
 | sha256 tutmadı / indirme başarısız | Genelde yarım kalan indirme: aynı komutu tekrar çalıştırın, doğrulanmış dosyalar atlanır. |
+
+**Takıldınız mı, merak mı ediyorsunuz?** [`SUPPORT.md`](SUPPORT.md) (nereye sorulur; yanıt süreleri hedeftir, taahhüt değil) · [`PRIVACY.md`](PRIVACY.md) (telemetri yok; ağ yalnız motoru ve modelleri indirmek için, listelenen sunuculardan kullanılır) · [`SECURITY.md`](SECURITY.md) (özel bildirim) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (5 adımda ilk pull request; belge ve betik için GPU gerekmez).
 
 ### v0.1.1 ile gelenler: yeni seçenekler (ayrıntı: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Bu seçenekleri kullanmazsanız 4 GB kartta hiçbir şey değişmez (referansımıza karşı 56 karelik bayt kontrolü v0.1.1 ile yeniden geçti [ölçtüm]). Ne çalışacağını görmek için her komuta `-Kuru` ekleyin.
@@ -87,20 +99,20 @@ MiniMax H3'ü (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF'u çalıştırıyo
 Bu kapı hareket tutarlılığını (nesne ölçeği/konum sıçraması) denetlemez: kabul etmeden önce videonun tamamını izleyin.
 1. Kare sayısı doğru, ses var, günlükte bellek geri-düşme/ALLOC_FAILED satırı yok.
 2. Ham gürültü kapısı: medyan süzgeç artığı <= 1,5 (0-255).
-3. Dokuya göre normalize gürültü, `scripts/doku_norm.py` (bu deponun sürümü): N = medyan artık / Sobel doku, her 6. kare. **Ölçek notu:** bu sürümde ölçülen 10 klip N = 0,034-0,052 verir (tablo `docs/KAPILAR.md`; F192/F209V2 son çeyrek 0,062'ye çıkar), ek kapı eşiği N <= 0,065. Başka bir gerçekleme aynı kliplerde 0,028-0,036 ölçtü, yani eşikler sürümler arasında DEĞİŞTİRİLEMEZ. Çok ince dokuda (çim sırası) temiz N 0,075 çıktı: eşik sahne ailesine göre. Önerilen ek kapı: yüksek frekans bandı sağlam gürültü tahmini (sigma-HH <= 1,5; temiz 0,74-1,19, s=2 gürültüde 2,2-3,0).
+3. Dokuya göre normalize gürültü, `scripts/doku_norm.py` (bu deponun sürümü): N = medyan artık / Sobel doku, her 6. kare. **Ölçek notu:** bu sürümde ölçülen 10 klip N = 0,034-0,052 verir (tablo `docs/KAPILAR.md`; F192/F209V2 son çeyrek 0,062'ye çıkar), ek kapı eşiği N <= 0,065. Başka bir uygulama aynı kliplerde 0,028-0,036 ölçtü, yani eşikler sürümler arasında DEĞİŞTİRİLEMEZ. Çok ince dokuda (çim sırası) temiz N 0,075 çıktı: eşik sahne ailesine göre. Önerilen ek kapı: yüksek frekans bandı sağlam gürültü tahmini (sigma-HH <= 1,5; temiz 0,74-1,19, s=2 gürültüde 2,2-3,0).
 
 Kapsam: VideoTurko TEK geçiş içindir (209 kareye kadar, yaklaşık 8,7 sn). Parçaları birleştirip uzun video yapmak denendi; dikişler belli oldu (sahne temiz devam etmiyor), bu yüzden projenin parçası değil. Daha uzun video isteyen kendi çözümünü geliştirebilir.
 Ayarlar sizin: 209 kare bizim 4 GB kartta denediğimiz varsayılandır, zorunlu değil. 17k+5 dizisinden istediğiniz kare sayısını seçin (56, 73, ... 192, 209; bkz. `docs/KURULUM.md`); istemi, tohumu, çözünürlüğü ya da herhangi bir bayrağı istediğiniz gibi değiştirin. Kısa video daha az bellek ve süre ister; büyük kartta daha fazlası sığabilir.
 
 ## Model lisans uyarısı
-**VideoTurko yalnız yamalar ve betikler içerir (MIT); modeli ve çıktıları kullanan kişi MiniMax lisansından kendisi sorumludur.** Hukuki görüş değildir. Aşağıda MiniMax H3 Community License (2 Ağustos 2026) maddeleri numaralarıyla özetlenmiştir; bağlayıcı olan lisansın kendisidir: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
+**VideoTurko yalnız yamalar ve betikler içerir (MIT); modeli ve çıktıları kullanan kişi MiniMax lisansından kendisi sorumludur.** Hukuki tavsiye değildir. Aşağıda MiniMax H3 Community License (2 Ağustos 2026) maddeleri numaralarıyla özetlenmiştir; bağlayıcı olan lisansın kendisidir: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Bu depo model ağırlığı İÇERMEZ (MiniMax H3, HyperFlow-H3-Flash GGUF ve VAE dosyaları yok). Bu proje MiniMax ile bağlantılı ya da onaylı değildir. Ticari kullanım yasak DEĞİLDİR (lisans ticari-olmayan lisansı değildir); şartlar aşağıdadır.
+Bu deponun MIT lisansı model ağırlıklarını kapsamaz; bkz. [`NOTICE`](NOTICE). Bu depo model ağırlığı İÇERMEZ (MiniMax H3, HyperFlow-H3-Flash GGUF ve VAE dosyaları yok). Bu proje MiniMax ile bağlantılı ya da onaylı değildir. Ticari kullanım yasak DEĞİLDİR (lisans ticari-olmayan lisansı değildir); şartlar aşağıdadır.
 
 **Bölge (Applicable Territory)**
 - **Giriş, I.3, I.5:** Lisans dünya geneli, ama Avrupa Birliği, Birleşik Krallık, Güney Kore ve ABD HARİÇ. Modeli kullanmaya başlamak lisansı kabul etmek sayılır.
 - **II:** Telifsiz, devredilemez, sınırlı lisans; kullanma, çoğaltma, dağıtma, türev üretme ve değiştirme yalnız bu bölgede ve sözleşme ile Ek A'ya uyarak serbesttir. Hariç bölgelerdeki kişiler MiniMax'tan ayrı lisans isteyebilir.
-- **V.4:** Modeli, türevlerini VE ÇIKTILARI (ürettiğiniz video/ses) hariç bölgelerde kullanmak, çoğaltmak, değiştirmek, dağıtmak ya da göstermek yetkisizdir. **Yani üretilen videoyu AB/BK/Güney Kore/ABD'de yayınlamak ya da göstermek lisans dışıdır.**
+- **V.4:** Modeli, türevlerini VE ÇIKTILARI (ürettiğiniz video/ses) hariç bölgelerde kullanmak, çoğaltmak, değiştirmek, dağıtmak ya da göstermek için izin verilmemiştir. **Yani üretilen videoyu AB/BK/Güney Kore/ABD'de yayınlamak ya da göstermek lisans dışıdır.**
 - **Ek A-1:** Bölge dışı kullanım, kabul edilebilir kullanım politikasının ihlalidir.
 
 **Dağıtım (III)** (bu depo model dağıtmaz; modeli dağıtırsanız)
@@ -117,7 +129,7 @@ Bu depo model ağırlığı İÇERMEZ (MiniMax H3, HyperFlow-H3-Flash GGUF ve VA
 **Kullanım kısıtları (V)**
 - **V.1:** Yürürlükteki yasalara (ticaret/ihracat uyumu dahil) ve Ek A'ya uyun. **V.2:** Modele erişim verdiğiniz herkesi en az bu kısıtlar kadar koruyucu bağlayıcı şartlara bağlayın ve onlara bildirin.
 - **V.3:** Modeli ya da ÇIKTILARINI başka bir yapay zekâ modelini geliştirmek için kullanamazsınız (yalnız MiniMax H3 ve türevleri hariç). (I.11: damıtma ve sentetik veriyle eğitim de "türev" sayılır; çıktının kendisi türev sayılmaz.)
-- **V.5:** Üçüncü kişilere model ile çıktı ürettiren bir ürün/hizmet/barındırılan hizmet sunarsanız: önce ve süresince makul teknik ve kurumsal güvenlik önlemleri, ihlal bildirim mekanizması, bildirimde hızlı inceleme, içerik kaldırma/erişim kesme ve tekrarlayanı askıya alma yükümlülüğü.
+- **V.5:** Üçüncü kişilere model ile çıktı ürettiren bir ürün/hizmet/barındırılan hizmet sunarsanız: önce ve süresince makul teknik ve idari güvenlik önlemleri, ihlal bildirim mekanizması, bildirimde hızlı inceleme, içerik kaldırma/erişim kesme ve tekrarlayanı askıya alma yükümlülüğü.
 
 **Marka ve haklar (VI)**
 - **VI.1:** Yaptığınız türev işlere ve model türevlerine (MiniMax'ın haklarına tabi) siz sahipsiniz. **VI.2:** MiniMax adı/markası lisanslı değil (yalnız modeli anlatmak/dağıtmak için gerekli ölçüde); "MiniMax H3" markası yalnız III.3 uyumu için bölge içinde kullanılabilir; ortaklık ima etmeyin.
@@ -127,7 +139,7 @@ Bu depo model ağırlığı İÇERMEZ (MiniMax H3, HyperFlow-H3-Flash GGUF ve VA
 **Sorumluluk reddi ve fesih (VII, VIII, IX)**
 - **VII.1:** MiniMax destek/güncelleme/yeni sürüm vermek zorunda değil. **VII.2:** Model ve çıktılar "OLDUĞU GİBİ", garantisiz; uygunluğu belirlemek ve riski üstlenmek size ait. **VII.3:** MiniMax ve bağlıları hiçbir zarardan sorumlu değildir (yasanın izin verdiği ölçüde).
 - **VIII.1:** Sözleşme kabul/erişim anında başlar. **VIII.2:** İhlalde MiniMax feshedebilir; fesihte model kullanımını/dağıtımını hemen bırakır, kopyaları silersiniz ve alıcıları bilgilendirirsiniz (VI.1, VI.3, VII, IX fesihten sonra da sürer).
-- **IX:** Hukuk Hong Kong ÖİB hukukudur; yetkili mahkemeler Hong Kong mahkemeleridir (BM Mal Satımı Sözleşmesi uygulanmaz).
+- **IX:** Geçerli hukuk Hong Kong ÖİB hukukudur; yetkili mahkemeler Hong Kong mahkemeleridir (BM Mal Satımı Sözleşmesi uygulanmaz).
 - **Ek not:** MiniMax H3 kodlayıcısı Qwen3-VL-32B (Apache 2.0) kullanır.
 
 **Kabul edilebilir kullanım politikası (Ek A)** (modeli, türevlerini ve çıktıları şunlar için KULLANMAYIN)
@@ -158,10 +170,10 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 
 ## Durum ve sınırlar
 - Tek makinede doğrulandı (GTX 1050 Ti 4 GB, 16 GB RAM, i7-7700HQ). Başka 4 GB kartlar ve RAM boyutları farklı olabilir.
-- **Varsayılan 209 kare (8,7 sn):** kalite kapılarından geçti (gürültü 1,08, koşu F209V2K) [ölçtüm: 209 kare, sürüm ikilisiyle, `uret.ps1` üzerinden, koşu U209; latent bayt-aynı; videoda kareler ve ses aynı, dosya sha'sı konteyner nedeniyle farklı; kanıt yazarlarda, bu depoda yok]. 209 karede DiT VRAM tepesi 4096 MiB içinde 3777 MiB idi (koşular F209b ve U209; tüm kart için `nvidia-smi` okuması), pay ince: başka GPU yükü (ekran, başka uygulamalar) koşuyu `blocks.0`'da düşürebilir; yalnız GTX 1050 Ti'de denendi. O koşuda ekran durumu kayıtlı değil; ekranınız bu karta bağlıysa kullanılabilir VRAM daha azdır [tahmin: Windows ekran yükü yaklaşık 100-300 MB]; gerekirse ekranı tümleşik GPU'ya bağlayın [tavsiye, denenmedi]. Örnekleme 2730 sn (U209: adımlar 436-483 sn), ayrı süreç VAE çözmesi 173 sn sürdü (2. aşama toplam 193 sn, ses çözme dahil) [ölçtüm: U209 sürüm ikilisi; eski geliştirme koşuları: 2664 sn ve 174 sn]. 1. aşamada süreç içi VAE belleği aşıp parçalı çözmeye düştü (320 sn); o çıktı atılır, video parçasız 2. aşamadan gelir. U209'da RAM tepesi ölçülmedi. 209 karedan uzun klipler bu sürümün parçası değil.
+- **Varsayılan 209 kare (8,7 sn):** kalite kapılarından geçti (gürültü 1,08, koşu F209V2K) [ölçtüm: 209 kare, sürüm ikilisiyle, `uret.ps1` üzerinden, koşu U209; latent bayt-aynı; videoda kareler ve ses aynı, dosya sha'sı konteyner nedeniyle farklı; kanıt yazarlarda, bu depoda yok]. 209 karede DiT VRAM tepesi 4096 MiB içinde 3777 MiB idi (koşular F209b ve U209; tüm kart için `nvidia-smi` okuması), pay ince: başka GPU yükü (ekran, başka uygulamalar) koşuyu `blocks.0`'da düşürebilir; yalnız GTX 1050 Ti'de denendi. O koşuda ekran durumu kayıtlı değil; ekranınız bu karta bağlıysa kullanılabilir VRAM daha azdır [tahmin: Windows ekran yükü yaklaşık 100-300 MB]; gerekirse ekranı tümleşik GPU'ya bağlayın [tavsiye, denenmedi]. Örnekleme 2730 sn (U209: adımlar 436-483 sn), ayrı süreç VAE çözmesi 173 sn sürdü (2. aşama toplam 193 sn, ses çözme dahil) [ölçtüm: U209 sürüm ikilisi; eski geliştirme koşuları: 2664 sn ve 174 sn]. 1. aşamada süreç içi VAE belleği aşıp parçalı çözmeye düştü (320 sn); o çıktı atılır, video parçasız 2. aşamadan gelir. U209'da RAM tepesi ölçülmedi. 209 kareden uzun klipler bu sürümün parçası değil.
 - **Resimden video (`-InitImg`):** başlangıç resmiyle bu GPU'da tavan 192 karedir (24 fps'te 8,0 sn): 209 kare sığmadı (blok 0'da yaklaşık 17,5 MB VRAM eksik: gereken 2587 MB, boş 2570 MB); 192 kare `uret.ps1` ile 3086 sn'de koştu, VRAM tepesi 3783 MiB, kapı geçti [ölçtüm: B209 ve B192 koşuları, 2026-11-20, tek sahne; kanıt yazarlarda, bu depoda yok]. Başka GPU'lar: [denenmedi].
 - **Boş RAM önemli:** yaklaşık 11 GB BOŞ RAM gerekir (motor süreci yaklaşık 11 GB tutar) [ölçtüm]. Boş RAM azsa süreç hata mesajı vermeden ölebilir [tahmin: bir kez gözledik, boş RAM yaklaşık 300 MB iken `sd-cli` yaklaşık 10 GB tutuyordu]. Koşu sürerken başka büyük program açmayın: 16 GB'lık makinede boş pay yalnız yaklaşık 0,3-0,5 GB kalır ve bellek baskısında koşu sessizce ölebilir. Başlamadan önce tarayıcı, oyun ve diğer büyük programları kapatın, boş RAM'e bakın.
 - **Temiz kök testi bekliyor:** kurulum ve çalıştırma betikleri boş klasörde yalnız bu talimatla henüz doğrulanmadı; test (56 karede referansa bayt kıyası dahil) kaydedilince bu bölüm güncellenir.
 - Çıktı videolar depoda yok.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

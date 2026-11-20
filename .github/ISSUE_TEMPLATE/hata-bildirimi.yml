@@ -14,6 +14,14 @@ body:
       label: "Command and frame count / Komut ve kare sayisi"
     validations:
       required: true
+  - type: input
+    id: hata-kodu
+    attributes:
+      label: "Error code / Hata kodu (example / ornek: VT-E-DISK)"
+      description: "Our scripts print lines like `HATA: [VT-E-...]` or `UYARI: [VT-W-...]`. Paste the code; see docs/SIK_HATALAR.md. No code? Paste the first 20 lines of the script output below. / Betiklerimiz `HATA: [VT-E-...]` gibi satirlar basar. Kodu yazin (docs/SIK_HATALAR.md). Kod yoksa betik ciktisinin ilk 20 satirini asagiya yapistirin."
+      placeholder: "VT-E-DISK"
+    validations:
+      required: false
   - type: textarea
     id: log
     attributes:

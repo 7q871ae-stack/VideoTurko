@@ -1,0 +1,134 @@
+{
+ "_not": "Single source of truth for scripts/dil_eslik_denetimi.py. Tiers: A = refreshed every release, B = may lag one release (warning), C = informational. Proposal pending user answer (form item 8); see docs/github/repolar/videoturko/taslaklar/dil_kademesi.md in the maintainer notes.",
+ "ana": "README.md",
+ "diller": {
+  "ar": {
+   "tier": "A",
+   "rtl": true
+  },
+  "az": {
+   "tier": "B",
+   "rtl": false
+  },
+  "bn": {
+   "tier": "B",
+   "rtl": false
+  },
+  "cs": {
+   "tier": "B",
+   "rtl": false
+  },
+  "de": {
+   "tier": "B",
+   "rtl": false
+  },
+  "el": {
+   "tier": "B",
+   "rtl": false
+  },
+  "es": {
+   "tier": "A",
+   "rtl": false
+  },
+  "fa": {
+   "tier": "B",
+   "rtl": true
+  },
+  "fr": {
+   "tier": "B",
+   "rtl": false
+  },
+  "he": {
+   "tier": "B",
+   "rtl": true
+  },
+  "hi": {
+   "tier": "A",
+   "rtl": false
+  },
+  "hu": {
+   "tier": "B",
+   "rtl": false
+  },
+  "id": {
+   "tier": "A",
+   "rtl": false
+  },
+  "it": {
+   "tier": "B",
+   "rtl": false
+  },
+  "ja": {
+   "tier": "B",
+   "rtl": false
+  },
+  "ko": {
+   "tier": "B",
+   "rtl": false
+  },
+  "ms": {
+   "tier": "B",
+   "rtl": false
+  },
+  "nl": {
+   "tier": "B",
+   "rtl": false
+  },
+  "pl": {
+   "tier": "B",
+   "rtl": false
+  },
+  "pt-BR": {
+   "tier": "A",
+   "rtl": false
+  },
+  "ro": {
+   "tier": "B",
+   "rtl": false
+  },
+  "ru": {
+   "tier": "A",
+   "rtl": false
+  },
+  "sv": {
+   "tier": "B",
+   "rtl": false
+  },
+  "th": {
+   "tier": "A",
+   "rtl": false
+  },
+  "tr": {
+   "tier": "A",
+   "rtl": false
+  },
+  "uk": {
+   "tier": "B",
+   "rtl": false
+  },
+  "ur": {
+   "tier": "B",
+   "rtl": true
+  },
+  "vi": {
+   "tier": "A",
+   "rtl": false
+  },
+  "zh-CN": {
+   "tier": "A",
+   "rtl": false
+  }
+ },
+ "zwj_izinli": [
+  "bn",
+  "hi",
+  "th",
+  "fa"
+ ],
+ "lrm_izinli": [
+  "ar",
+  "fa",
+  "he",
+  "ur"
+ ]
+}

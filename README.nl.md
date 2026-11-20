@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · Nederlands · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+De vertalingen volgen deze Engelse README. Als een vertaling afwijkt of achterloopt, geldt de Engelse tekst, vooral voor de licentie- en beveiligingstekst ([`SECURITY.md`](SECURITY.md) en [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) worden alleen in het Engels en Turks bijgehouden).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Voor je begint (licentie, gebied):** deze repository is MIT en bevat alleen patches en scripts. Het MiniMax H3-model dat ze downloadt valt onder de MiniMax H3 Community License: het geldigheidsgebied sluit de Europese Unie, het Verenigd Koninkrijk, Zuid-Korea en de Verenigde Staten uit, en het model, afgeleide werken **en uitvoer (de video’s die je genereert)** mogen daar niet worden gebruikt, verspreid of getoond (V.4). Commercieel gebruik is toegestaan binnen de licentievoorwaarden. Lees [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) vóór de installatie; dit is geen juridisch advies.
 
 > **In 30 seconden:** een videokaart met 4 GB kan in één pass een MiniMax H3-video van 209 frames (8,7 s) maken: geverifieerd op één machine (GTX 1050 Ti 4 GB; een volledige `kur.ps1`-installatie in een lege map is nog niet end-to-end geverifieerd) [gemeten: 209 frames met de release-binary via `uret.ps1`, run U209; latent byte-identiek aan de run met de ontwikkelbuild; frames en audio in de video identiek, de sha van het bestand verschilt door de container; het bewijs wordt bewaard door de auteurs, niet in deze repo]; met `-InitImg` (image-to-video) maximaal 192 frames (8,0 s) [gemeten: run B192]; 209 frames duren ongeveer 57 min, de standaard tijdslimiet is 80 min [gemeten: run U209]; de 3 stappen hieronder laten zien hoe je het draait.
 
@@ -12,14 +16,18 @@ VideoTurko: geheugenpatches voor stable-diffusion.cpp en recepten om MiniMax H3 
 **Status: de installatie- en runscripts hieronder worden nog afgerond en de clean-root-test staat nog open; er wordt niets beweerd over de werking totdat die test geslaagd is (zie "Status en grenzen").**
 
 1. **Download** deze repository (groene knop **Code**, dan **Download ZIP**) en pak hem uit in een KORTE map, bijvoorbeeld `C:\vt`.
-2. **Installeer**: open PowerShell in die map (typ `powershell` in de adresbalk van Verkenner) en voer uit
+2. **Installeren: dubbelklik op `kur.cmd`** (er opent een zwart venster dat elke stap toont; sluiten stopt de installatie, opnieuw uitvoeren gaat verder waar het bleef: een half gedownload modelbestand wordt hervat [gelezen: het downloadscript bewaart een `.part`-bestand en gaat daarvandaan verder; een volledige hervatting van 29 GiB is niet gemeten]). Waarschuwt Windows voor het gedownloade bestand, gebruik dan het PowerShell-commando hieronder [advies, niet getest met een gedownloade ZIP]. Liever de opdrachtregel? Open PowerShell in die map (typ `powershell` in de adresbalk van Verkenner) en voer dezelfde installatie uit:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    De installatiemap is de map die je hebt uitgepakt (de engine komt in `engine\bin`, de modellen in `model`); wil je een andere plek, zet dan eerst de omgevingsvariabele `VT_ROOT`. Het script controleert GPU, driver, RAM en schijf, haalt de engine en de modellen op (engine-zips en nieuw gedownloade modelbestanden worden met sha256 gecontroleerd; een modelbestand dat al aanwezig is met de juiste grootte wordt alleen op grootte gecontroleerd, `scripts\modelleri_indir.ps1 -Dogrula` voert de volledige sha256-controle uit), doet een korte echte controle en toont READY alleen als die controle geslaagd is [ontwerp: `kur.ps1` is nog niet volledig uitgevoerd in een schone map; deze zin wordt bijgewerkt na de test in een schone map]. `-ExecutionPolicy Bypass` geldt alleen voor dit ene proces; lees `scripts\kur.ps1` eerst, zoals bij elk installatieprogramma.
    De engine-zip komt uit de GitHub-release v0.1.0 (gepubliceerd op 2026-11-19; de sha256 ervan staat vast in `kur.ps1`). Offline of met een eigen build geef je lokale zips mee: `-MotorZip <path> -CudaZip <path>`. Een lokale zip wordt tegen dezelfde vastgezette sha256 gecontroleerd (een `.sha256`-bestand ernaast wordt genegeerd), dus het moet de release-zip zijn; voor een eigen build zet je eerst `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` op de sha256 ervan. Een onjuiste sha256 stopt met exit 1. Alleen `.exe`/`.dll` gaan naar `engine\bin`; licenties en README gaan naar `engine\lisanslar\<zip name>\`. [vóór de release geprobeerd met de dist-zips: het sidecar-bestand `.sha256` plus de waarschuwing dat het naar zichzelf verwijst, binary en DLL's geplaatst, `sd-cli --help` draaide; de sha's van de geïnstalleerde binaries kwamen overeen (`c5cebe78...`, `e5d3d329...`); de modelstap en de 5-frame-controle van `kur.ps1` zijn nog NIET op een echte GPU uitgevoerd]
    **Modellicentie:** vóór de modelstap toont het installatieprogramma de samenvatting van de licentie (`docs/LISANS_KABUL.txt`, volledige tekst `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, gebiedsbeperkingen die ook voor gegenereerde video's gelden, regels voor commercieel gebruik en AI-labels) en vraagt of je akkoord gaat (`E` = ja). Lees die eerst. Voor onbeheerde runs kun je `-LisansKabul E` meegeven; dat betekent dat je de licentie zelf hebt gelezen en geaccepteerd; voeg het niet toe namens iemand anders. (AI-agents: volg `AGENTS.md`; typ nooit E zonder toestemming van de gebruiker.) Zonder acceptatie stopt `kur.ps1` met exitcode 2 en downloadt geen model.
-3. **Genereer**: zet je prompt in een tekstbestand (één Engelse alinea, optioneel een zin met `audio:`) en voer uit
+3. **Je eerste video (56 frames, ongeveer 11 min op onze GTX 1050 Ti** [gemeten: 641 s, run R0, `docs/OLCUMLER.md`; andere kaarten niet gemeten]**)**: wanneer het installatieprogramma `HAZIR / READY` afdrukt, voer uit
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (snelkoppeling: sleep een prompt-tekstbestand op `uret.cmd`, of voer `uret.cmd docs\ornek_istem_R0.txt` uit: dezelfde run van 56 frames). De video staat in `runs\`. Schrijf daarna je eigen prompt in een tekstbestand (één Engelse alinea, optionele `audio:`-zin) en draai de langste clip die we dekken (standaard, ongeveer 57 min [gemeten: run U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: geheugenpatches voor stable-diffusion.cpp en recepten om MiniMax H3 
 | Besturingssysteem | Windows 10/11, 64-bit |
 | GPU | NVIDIA, 4 GB of meer; alleen getest op GTX 1050 Ti (sm_61); kleine marge (3777/4096 MiB bij 209 frames): een drukke desktop of browser kan de run laten mislukken; geen andere 4 GB-kaart geprobeerd |
 | RAM | 16 GB (piek ongeveer 11 GB; sluit andere programma's) |
-| Schijf | 32 GiB of meer vrij, modellen op een SSD (NVMe heeft de voorkeur) |
+| Schijf | minstens 32 GiB vrij (40 GiB of meer aanbevolen: tussen 32 en 40 toont het installatieprogramma een waarschuwing, `[VT-W-DISK-PAY]` [gemeten: `-Kuru`-runs met gesimuleerde schijf]), modellen op een SSD (bij voorkeur NVMe) |
 | Download | engine-zip 36,8 MB + CUDA-runtime-zip 567,5 MB [gemeten] + modellen 31.473.112.040 bytes (ongeveer 29,3 GiB) [gelezen: groottes in `scripts/modeller.json`]; in totaal ongeveer 30 GiB |
 | Modellen | niet meegeleverd; worden door het installatieprogramma opgehaald onder de MiniMax-licentie (zie waarschuwing hieronder). De modellen (29,3 GiB, 31.473.112.040 bytes in `scripts/modeller.json`) staan niet in deze repository of release: de limieten van GitHub voor bestands- en releasegrootte gelden, en `kur.ps1` downloadt ze van de officiële bron met sha256-verificatie. |
 
 Exitcodes van `kur.ps1`: 0 READY, 1 fout, 2 invoer van de gebruiker nodig (licentie, of nog geen release/zip), 3 hardware of schijf onvoldoende, 4 gestopt (DUR-bestand). `uret.ps1` accepteert een run alleen als het `.avi`-bestand bestaat, het aantal frames klopt en de logs schoon zijn [gemeten: één echte run via `uret.ps1` met de release-binary, run U209, 209 frames, poort geslaagd]. Exitcodes van `uret.ps1`: 0 DONE (kwaliteitspoort geslaagd), 1 fout of ongeldige uitvoer (inclusief een video zonder audiostream), 2 gestopt (DUR-bestand), 5 `KAPI RED` (kwaliteitspoort niet gehaald: clip niet geaccepteerd, de beslissing is aan jou), 6 poort kon niet draaien (clip niet geaccepteerd). Details in AGENTS.md. [gemeten: exitcodes 0, 1 (stille video), 5 en 6 in scenario's met een nep-engine en een nep-poort; echte engine: exit 0 in run U209]
 
 ### Problemen oplossen (details: `docs/SIK_HATALAR.md`)
+Foutregels van onze scripts dragen een vaste code, bijvoorbeeld `HATA: [VT-E-DLL] ...` of `UYARI: [VT-W-DISK-PAY] ...`. Zoek de code op in [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (ankervoorbeeld `#vt-e-dll`) of in `docs/hata_imzalari.json` en zet de code in je issue. De eerste kolom van de tabel hieronder blijft zoals afgedrukt (vertaal codes en logtekst niet).
+
 | Wat je ziet | Wat het betekent, wat je doet |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Start `sd-cli.exe` niet met de hand; voer `scripts\kur.ps1` uit, dat de CUDA-DLL's op hun plek zet. |
@@ -48,6 +58,8 @@ Exitcodes van `kur.ps1`: 0 READY, 1 fout, 2 invoer van de gebruiker nodig (licen
 | Exitcode leeg maar "finished" (#14) | De wrapper las de exitcode te vroeg; draai opnieuw en controleer of het videobestand bestaat. |
 | Systeem wordt traag, swapping (#18) | De engine gebruikt ongeveer 10-11 GB RAM; sluit browsers en andere programma's. |
 | sha256-mismatch / download mislukt | Meestal een onderbroken download: voer dezelfde opdracht opnieuw uit, geverifieerde bestanden worden overgeslagen. |
+
+**Vast of nieuwsgierig?** [`SUPPORT.md`](SUPPORT.md) (waar je vragen stelt; reactietijden zijn doelen, geen toezeggingen) · [`PRIVACY.md`](PRIVACY.md) (geen telemetrie; het netwerk wordt alleen gebruikt om de engine en modellen te downloaden, van de vermelde hosts) · [`SECURITY.md`](SECURITY.md) (privémelding) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (eerste pull request in 5 stappen; voor documenten en scripts is geen GPU nodig).
 
 ### Nieuw in v0.1.1: meer opties (details: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Zonder deze opties verandert er niets op een kaart van 4 GB (de bytecontrole van 56 frames tegen onze referentie is met v0.1.1 opnieuw geslaagd [gemeten]). Zet `-Kuru` achter een willekeurige opdracht om te zien wat er zou draaien.
@@ -95,7 +107,7 @@ Je instellingen zijn van jou: 209 frames is onze geteste standaard op een kaart 
 ## Waarschuwing over de modellicentie
 **VideoTurko bevat alleen patches en scripts (MIT); wie het model en de uitvoer ervan gebruikt, is zelf verantwoordelijk voor de MiniMax-licentie.** Geen juridisch advies. Hieronder staan de bepalingen van de MiniMax H3 Community License (2 augustus 2026) samengevat met hun nummers; de licentie zelf is bindend: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Deze repo bevat GEEN modelgewichten (geen MiniMax H3-, HyperFlow-H3-Flash-GGUF- of VAE-bestanden). Dit project is niet verbonden aan MiniMax en wordt niet door MiniMax onderschreven. Commercieel gebruik is NIET verboden (het is geen niet-commerciële licentie); de voorwaarden staan hieronder.
+De MIT-licentie van deze repository dekt de modelgewichten niet; zie [`NOTICE`](NOTICE). Deze repo bevat GEEN modelgewichten (geen MiniMax H3-, HyperFlow-H3-Flash-GGUF- of VAE-bestanden). Dit project is niet verbonden aan MiniMax en wordt niet door MiniMax onderschreven. Commercieel gebruik is NIET verboden (het is geen niet-commerciële licentie); de voorwaarden staan hieronder.
 
 **Gebied (Applicable Territory)**
 - **Preambule, I.3, I.5:** Wereldwijd, MET UITZONDERING VAN de Europese Unie, het Verenigd Koninkrijk, de Republiek Korea en de Verenigde Staten. Gebruik van het model geldt als acceptatie van de licentie.
@@ -164,4 +176,4 @@ Gebruikte runnamen tussen haakjes (onze eigen runnamen, geen bestanden in deze r
 - **Clean-root-test staat nog open:** de installatie- en runscripts zijn nog niet vanuit een lege map geverifieerd met alleen deze instructies; deze sectie wordt bijgewerkt wanneer die test (inclusief een bytevergelijking van 56 frames met de referentie) is vastgelegd.
 - Hier worden geen gegenereerde video's meegeleverd.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

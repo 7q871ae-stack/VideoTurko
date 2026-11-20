@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · Română · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Traducerile urmează acest README în engleză. Dacă o traducere diferă sau rămâne în urmă, textul în engleză este cel valabil, mai ales pentru textul despre licență și securitate ([`SECURITY.md`](SECURITY.md) și [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) sunt păstrate doar în engleză și turcă).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Înainte să începeți (licență, teritoriu):** acest depozit este MIT și conține doar patch-uri și scripturi. Modelul MiniMax H3 pe care îl descarcă este sub MiniMax H3 Community License: teritoriul ei exclude Uniunea Europeană, Regatul Unit, Coreea de Sud și Statele Unite, iar modelul, derivatele **și ieșirile (videoclipurile pe care le generați)** nu pot fi folosite, distribuite sau afișate acolo (V.4). Utilizarea comercială este permisă în limitele termenilor licenței. Citiți [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) înainte de instalare; aceasta nu este consultanță juridică.
 
 > **În 30 de secunde:** o placă video de 4 GB poate genera un videoclip MiniMax H3 de 209 de cadre (8,7 s) dintr-o singură trecere: verificat pe un singur calculator (GTX 1050 Ti 4 GB; instalarea completă cu `kur.ps1` într-un folder gol nu a fost încă verificată cap-coadă) [măsurat: 209 cadre cu binarul de release prin `uret.ps1`, rularea U209; latentul identic la nivel de octet cu rularea build-ului de dezvoltare; cadrele și sunetul sunt identice în videoclip, sha-ul fișierului diferă din cauza containerului; dovezile sunt păstrate de autori, nu se află în acest depozit]; cu `-InitImg` (imagine-în-video) cel mult 192 de cadre (8,0 s) [măsurat: rularea B192]; 209 cadre durează aproximativ 57 min, limita de timp implicită este de 80 min [măsurat: rularea U209]; cei 3 pași de mai jos arată cum se rulează.
 
@@ -12,14 +16,18 @@ VideoTurko: patch-uri de memorie pentru stable-diffusion.cpp și rețete pentru 
 **Stare: scripturile de instalare și rulare de mai jos sunt în curs de finalizare, iar testul pe un folder gol (clean-root) este în așteptare; nimic de aici nu se afirmă că funcționează până când acest test nu este trecut (vedeți „Stare și limite”).**
 
 1. **Descărcați** acest depozit (butonul verde **Code**, apoi **Download ZIP**) și extrageți-l într-un folder cu cale SCURTĂ, de exemplu `C:\vt`.
-2. **Instalați**: deschideți PowerShell în acel folder (tastați `powershell` în bara de adrese din Explorer) și rulați
+2. **Instalare: dați dublu clic pe `kur.cmd`** (se deschide o fereastră neagră care arată fiecare pas; închiderea ei oprește instalarea, iar rularea din nou continuă de unde a rămas: un fișier de model descărcat pe jumătate este reluat [citit: scriptul de descărcare păstrează un fișier `.part` și continuă de la el; reluarea completă pentru 29 GiB nu a fost măsurată]). Dacă Windows avertizează în legătură cu fișierul descărcat, folosiți în schimb comanda PowerShell de mai jos [sfat, netestat pe un ZIP descărcat]. Preferați linia de comandă? Deschideți PowerShell în acel dosar (tastați `powershell` în bara de adrese din Explorer) și rulați aceeași instalare:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Rădăcina instalării este folderul extras (motorul ajunge în `engine\bin`, modelele în `model`); pentru alt loc setați mai întâi variabila de mediu `VT_ROOT`. Scriptul verifică GPU-ul, driverul, RAM-ul și discul, descarcă motorul și modelele (arhivele zip ale motorului și fișierele de model descărcate acum sunt verificate cu sha256; un fișier de model deja prezent, cu dimensiunea corectă, este verificat doar după dimensiune, iar `scripts\modelleri_indir.ps1 -Dogrula` rulează verificarea sha256 completă), rulează o scurtă verificare reală și afișează READY numai dacă verificarea a trecut [proiectat: `kur.ps1` nu a fost rulat integral într-un folder curat; această propoziție se actualizează după testul în folder curat]. `-ExecutionPolicy Bypass` se aplică numai acestui proces; citiți mai întâi `scripts\kur.ps1`, ca la orice program de instalare.
    Zip-ul motorului vine din release-ul GitHub v0.1.0 (publicat pe 2026-11-19; sha256-ul său este fixat în `kur.ps1`). Fără internet sau cu propriul build, indicați arhive locale: `-MotorZip <path> -CudaZip <path>`. O arhivă locală este verificată cu același sha256 fixat (un fișier `.sha256` de lângă ea este ignorat), deci trebuie să fie zip-ul din release; pentru propriul build setați mai întâi `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` la sha256-ul acestuia. Un sha256 greșit oprește scriptul cu exit 1. Numai `.exe`/`.dll` ajung în `engine\bin`; licențele și README-ul ajung în `engine\lisanslar\<zip name>\`. [încercat cu arhivele dist înainte de release: fișierul însoțitor `.sha256` plus avertismentul de auto-referință, binarul și DLL-urile plasate, `sd-cli --help` a rulat; sha-urile binarelor instalate au coincis (`c5cebe78...`, `e5d3d329...`); pasul cu modelele și verificarea de 5 cadre din `kur.ps1` NU au fost încă rulate pe un GPU real]
    **Licența modelului:** înainte de pasul cu modelele, programul de instalare afișează rezumatul licenței (`docs/LISANS_KABUL.txt`, textul complet în `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, limite teritoriale care se aplică și videoclipurilor generate, reguli privind uzul comercial și etichetarea AI) și vă cere acceptul (`E` = da). Citiți-o mai întâi. Pentru rulări fără supraveghere puteți transmite `-LisansKabul E`, ceea ce înseamnă că ați citit și ați acceptat licența personal; nu o adăugați în locul altcuiva. (Agenți AI: urmați `AGENTS.md`; nu tastați niciodată E fără acordul utilizatorului.) Fără acceptare, `kur.ps1` se oprește cu codul de ieșire 2 și nu descarcă niciun model.
-3. **Generați**: puneți prompt-ul într-un fișier text (un paragraf în engleză, opțional o propoziție `audio:`) și rulați
+3. **Primul dumneavoastră videoclip (56 de cadre, cam 11 min pe GTX 1050 Ti-ul nostru** [măsurat: 641 s, rularea R0, `docs/OLCUMLER.md`; alte plăci nemăsurate]**)**: când instalatorul afișează `HAZIR / READY`, rulați
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (scurtătură: trageți un fișier text cu prompt peste `uret.cmd` sau rulați `uret.cmd docs\ornek_istem_R0.txt`: aceeași rulare de 56 de cadre). Videoclipul este în `runs\`. Apoi scrieți propriul prompt într-un fișier text (un paragraf în engleză, propoziție `audio:` opțională) și rulați cel mai lung clip pe care îl acoperim (implicit, cam 57 min [măsurat: rularea U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: patch-uri de memorie pentru stable-diffusion.cpp și rețete pentru 
 | SO | Windows 10/11, 64 de biți |
 | GPU | NVIDIA, 4 GB sau mai mult; testat numai pe GTX 1050 Ti (sm_61); marjă mică (3777/4096 MiB la 209 cadre): un ecran încărcat sau un browser pot întrerupe rularea; nicio altă placă de 4 GB nu a fost încercată |
 | RAM | 16 GB (vârf de aproximativ 11 GB; închideți celelalte programe) |
-| Disc | 32 GiB sau mai mult liberi, modelele pe un SSD (de preferat NVMe) |
+| Disc | cel puțin 32 GiB liberi (se recomandă 40 GiB sau mai mult: între 32 și 40 instalatorul afișează un avertisment, `[VT-W-DISK-PAY]` [măsurat: rulări `-Kuru` cu disc simulat]), modele pe un SSD (de preferat NVMe) |
 | Descărcare | zip motor 36,8 MB + zip runtime CUDA 567,5 MB [măsurat] + modele 31.473.112.040 octeți (aproximativ 29,3 GiB) [citit: dimensiunile din `scripts/modeller.json`]; în total aproximativ 30 GiB |
 | Modele | neincluse; descărcate de programul de instalare sub licența MiniMax (vedeți avertismentul de mai jos). Modelele (29,3 GiB, 31.473.112.040 octeți în `scripts/modeller.json`) nu se află în acest depozit și nici în release: se aplică limitele GitHub pentru dimensiunea fișierelor/release-urilor, iar `kur.ps1` le descarcă din sursa oficială cu verificare sha256. |
 
 Codurile de ieșire ale `kur.ps1`: 0 READY, 1 eroare, 2 este nevoie de intervenția utilizatorului (licență sau încă niciun release/zip), 3 hardware sau disc insuficient, 4 oprit (fișier DUR). `uret.ps1` acceptă o rulare numai dacă fișierul `.avi` există, numărul de cadre este corect și jurnalele sunt curate [măsurat: o rulare reală prin `uret.ps1` pe binarul de release, rularea U209, 209 cadre, poarta de calitate trecută]. Codurile de ieșire ale `uret.ps1`: 0 DONE (poarta de calitate trecută), 1 eroare sau ieșire invalidă (inclusiv un videoclip fără flux audio), 2 oprit (fișier DUR), 5 `KAPI RED` (poarta de calitate a eșuat: clipul nu este acceptat, decizia vă aparține), 6 poarta nu a putut rula (clipul nu este acceptat). Detalii în AGENTS.md. [măsurat: codurile de ieșire 0, 1 (videoclip fără sunet), 5 și 6 în scenarii cu un motor fals și o poartă falsă; motor real: ieșire 0 în rularea U209]
 
 ### Depanare (detalii: `docs/SIK_HATALAR.md`)
+Liniile de eroare ale scripturilor noastre poartă un cod stabil, de exemplu `HATA: [VT-E-DLL] ...` sau `UYARI: [VT-W-DISK-PAY] ...`. Căutați codul în [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (exemplu de ancoră `#vt-e-dll`) sau în `docs/hata_imzalari.json` și scrieți codul în issue-ul dumneavoastră. Prima coloană a tabelului de mai jos rămâne așa cum este afișată (nu traduceți codurile și textul jurnalelor).
+
 | Ce vedeți | Ce înseamnă, ce de făcut |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Nu porniți `sd-cli.exe` manual; rulați `scripts\kur.ps1`, care pune DLL-urile CUDA la locul lor. |
@@ -48,6 +58,8 @@ Codurile de ieșire ale `kur.ps1`: 0 READY, 1 eroare, 2 este nevoie de interven�
 | Cod de ieșire gol, dar „finished” (#14) | Scriptul a citit codul de ieșire prea devreme; rulați din nou și verificați că fișierul video există. |
 | Sistemul încetinește, swapping (#18) | Motorul folosește aproximativ 10-11 GB de RAM; închideți browserele și celelalte programe. |
 | sha256 diferit / descărcare eșuată | De obicei o descărcare întreruptă: rulați aceeași comandă din nou, fișierele verificate sunt sărite. |
+
+**Blocat sau curios?** [`SUPPORT.md`](SUPPORT.md) (unde puteți întreba; timpii de răspuns sunt ținte, nu angajamente) · [`PRIVACY.md`](PRIVACY.md) (fără telemetrie; rețeaua este folosită doar pentru descărcarea motorului și a modelelor, de la gazdele listate) · [`SECURITY.md`](SECURITY.md) (raportare privată) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (primul pull request în 5 pași; pentru documente și scripturi nu este nevoie de GPU).
 
 ### Nou în v0.1.1: mai multe opțiuni (detalii: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Fără aceste opțiuni nu se schimbă nimic pe o placă de 4 GB (verificarea la nivel de octet pe 56 de cadre față de referința noastră a trecut din nou cu v0.1.1 [măsurat]). Adăugați `-Kuru` la orice comandă pentru a vedea ce s-ar rula.
@@ -95,7 +107,7 @@ Setările sunt ale dumneavoastră: 209 cadre este valoarea implicită testată d
 ## Avertisment privind licența modelului
 **VideoTurko conține numai patch-uri și scripturi (MIT); cine folosește modelul și ieșirile lui răspunde personal pentru licența MiniMax.** Nu reprezintă consultanță juridică. Mai jos sunt clauzele MiniMax H3 Community License (2 august 2026) rezumate cu numerele lor; licența însăși este cea obligatorie: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Acest depozit NU conține ponderi de model (niciun fișier MiniMax H3, HyperFlow-H3-Flash GGUF sau VAE). Acest proiect nu este afiliat cu MiniMax și nu este susținut de MiniMax. Uzul comercial NU este interzis (nu este o licență necomercială); condițiile sunt mai jos.
+Licența MIT a acestui depozit nu acoperă ponderile modelului; vedeți [`NOTICE`](NOTICE). Acest depozit NU conține ponderi de model (niciun fișier MiniMax H3, HyperFlow-H3-Flash GGUF sau VAE). Acest proiect nu este afiliat cu MiniMax și nu este susținut de MiniMax. Uzul comercial NU este interzis (nu este o licență necomercială); condițiile sunt mai jos.
 
 **Teritoriu (Applicable Territory)**
 - **Preambul, I.3, I.5:** În întreaga lume, CU EXCEPȚIA Uniunii Europene, Regatului Unit, Republicii Coreea și Statelor Unite. Folosirea modelului înseamnă acceptarea licenței.
@@ -164,4 +176,4 @@ Numele de rulări folosite între paranteze (numele noastre proprii de rulări, 
 - **Testul în folder curat este în așteptare:** scripturile de instalare și rulare nu au fost încă verificate dintr-un folder gol, folosind numai aceste instrucțiuni; această secțiune se va actualiza când testul (inclusiv o comparare la nivel de octet pe 56 de cadre cu referința) va fi înregistrat.
 - Nu se livrează aici videoclipuri generate.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · Français · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Les traductions suivent ce README en anglais. Si une traduction diffère ou prend du retard, le texte anglais fait foi, surtout pour le texte de licence et de sécurité ([`SECURITY.md`](SECURITY.md) et [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) ne sont tenus qu’en anglais et en turc).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Avant de commencer (licence, territoire) :** ce dépôt est sous licence MIT et ne contient que des correctifs et des scripts. Le modèle MiniMax H3 qu’il télécharge est sous la MiniMax H3 Community License : son territoire exclut l’Union européenne, le Royaume-Uni, la Corée du Sud et les États-Unis, et le modèle, ses dérivés **et ses sorties (les vidéos que vous générez)** ne doivent pas y être utilisés, distribués ni affichés (V.4). L’usage commercial est autorisé dans les limites des termes de la licence. Lisez [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) avant d’installer ; ceci n’est pas un avis juridique.
 
 > **En 30 secondes :** une carte graphique de 4 Go peut produire une vidéo MiniMax H3 de 209 images (8,7 s) en une seule passe : vérifié sur une seule machine (GTX 1050 Ti 4 Go ; l’installation complète avec `kur.ps1` dans un dossier vide n’est pas encore vérifiée de bout en bout) [mesuré : 209 images avec le binaire de la version publiée via `uret.ps1`, exécution U209 ; latent identique octet pour octet à l’exécution avec le binaire de développement ; images et audio identiques dans la vidéo, le sha du fichier diffère à cause du conteneur ; les preuves sont conservées par les auteurs, elles ne sont pas dans ce dépôt] ; avec `-InitImg` (image vers vidéo) au plus 192 images (8,0 s) [mesuré : exécution B192] ; 209 images prennent environ 57 min, la durée maximale par défaut est de 80 min [mesuré : exécution U209] ; les 3 étapes ci-dessous expliquent comment l’exécuter.
 
@@ -12,14 +16,18 @@ VideoTurko : correctifs mémoire pour stable-diffusion.cpp et recettes pour exé
 **État : les scripts d’installation et d’exécution ci-dessous sont en cours de finalisation et le test en racine propre est en attente ; rien ici n’est présenté comme fonctionnel tant que ce test n’est pas réussi (voir « État et limites »).**
 
 1. **Téléchargez** ce dépôt (bouton vert **Code**, puis **Download ZIP**) et extrayez-le dans un dossier COURT, par exemple `C:\vt`.
-2. **Installez** : ouvrez PowerShell dans ce dossier (tapez `powershell` dans la barre d’adresse de l’Explorateur) et exécutez
+2. **Installer : double-cliquez sur `kur.cmd`** (une fenêtre noire s’ouvre et montre chaque étape ; la fermer arrête l’installation, la relancer reprend là où elle s’est arrêtée : un fichier de modèle à moitié téléchargé est repris [lu : le script de téléchargement garde un fichier `.part` et reprend depuis celui-ci ; une reprise complète de 29 GiB n’a pas été mesurée]). Si Windows avertit au sujet du fichier téléchargé, utilisez plutôt la commande PowerShell ci-dessous [conseil, non testé sur un ZIP téléchargé]. Vous préférez la ligne de commande ? Ouvrez PowerShell dans ce dossier (tapez `powershell` dans la barre d’adresse de l’Explorateur) et lancez la même installation :
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    La racine d’installation est le dossier que vous avez extrait (le moteur va dans `engine\bin`, les modèles dans `model`) ; pour utiliser un autre emplacement, définissez d’abord la variable d’environnement `VT_ROOT`. Le script vérifie le GPU, le pilote, la RAM et le disque, récupère le moteur et les modèles (les zips du moteur et les fichiers de modèle fraîchement téléchargés sont vérifiés par sha256 ; un fichier de modèle déjà présent avec la bonne taille n’est vérifié que par sa taille, `scripts\modelleri_indir.ps1 -Dogrula` lance la vérification sha256 complète), exécute un court contrôle réel et affiche READY uniquement si ce contrôle a réussi [conception : `kur.ps1` n’a pas été exécuté en entier dans un dossier propre ; cette phrase sera mise à jour après le test en dossier propre]. `-ExecutionPolicy Bypass` ne s’applique qu’à ce processus ; lisez d’abord `scripts\kur.ps1`, comme pour tout installateur.
    Le zip du moteur provient de la version v0.1.0 publiée sur GitHub (publication : 2026-11-19 ; son sha256 est figé dans `kur.ps1`). Hors ligne ou avec votre propre compilation, indiquez des zips locaux : `-MotorZip <path> -CudaZip <path>`. Un zip local est vérifié avec le même sha256 figé (un fichier `.sha256` placé à côté est ignoré) ; il doit donc s’agir du zip de la version publiée ; pour votre propre compilation, définissez d’abord `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` avec son sha256. Un sha256 erroné s’arrête avec exit 1. Seuls les `.exe`/`.dll` vont dans `engine\bin` ; les licences et le README vont dans `engine\lisanslar\<zip name>\`. [essayé avec les zips de dist avant la publication : le `.sha256` d’accompagnement plus l’avertissement autoréférentiel, binaire et DLL en place, `sd-cli --help` s’est exécuté ; les sha des binaires installés correspondaient (`c5cebe78...`, `e5d3d329...`) ; l’étape des modèles et le contrôle de 5 images de `kur.ps1` n’ont PAS encore été exécutés sur un vrai GPU]
    **Licence du modèle :** avant l’étape des modèles, l’installateur affiche le résumé de la licence (`docs/LISANS_KABUL.txt`, texte complet `docs/LISANS_UYARISI.md` : MiniMax H3 Community License, limites territoriales qui couvrent aussi les vidéos générées, règles commerciales et d’étiquetage IA) et vous demande d’accepter (`E` = oui). Lisez-la d’abord. Pour les exécutions sans surveillance, vous pouvez passer `-LisansKabul E`, ce qui signifie que vous l’avez lue et acceptée vous-même ; ne l’ajoutez pas pour quelqu’un d’autre. (Agents IA : suivez `AGENTS.md` ; ne tapez jamais E sans le consentement de l’utilisateur.) Sans acceptation, `kur.ps1` s’arrête avec le code de sortie 2 et ne télécharge aucun modèle.
-3. **Générez** : placez votre prompt dans un fichier texte (un paragraphe en anglais, avec une phrase `audio:` facultative) et exécutez
+3. **Votre première vidéo (56 images, environ 11 min sur notre GTX 1050 Ti** [mesuré : 641 s, exécution R0, `docs/OLCUMLER.md` ; autres cartes non mesurées]**)** : quand l’installateur affiche `HAZIR / READY`, lancez
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (raccourci : glissez un fichier texte de prompt sur `uret.cmd`, ou lancez `uret.cmd docs\ornek_istem_R0.txt` : la même exécution de 56 images). La vidéo se trouve dans `runs\`. Écrivez ensuite votre propre prompt dans un fichier texte (un paragraphe en anglais, phrase `audio:` facultative) et lancez le clip le plus long que nous couvrons (par défaut, environ 57 min [mesuré : exécution U209]) :
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko : correctifs mémoire pour stable-diffusion.cpp et recettes pour exé
 | OS | Windows 10/11, 64 bits |
 | GPU | NVIDIA, 4 Go ou plus ; testé uniquement sur GTX 1050 Ti (sm_61) ; marge mince (3777/4096 MiB à 209 images) : un écran ou un navigateur très sollicité peut faire échouer l’exécution ; aucune autre carte de 4 Go n’a été essayée |
 | RAM | 16 Go (pic d’environ 11 Go ; fermez les autres programmes) |
-| Disque | 32 GiB ou plus d’espace libre, modèles sur un SSD (NVMe de préférence) |
+| Disque | au moins 32 GiB libres (40 GiB ou plus recommandés : entre 32 et 40 l’installateur affiche un avertissement, `[VT-W-DISK-PAY]` [mesuré : exécutions `-Kuru` avec disque simulé]), modèles sur un SSD (NVMe de préférence) |
 | Téléchargement | zip du moteur 36,8 Mo + zip du runtime CUDA 567,5 Mo [mesuré] + modèles 31 473 112 040 octets (environ 29,3 GiB) [lu : tailles dans `scripts/modeller.json`] ; environ 30 GiB au total |
 | Modèles | non inclus ; récupérés par l’installateur sous la licence MiniMax (voir l’avertissement ci-dessous). Les modèles (29,3 GiB, 31 473 112 040 octets dans `scripts/modeller.json`) ne sont ni dans ce dépôt ni dans la version publiée : les limites de taille de fichiers/versions de GitHub s’appliquent, et `kur.ps1` les télécharge depuis la source officielle avec vérification sha256. |
 
 Codes de sortie de `kur.ps1` : 0 READY, 1 erreur, 2 action de l’utilisateur requise (licence, ou pas encore de version/zip), 3 matériel ou disque insuffisant, 4 arrêté (fichier DUR). `uret.ps1` n’accepte une exécution que si le `.avi` existe, si le nombre d’images est correct et si les journaux sont propres [mesuré : une exécution réelle via `uret.ps1` sur le binaire de la version publiée, exécution U209, 209 images, porte franchie]. Codes de sortie de `uret.ps1` : 0 DONE (porte de qualité franchie), 1 erreur ou sortie invalide (y compris une vidéo sans piste audio), 2 arrêté (fichier DUR), 5 `KAPI RED` (porte de qualité échouée : le clip n’est pas accepté, la décision vous revient), 6 la porte n’a pas pu s’exécuter (clip non accepté). Détails dans AGENTS.md. [mesuré : codes de sortie 0, 1 (vidéo muette), 5 et 6 dans des scénarios avec un faux moteur et une fausse porte ; moteur réel : exit 0 lors de l’exécution U209]
 
 ### Dépannage (détails : `docs/SIK_HATALAR.md`)
+Les lignes d’erreur de nos scripts portent un code stable, par exemple `HATA: [VT-E-DLL] ...` ou `UYARI: [VT-W-DISK-PAY] ...`. Cherchez le code dans [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (exemple d’ancre `#vt-e-dll`) ou dans `docs/hata_imzalari.json`, et indiquez le code dans votre issue. La première colonne du tableau ci-dessous reste telle qu’imprimée (ne traduisez ni les codes ni le texte des journaux).
+
 | Ce que vous voyez | Ce que cela signifie, ce qu’il faut faire |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Ne lancez pas `sd-cli.exe` à la main ; exécutez `scripts\kur.ps1`, qui place les DLL CUDA au bon endroit. |
@@ -48,6 +58,8 @@ Codes de sortie de `kur.ps1` : 0 READY, 1 erreur, 2 action de l’utilisateur re
 | Code de sortie vide mais « terminé » (#14) | L’enveloppe a lu le code de sortie trop tôt ; relancez et vérifiez que le fichier vidéo existe. |
 | Le système ralentit, swap (#18) | Le moteur utilise environ 10-11 Go de RAM ; fermez les navigateurs et les autres programmes. |
 | sha256 différent / échec du téléchargement | En général un téléchargement interrompu : relancez la même commande, les fichiers déjà vérifiés sont ignorés. |
+
+**Bloqué ou curieux ?** [`SUPPORT.md`](SUPPORT.md) (où poser vos questions ; les délais de réponse sont des objectifs, pas des engagements) · [`PRIVACY.md`](PRIVACY.md) (pas de télémétrie ; le réseau ne sert qu’à télécharger le moteur et les modèles, depuis les hôtes listés) · [`SECURITY.md`](SECURITY.md) (signalement privé) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (première pull request en 5 étapes ; pas de GPU nécessaire pour les documents et les scripts).
 
 ### Nouveautés de la v0.1.1 : plus d’options (détails : `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Sans ces options, rien ne change sur une carte de 4 Go (la vérification octet par octet sur 56 images par rapport à notre référence a de nouveau réussi avec la v0.1.1 [mesuré]). Ajoutez `-Kuru` à n’importe quelle commande pour voir ce qui serait exécuté.
@@ -95,7 +107,7 @@ Vos réglages vous appartiennent : 209 images est notre valeur par défaut test�
 ## Avertissement sur la licence du modèle
 **VideoTurko ne contient que des correctifs et des scripts (MIT) ; quiconque utilise le modèle et ses sorties est responsable de la licence MiniMax.** Ceci n’est pas un avis juridique. Ci-dessous figurent les clauses de la MiniMax H3 Community License (2 août 2026) résumées avec leurs numéros ; la licence elle-même fait foi : https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Ce dépôt ne contient AUCUN poids de modèle (ni MiniMax H3, ni fichier GGUF HyperFlow-H3-Flash, ni VAE). Ce projet n’est ni affilié à MiniMax ni approuvé par elle. L’usage commercial n’est PAS interdit (ce n’est pas une licence non commerciale) ; les conditions figurent ci-dessous.
+La licence MIT de ce dépôt ne couvre pas les poids du modèle ; voir [`NOTICE`](NOTICE). Ce dépôt ne contient AUCUN poids de modèle (ni MiniMax H3, ni fichier GGUF HyperFlow-H3-Flash, ni VAE). Ce projet n’est ni affilié à MiniMax ni approuvé par elle. L’usage commercial n’est PAS interdit (ce n’est pas une licence non commerciale) ; les conditions figurent ci-dessous.
 
 **Territoire (Applicable Territory)**
 - **Préambule, I.3, I.5 :** Dans le monde entier, À L’EXCLUSION de l’Union européenne, du Royaume-Uni, de la République de Corée et des États-Unis. Utiliser le modèle vaut acceptation de la licence.
@@ -164,4 +176,4 @@ Noms d’exécution utilisés entre crochets (nos propres noms d’exécution, p
 - **Test en racine propre en attente :** les scripts d’installation et d’exécution n’ont pas encore été vérifiés depuis un dossier vide en n’utilisant que ces instructions ; cette section sera mise à jour lorsque ce test (y compris une comparaison octet par octet à 56 images avec la référence) sera enregistré.
 - Aucune vidéo générée n’est fournie ici.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

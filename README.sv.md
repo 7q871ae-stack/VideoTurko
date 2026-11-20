@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · Svenska · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Översättningarna följer denna engelska README. Om en översättning avviker eller ligger efter gäller den engelska texten, särskilt för licens- och säkerhetstexten ([`SECURITY.md`](SECURITY.md) och [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) hålls bara på engelska och turkiska).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Innan du börjar (licens, territorium):** det här förrådet är MIT och innehåller bara patchar och skript. MiniMax H3-modellen som det laddar ner omfattas av MiniMax H3 Community License: dess territorium utesluter Europeiska unionen, Storbritannien, Sydkorea och USA, och modellen, derivat **och utdata (videorna du genererar)** får inte användas, distribueras eller visas där (V.4). Kommersiell användning är tillåten inom licensvillkoren. Läs [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) före installationen; detta är inte juridisk rådgivning.
 
 > **Kort version (30 sekunder):** ett grafikkort med 4 GB kan göra en MiniMax H3-video på 209 bildrutor (8,7 s) i ett enda pass: verifierat på en dator (GTX 1050 Ti 4 GB; en fullständig `kur.ps1`-installation i en tom mapp är ännu inte verifierad från början till slut) [uppmätt: 209 bildrutor med release-binären via `uret.ps1`, körning U209; latenten är byte-identisk med körningen på utvecklingsbygget; bildrutor och ljud är identiska i videon, filens sha skiljer sig på grund av containern; underlaget förvaras av skaparna och finns inte i det här repot]; med `-InitImg` (image-to-video) högst 192 bildrutor (8,0 s) [uppmätt: körning B192]; 209 bildrutor tar ungefär 57 min, standardgräns för körtid 80 min [uppmätt: körning U209]; de 3 stegen nedan visar hur du kör det.
 
@@ -12,14 +16,18 @@ VideoTurko: minnespatchar för stable-diffusion.cpp och recept för att köra Mi
 **Status: installations- och körskripten nedan färdigställs fortfarande och testet i tom rotmapp (clean-root) återstår; inget här påstås fungera förrän det testet har gått igenom (se "Status och begränsningar").**
 
 1. **Ladda ner** det här repot (den gröna knappen **Code**, sedan **Download ZIP**) och packa upp det i en KORT sökväg, till exempel `C:\vt`.
-2. **Installera**: öppna PowerShell i den mappen (skriv `powershell` i Utforskarens adressfält) och kör
+2. **Installera: dubbelklicka på `kur.cmd`** (ett svart fönster öppnas och visar varje steg; att stänga det stoppar installationen, och att köra igen fortsätter där den slutade: en halvnedladdad modellfil återupptas [läst: nedladdningsskriptet behåller en `.part`-fil och fortsätter från den; en full återupptagning av 29 GiB har inte mätts]). Om Windows varnar för den nedladdade filen, använd PowerShell-kommandot nedan i stället [råd, inte testat med en nedladdad ZIP]. Föredrar du kommandoraden? Öppna PowerShell i den mappen (skriv `powershell` i Utforskarens adressfält) och kör samma installation:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Installationsroten är mappen du packade upp (motorn hamnar i `engine\bin`, modellerna i `model`); vill du använda en annan plats, sätt miljövariabeln `VT_ROOT` först. Skriptet kontrollerar GPU, drivrutin, RAM och disk, hämtar motorn och modellerna (motor-zippar och nyligen nedladdade modellfiler sha256-kontrolleras; en modellfil som redan finns med rätt storlek storlekskontrolleras bara, `scripts\modelleri_indir.ps1 -Dogrula` kör den fullständiga sha256-kontrollen), kör en kort riktig kontroll och skriver ut READY bara om kontrollen gick igenom [upplägg: `kur.ps1` har inte körts i sin helhet i en ren mapp; den här meningen uppdateras efter testet i ren mapp]. `-ExecutionPolicy Bypass` gäller bara den här ena processen; läs `scripts\kur.ps1` först, som med vilket installationsprogram som helst.
    Motor-zippen kommer från GitHub-releasen v0.1.0 (publicerad 2026-11-19; dess sha256 är fastlåst i `kur.ps1`). Offline eller med ett eget bygge anger du lokala zippar: `-MotorZip <path> -CudaZip <path>`. En lokal zip kontrolleras mot samma fastlåsta sha256 (en `.sha256`-fil bredvid ignoreras), så den måste vara release-zippen; för ett eget bygge sätter du först `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` till dess sha256. En felaktig sha256 stoppar med exit 1. Bara `.exe`/`.dll` hamnar i `engine\bin`; licenser och README hamnar i `engine\lisanslar\<zip name>\`. [provat med dist-zippar före releasen: sidofilen `.sha256` plus varningen om självreferens, binär och DLL-filer lades på plats, `sd-cli --help` kördes; de installerade binärernas sha stämde (`c5cebe78...`, `e5d3d329...`); modellsteget och 5-bildrutorskontrollen i `kur.ps1` har ännu INTE körts på ett riktigt GPU]
    **Modelllicens:** före modellsteget skriver installationsprogrammet ut en sammanfattning av licensen (`docs/LISANS_KABUL.txt`, hela texten `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, territoriella begränsningar som även omfattar genererade videor, regler för kommersiell användning och AI-märkning) och ber dig godkänna (`E` = ja). Läs den först. För obevakade körningar kan du ange `-LisansKabul E`, vilket betyder att du själv har läst och godkänt den; lägg inte till det åt någon annan. (AI-agenter: följ `AGENTS.md`; skriv aldrig E utan användarens samtycke.) Utan godkännande stoppar `kur.ps1` med exit-kod 2 och laddar inte ner någon modell.
-3. **Generera**: lägg din prompt i en textfil (ett engelskt stycke, valfri `audio:`-mening) och kör
+3. **Din första video (56 bildrutor, ungefär 11 min på vårt GTX 1050 Ti** [uppmätt: 641 s, körning R0, `docs/OLCUMLER.md`; andra kort har inte mätts]**)**: när installationen skriver ut `HAZIR / READY`, kör
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (genväg: dra en textfil med prompt till `uret.cmd`, eller kör `uret.cmd docs\ornek_istem_R0.txt`: samma körning med 56 bildrutor). Videon finns i `runs\`. Skriv sedan din egen prompt i en textfil (ett engelskt stycke, valfri `audio:`-mening) och kör det längsta klipp vi täcker (standard, ungefär 57 min [uppmätt: körning U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: minnespatchar för stable-diffusion.cpp och recept för att köra Mi
 | OS | Windows 10/11, 64-bitars |
 | GPU | NVIDIA, 4 GB eller mer; testad bara på GTX 1050 Ti (sm_61); smal marginal (3777/4096 MiB vid 209 bildrutor): en belastad skärm eller webbläsare kan få körningen att misslyckas; inget annat 4 GB-kort har provats |
 | RAM | 16 GB (topp på cirka 11 GB; stäng andra program) |
-| Disk | 32 GiB eller mer ledigt, modellerna på en SSD (helst NVMe) |
+| Disk | minst 32 GiB ledigt (40 GiB eller mer rekommenderas: mellan 32 och 40 skriver installationen ut en varning, `[VT-W-DISK-PAY]` [uppmätt: `-Kuru`-körningar med simulerad disk]), modeller på en SSD (helst NVMe) |
 | Nedladdning | motor-zip 36,8 MB + CUDA-runtime-zip 567,5 MB [uppmätt] + modeller 31 473 112 040 byte (cirka 29,3 GiB) [läst: storlekar i `scripts/modeller.json`]; cirka 30 GiB totalt |
 | Modeller | ingår inte; hämtas av installationsprogrammet under MiniMax-licensen (se varningen nedan). Modellerna (29,3 GiB, 31 473 112 040 byte i `scripts/modeller.json`) finns inte i det här repot eller i releasen: GitHubs gränser för fil- och releasestorlek gäller, och `kur.ps1` laddar ner dem från den officiella källan med sha256-verifiering. |
 
 Exit-koder för `kur.ps1`: 0 READY, 1 fel, 2 användarinmatning behövs (licens, eller ännu ingen release/zip), 3 otillräcklig hårdvara eller disk, 4 stoppad (DUR-fil). `uret.ps1` godkänner en körning bara om `.avi`-filen finns, antalet bildrutor stämmer och loggarna är rena [uppmätt: en riktig körning via `uret.ps1` på release-binären, körning U209, 209 bildrutor, grinden passerades]. Exit-koder för `uret.ps1`: 0 DONE (kvalitetsgrinden passerades), 1 fel eller ogiltig utdata (inklusive en video utan ljudspår), 2 stoppad (DUR-fil), 5 `KAPI RED` (kvalitetsgrinden underkände: klippet är inte godkänt, beslutet är ditt), 6 grinden kunde inte köras (klippet är inte godkänt). Detaljer i AGENTS.md. [uppmätt: exit-koderna 0, 1 (ljudlös video), 5 och 6 i scenarier med en låtsasmotor och en låtsasgrind; riktig motor: exit 0 i körning U209]
 
 ### Felsökning (detaljer: `docs/SIK_HATALAR.md`)
+Felrader från våra skript bär en stabil kod, till exempel `HATA: [VT-E-DLL] ...` eller `UYARI: [VT-W-DISK-PAY] ...`. Slå upp koden i [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (ankarexempel `#vt-e-dll`) eller i `docs/hata_imzalari.json` och skriv koden i ditt ärende (issue). Första kolumnen i tabellen nedan förblir som utskriven (översätt inte koder och loggtext).
+
 | Du ser | Vad det betyder, vad du gör |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Starta inte `sd-cli.exe` för hand; kör `scripts\kur.ps1`, som lägger CUDA-DLL-filerna på plats. |
@@ -48,6 +58,8 @@ Exit-koder för `kur.ps1`: 0 READY, 1 fel, 2 användarinmatning behövs (licens,
 | Exit-koden är tom men "finished" (#14) | Wrappern läste exit-koden för tidigt; kör igen och kontrollera att videofilen finns. |
 | Systemet blir segt, swappar (#18) | Motorn använder cirka 10-11 GB RAM; stäng webbläsare och andra program. |
 | sha256-avvikelse / nedladdningen misslyckades | Oftast en avbruten nedladdning: kör samma kommando igen, verifierade filer hoppas över. |
+
+**Har du kört fast eller är nyfiken?** [`SUPPORT.md`](SUPPORT.md) (var du frågar; svarstider är mål, inte åtaganden) · [`PRIVACY.md`](PRIVACY.md) (ingen telemetri; nätverket används bara för att ladda ner motorn och modellerna, från listade värdar) · [`SECURITY.md`](SECURITY.md) (privat rapportering) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (första pull request i 5 steg; ingen GPU behövs för dokument och skript).
 
 ### Nytt i v0.1.1: fler alternativ (detaljer: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Utan de här alternativen ändras ingenting på ett 4 GB-kort (bytekontrollen med 56 bildrutor mot vår referens gick igenom igen med v0.1.1 [uppmätt]). Lägg till `-Kuru` på valfritt kommando för att se vad som skulle köras.
@@ -95,7 +107,7 @@ Dina inställningar är dina: 209 bildrutor är vår testade standard på ett 4 
 ## Varning för modelllicensen
 **VideoTurko innehåller bara patchar och skript (MIT); den som använder modellen och dess utdata ansvarar själv för MiniMax-licensen.** Inte juridisk rådgivning. Nedan sammanfattas klausulerna i MiniMax H3 Community License (2 augusti 2026) med deras nummer; själva licensen är den bindande: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Det här repot innehåller INGA modellvikter (inga filer för MiniMax H3, HyperFlow-H3-Flash GGUF eller VAE). Projektet är inte knutet till eller godkänt av MiniMax. Kommersiell användning är INTE förbjuden (det är inte en licens för enbart icke-kommersiellt bruk); villkoren står nedan.
+MIT-licensen för det här förrådet täcker inte modellvikterna; se [`NOTICE`](NOTICE). Det här repot innehåller INGA modellvikter (inga filer för MiniMax H3, HyperFlow-H3-Flash GGUF eller VAE). Projektet är inte knutet till eller godkänt av MiniMax. Kommersiell användning är INTE förbjuden (det är inte en licens för enbart icke-kommersiellt bruk); villkoren står nedan.
 
 **Territorium (Applicable Territory)**
 - **Preambel, I.3, I.5:** Hela världen, UTOM Europeiska unionen, Storbritannien, Republiken Korea och USA. Att använda modellen räknas som att godta licensen.
@@ -164,4 +176,4 @@ Körningsnamn som används inom hakparentes (våra egna körningsnamn, inte file
 - **Test i tom rotmapp återstår:** installations- och körskripten har ännu inte verifierats från en tom mapp med enbart de här instruktionerna; det här avsnittet uppdateras när det testet (inklusive en byte-jämförelse med 56 bildrutor mot referensen) är dokumenterat.
 - Inga genererade videor levereras här.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

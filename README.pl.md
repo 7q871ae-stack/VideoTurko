@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · Polski · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+Tłumaczenia podążają za tym angielskim README. Jeśli tłumaczenie się różni lub jest spóźnione, obowiązuje tekst angielski, zwłaszcza w tekście o licencji i bezpieczeństwie ([`SECURITY.md`](SECURITY.md) i [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) są utrzymywane tylko po angielsku i turecku).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Zanim zaczniesz (licencja, terytorium):** to repozytorium jest na licencji MIT i zawiera tylko łatki i skrypty. Pobierany przez nie model MiniMax H3 podlega MiniMax H3 Community License: jej terytorium wyklucza Unię Europejską, Wielką Brytanię, Koreę Południową i Stany Zjednoczone, a modelu, pochodnych **i wyników (generowanych przez Ciebie filmów)** nie wolno tam używać, dystrybuować ani wyświetlać (V.4). Użycie komercyjne jest dozwolone w granicach warunków licencji. Przeczytaj [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) przed instalacją; to nie jest porada prawna.
 
 > **W 30 sekund:** karta graficzna z 4 GB pamięci może w jednym przebiegu wygenerować wideo MiniMax H3 o długości 209 klatek (8.7 s): sprawdzone na jednym komputerze (GTX 1050 Ti 4 GB; pełna instalacja `kur.ps1` w pustym folderze nie została jeszcze sprawdzona od początku do końca) [zmierzone: 209 klatek na binarce wydaniowej przez `uret.ps1`, przebieg U209; latent identyczny bajt w bajt z przebiegiem na kompilacji deweloperskiej; klatki i dźwięk w wideo identyczne, sha pliku różni się z powodu kontenera; dowody przechowują autorzy, nie ma ich w tym repozytorium]; z `-InitImg` (obraz do wideo) co najwyżej 192 klatki (8.0 s) [zmierzone: przebieg B192]; 209 klatek liczy się około 57 min, domyślny limit czasu to 80 min [zmierzone: przebieg U209]; jak to uruchomić, pokazują 3 kroki poniżej.
 
@@ -12,14 +16,18 @@ VideoTurko: łatki pamięci do stable-diffusion.cpp oraz przepisy na uruchomieni
 **Status: poniższe skrypty instalacji i uruchomienia są jeszcze dopracowywane, a test w czystym folderze nie został wykonany; dopóki go nie przejdą, nie twierdzimy, że cokolwiek tu działa (zob. „Status i ograniczenia”).**
 
 1. **Pobierz** to repozytorium (zielony przycisk **Code**, potem **Download ZIP**) i rozpakuj do KRÓTKIEJ ścieżki, na przykład `C:\vt`.
-2. **Zainstaluj**: otwórz PowerShell w tym folderze (wpisz `powershell` w pasku adresu Eksploratora) i uruchom
+2. **Instalacja: kliknij dwukrotnie `kur.cmd`** (otworzy się czarne okno i pokaże każdy krok; zamknięcie go zatrzymuje instalację, a ponowne uruchomienie kontynuuje od miejsca przerwania: w połowie pobrany plik modelu jest wznawiany [przeczytane: skrypt pobierania zachowuje plik `.part` i wznawia od niego; pełne wznowienie 29 GiB nie było mierzone]). Jeśli Windows ostrzega przed pobranym plikiem, użyj zamiast tego polecenia PowerShell poniżej [rada, nie testowano na pobranym ZIP-ie]. Wolisz wiersz poleceń? Otwórz PowerShell w tym folderze (wpisz `powershell` w pasku adresu Eksploratora) i uruchom tę samą instalację:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Katalogiem głównym instalacji jest folder, do którego rozpakowano archiwum (silnik trafia do `engine\bin`, modele do `model`); aby użyć innego miejsca, najpierw ustaw zmienną środowiskową `VT_ROOT`. Skrypt sprawdza GPU, sterownik, RAM i dysk, pobiera silnik i modele (archiwa zip silnika oraz świeżo pobrane pliki modeli są sprawdzane sumą sha256; plik modelu, który już jest na miejscu i ma właściwy rozmiar, jest sprawdzany tylko pod względem rozmiaru, a pełną weryfikację sha256 uruchamia `scripts\modelleri_indir.ps1 -Dogrula`), wykonuje krótki prawdziwy test i wypisuje READY tylko wtedy, gdy ten test przeszedł [wg projektu: `kur.ps1` nie był uruchomiony w całości w czystym folderze; to zdanie zostanie zaktualizowane po teście w czystym folderze]. `-ExecutionPolicy Bypass` działa tylko dla tego jednego procesu; tak jak w przypadku każdego instalatora, najpierw przeczytaj `scripts\kur.ps1`.
    Archiwum zip silnika pochodzi z wydania v0.1.0 na GitHubie (opublikowanego 2026-11-19; jego suma sha256 jest wpisana na stałe w `kur.ps1`). Bez internetu lub z własną kompilacją podaj lokalne archiwa zip: `-MotorZip <path> -CudaZip <path>`. Lokalne archiwum zip jest sprawdzane tą samą wpisaną na stałe sumą sha256 (plik `.sha256` obok jest ignorowany), więc musi to być archiwum z wydania; dla własnej kompilacji najpierw ustaw w `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` jej sumę sha256. Błędna suma sha256 zatrzymuje skrypt z kodem 1. Do `engine\bin` trafiają tylko pliki `.exe` i `.dll`; licencje i README trafiają do `engine\lisanslar\<zip name>\`. [próbowano na archiwach dist przed wydaniem: plik `.sha256` obok plus ostrzeżenie o samoodwołaniu, binarka i biblioteki DLL rozmieszczone, `sd-cli --help` zadziałało; sumy sha zainstalowanych binarek zgodne (`c5cebe78...`, `e5d3d329...`); kroku z modelami i 5-klatkowego testu w `kur.ps1` NIE uruchomiono jeszcze na prawdziwym GPU]
    **Licencja modelu:** przed krokiem z modelami instalator wypisuje streszczenie licencji (`docs/LISANS_KABUL.txt`, pełny tekst `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, ograniczenia terytorialne obejmujące także wygenerowane wideo, zasady użycia komercyjnego i oznaczania treści AI) i prosi o akceptację (`E` = tak). Przeczytaj ją najpierw. Do uruchomień bez nadzoru możesz przekazać `-LisansKabul E`, co oznacza, że licencję przeczytano i zaakceptowano samodzielnie; nie dodawaj tej flagi za kogoś innego. (Agenci AI: stosujcie się do `AGENTS.md`; nigdy nie wpisujcie E bez zgody użytkownika.) Bez akceptacji `kur.ps1` zatrzymuje się z kodem wyjścia 2 i nie pobiera żadnego modelu.
-3. **Generuj**: umieść prompt w pliku tekstowym (jeden akapit po angielsku, opcjonalnie zdanie `audio:`) i uruchom
+3. **Twój pierwszy film (56 klatek, około 11 min na naszej GTX 1050 Ti** [zmierzone: 641 s, przebieg R0, `docs/OLCUMLER.md`; inne karty nie były mierzone]**)**: gdy instalator wypisze `HAZIR / READY`, uruchom
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (skrót: przeciągnij plik tekstowy z promptem na `uret.cmd` albo uruchom `uret.cmd docs\ornek_istem_R0.txt`: ten sam przebieg 56 klatek). Film jest w `runs\`. Potem zapisz własny prompt w pliku tekstowym (jeden akapit po angielsku, opcjonalne zdanie `audio:`) i uruchom najdłuższy klip, jaki obsługujemy (domyślnie, około 57 min [zmierzone: przebieg U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: łatki pamięci do stable-diffusion.cpp oraz przepisy na uruchomieni
 | System | Windows 10/11, 64-bit |
 | GPU | NVIDIA, 4 GB lub więcej; testowane tylko na GTX 1050 Ti (sm_61); mały zapas (3777/4096 MiB przy 209 klatkach): zajęty ekran albo przeglądarka mogą przerwać przebieg; innych kart 4 GB nie próbowano |
 | RAM | 16 GB (szczyt około 11 GB; zamknij inne programy) |
-| Dysk | 32 GiB lub więcej wolnego miejsca, modele na SSD (najlepiej NVMe) |
+| Dysk | co najmniej 32 GiB wolnego miejsca (zalecane 40 GiB lub więcej: między 32 a 40 instalator wypisuje ostrzeżenie, `[VT-W-DISK-PAY]` [zmierzone: przebiegi `-Kuru` z symulowanym dyskiem]), modele na SSD (najlepiej NVMe) |
 | Pobieranie | zip silnika 36.8 MB + zip środowiska CUDA 567.5 MB [zmierzone] + modele 31,473,112,040 bajtów (około 29.3 GiB) [przeczytane: rozmiary w `scripts/modeller.json`]; łącznie około 30 GiB |
 | Modele | nie są dołączone; instalator pobiera je na warunkach licencji MiniMax (zob. ostrzeżenie poniżej). Modeli (29.3 GiB, 31,473,112,040 bajtów w `scripts/modeller.json`) nie ma ani w tym repozytorium, ani w wydaniu: obowiązują limity GitHuba na rozmiar plików i wydań, a `kur.ps1` pobiera je z oficjalnego źródła z weryfikacją sha256. |
 
 Kody wyjścia `kur.ps1`: 0 READY, 1 błąd, 2 potrzebna odpowiedź użytkownika (licencja albo brak jeszcze wydania/zip), 3 sprzęt lub dysk niewystarczający, 4 zatrzymano (plik DUR). `uret.ps1` przyjmuje przebieg tylko wtedy, gdy plik `.avi` istnieje, liczba klatek się zgadza, a logi są czyste [zmierzone: jeden prawdziwy przebieg przez `uret.ps1` na binarce wydaniowej, przebieg U209, 209 klatek, kontrola zaliczona]. Kody wyjścia `uret.ps1`: 0 DONE (kontrola jakości zaliczona), 1 błąd lub nieprawidłowy wynik (w tym wideo bez ścieżki dźwiękowej), 2 zatrzymano (plik DUR), 5 `KAPI RED` (kontrola jakości niezaliczona: klip nie został przyjęty, decyzja należy do Ciebie), 6 kontroli nie udało się wykonać (klip nie został przyjęty). Szczegóły w AGENTS.md. [zmierzone: kody wyjścia 0, 1 (wideo bez dźwięku), 5 i 6 w scenariuszach z atrapą silnika i atrapą kontroli; na prawdziwym silniku: kod 0 w przebiegu U209]
 
 ### Rozwiązywanie problemów (szczegóły: `docs/SIK_HATALAR.md`)
+Linie błędów naszych skryptów niosą stały kod, na przykład `HATA: [VT-E-DLL] ...` albo `UYARI: [VT-W-DISK-PAY] ...`. Wyszukaj kod w [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (przykład kotwicy `#vt-e-dll`) lub w `docs/hata_imzalari.json` i wpisz kod w swoim zgłoszeniu (issue). Pierwsza kolumna tabeli poniżej zostaje taka, jak wypisana (kodów i tekstu logów nie tłumaczymy).
+
 | Co widzisz | Co to oznacza i co zrobić |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Nie uruchamiaj `sd-cli.exe` ręcznie; uruchom `scripts\kur.ps1`, który umieszcza biblioteki DLL CUDA na miejscu. |
@@ -48,6 +58,8 @@ Kody wyjścia `kur.ps1`: 0 READY, 1 błąd, 2 potrzebna odpowiedź użytkownika 
 | Kod wyjścia pusty, ale jest „finished” (#14) | Wrapper odczytał kod wyjścia zbyt wcześnie; uruchom ponownie i sprawdź, czy plik wideo istnieje. |
 | System zwalnia, trwa swapowanie (#18) | Silnik zajmuje około 10-11 GB RAM; zamknij przeglądarki i inne programy. |
 | Niezgodność sha256 / pobieranie nie powiodło się | Zwykle pobieranie zostało przerwane: uruchom to samo polecenie jeszcze raz, zweryfikowane pliki zostaną pominięte. |
+
+**Utknąłeś albo jesteś ciekaw?** [`SUPPORT.md`](SUPPORT.md) (gdzie pytać; czasy odpowiedzi to cele, nie zobowiązania) · [`PRIVACY.md`](PRIVACY.md) (bez telemetrii; sieć służy tylko do pobrania silnika i modeli z wymienionych hostów) · [`SECURITY.md`](SECURITY.md) (prywatne zgłoszenie) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (pierwszy pull request w 5 krokach; do dokumentów i skryptów nie potrzeba GPU).
 
 ### Nowości w v0.1.1: dodatkowe opcje (szczegóły: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Bez tych opcji na karcie 4 GB nic się nie zmienia (kontrola bajt w bajt na 56 klatkach względem naszego wzorca ponownie zaliczona w v0.1.1 [zmierzone]). Dodaj `-Kuru` do dowolnego polecenia, aby zobaczyć, co zostałoby uruchomione.
@@ -95,7 +107,7 @@ Ustawienia są Twoje: 209 klatek to nasza sprawdzona wartość domyślna na karc
 ## Ostrzeżenie o licencji modelu
 **VideoTurko zawiera wyłącznie łatki i skrypty (MIT); kto używa modelu i jego wyników, sam odpowiada za przestrzeganie licencji MiniMax.** To nie jest porada prawna. Poniżej klauzule MiniMax H3 Community License (2 sierpnia 2026) w streszczeniu, z numerami; wiążąca jest sama licencja: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-To repozytorium NIE zawiera wag modeli (żadnych plików MiniMax H3, GGUF HyperFlow-H3-Flash ani VAE). Projekt nie jest powiązany z MiniMax ani przez nią popierany. Użycie komercyjne NIE jest zabronione (to nie jest licencja niekomercyjna); warunki poniżej.
+Licencja MIT tego repozytorium nie obejmuje wag modelu; zobacz [`NOTICE`](NOTICE). To repozytorium NIE zawiera wag modeli (żadnych plików MiniMax H3, GGUF HyperFlow-H3-Flash ani VAE). Projekt nie jest powiązany z MiniMax ani przez nią popierany. Użycie komercyjne NIE jest zabronione (to nie jest licencja niekomercyjna); warunki poniżej.
 
 **Terytorium (Applicable Territory)**
 - **Preambuła, I.3, I.5:** cały świat, Z WYŁĄCZENIEM Unii Europejskiej, Zjednoczonego Królestwa, Republiki Korei i Stanów Zjednoczonych. Korzystanie z modelu oznacza przyjęcie licencji.
@@ -164,4 +176,4 @@ Nazwy przebiegów używane w nawiasach (nasze własne nazwy, nie pliki tego repo
 - **Test w czystym folderze przed nami:** skrypty instalacji i uruchomienia nie zostały jeszcze sprawdzone z pustego folderu wyłącznie według tej instrukcji; sekcja zostanie zaktualizowana, gdy test (łącznie z bajtowym porównaniem 56 klatek z wzorcem) zostanie zapisany.
 - Wygenerowane wideo nie są tu dostarczane.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

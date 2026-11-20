@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · 日本語 · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+翻訳はこの英語版 README に従います。翻訳が異なる場合や遅れている場合は、特にライセンスとセキュリティの文章では英語の文章が正本です([`SECURITY.md`](SECURITY.md) と [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) は英語とトルコ語のみで管理されています)。
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **始める前に(ライセンス、地域):** このリポジトリは MIT で、パッチとスクリプトだけを含みます。ダウンロードされる MiniMax H3 モデルは MiniMax H3 Community License の下にあります。対象地域には欧州連合、英国、韓国、米国は含まれず、モデル、派生物、**および出力(生成した動画)**をそれらの地域で使用・配布・表示してはいけません(V.4)。商用利用はライセンス条件の範囲内で認められます。インストール前に [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) を読んでください。これは法的助言ではありません。
 
 > **30 秒で要点：** 4 GB のグラフィックカードで、MiniMax H3 の 209 フレーム（8.7 秒）の動画を 1 パスで生成できます。確認は 1 台のマシン（GTX 1050 Ti 4 GB）で行いました。空のフォルダーに対する `kur.ps1` のフルインストールは、まだ最初から最後までは検証していません [実測: リリースバイナリで `uret.ps1` 経由の 209 フレーム、実行 U209。latent は開発ビルドの実行とバイト単位で一致。動画内のフレームと音声は同一で、ファイルの sha はコンテナの違いにより異なる。証拠は作者が保管しており、このリポジトリには含まれない]。`-InitImg`（image-to-video）では最大 192 フレーム（8.0 秒）です [実測: 実行 B192]。209 フレームには約 57 分かかり、既定のタイムキャップは 80 分です [実測: 実行 U209]。以下の 3 ステップが実行方法です。
 
@@ -12,14 +16,18 @@ VideoTurko：4 GB の GTX 1050 Ti で MiniMax H3 の text-to-video を動かす�
 **状況：以下のインストール・実行スクリプトは仕上げ中で、クリーンルートテストは未実施です。このテストに合格するまで、ここに書かれた内容が動作するとは主張しません（「状況と制限」を参照）。**
 
 1. **ダウンロード**：このリポジトリをダウンロードし（緑の **Code** ボタン、続けて **Download ZIP**）、`C:\vt` のような短いパスのフォルダーに展開します。
-2. **インストール**：そのフォルダーで PowerShell を開き（エクスプローラーのアドレスバーに `powershell` と入力）、次を実行します。
+2. **インストール: `kur.cmd` をダブルクリック**(黒いウィンドウが開き各ステップを表示します。閉じるとインストールが止まり、もう一度実行すると続きから再開します。ダウンロード途中のモデルファイルは再開されます [読了: ダウンロードスクリプトは `.part` ファイルを保持してそこから再開する。29 GiB 全体の再開は未測定])。ダウンロードしたファイルについて Windows が警告を出す場合は、代わりに下の PowerShell コマンドを使ってください [助言、ダウンロードした ZIP では未テスト]。コマンドラインがお好みですか? そのフォルダーで PowerShell を開き(エクスプローラーのアドレスバーに `powershell` と入力)、同じインストールを実行します:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    インストール先は展開したフォルダーです（エンジンは `engine\bin`、モデルは `model` に入ります）。別の場所を使う場合は、先に環境変数 `VT_ROOT` を設定してください。GPU、ドライバー、RAM、ディスクを確認し、エンジンとモデルを取得し（エンジンの zip と新規にダウンロードしたモデルファイルは sha256 で検証します。すでにあるモデルファイルはサイズが合っていればサイズだけを確認します。`scripts\modelleri_indir.ps1 -Dogrula` で完全な sha256 検証を実行できます）、短い実機チェックを実行し、そのチェックに合格した場合にだけ READY と表示します [設計: `kur.ps1` はクリーンなフォルダーで全体を実行したことがありません。この文はクリーンフォルダーテストの後に更新します]。`-ExecutionPolicy Bypass` はこの 1 プロセスにのみ適用されます。どのインストーラーでも同じですが、先に `scripts\kur.ps1` を読んでください。
    エンジンの zip は GitHub のリリース v0.1.0 から取得します（2026 年 11 月 19 日に公開。その sha256 は `kur.ps1` に固定されています）。オフラインの場合や自分でビルドしたものを使う場合は、ローカルの zip を渡してください：`-MotorZip <path> -CudaZip <path>`。ローカルの zip も同じ固定 sha256 で検証されます（隣にある `.sha256` ファイルは無視されます）。そのため、リリースの zip である必要があります。自分でビルドしたものを使う場合は、先に `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` にその sha256 を設定してください。sha256 が間違っている場合は exit 1 で停止します。`engine\bin` に置かれるのは `.exe`/`.dll` だけで、ライセンスと README は `engine\lisanslar\<zip name>\` に入ります。[試行：リリース前に dist の zip で、サイドカーの `.sha256` と自己参照の警告、バイナリと DLL の配置、`sd-cli --help` の実行を確認。インストールされたバイナリの sha も一致（`c5cebe78...`、`e5d3d329...`）。`kur.ps1` のモデルのステップと 5 フレームチェックは、実機の GPU ではまだ実行していない]
    **モデルのライセンス：** モデルのステップの前に、インストーラーがライセンスの要約（`docs/LISANS_KABUL.txt`、全文は `docs/LISANS_UYARISI.md`：MiniMax H3 Community License、生成した動画にも及ぶ地域制限、商用利用と AI 表示のルール）を表示し、同意を求めます（`E` = はい）。先に必ず読んでください。無人実行では `-LisansKabul E` を渡せますが、これは自分で読んで同意したことを意味します。他の人の代わりに付けないでください。（AI エージェントへ：`AGENTS.md` に従い、ユーザーの同意なしに E を入力しないこと。）同意がない場合、`kur.ps1` は終了コード 2 で停止し、モデルをダウンロードしません。
-3. **生成**：プロンプトをテキストファイルに書き（英語で 1 段落、任意で `audio:` の 1 文）、次を実行します。
+3. **最初の動画(56 フレーム、当方の GTX 1050 Ti で約 11 分**[実測: 641 秒、実行 R0、`docs/OLCUMLER.md`。他のカードは未測定]**)**: インストーラーが `HAZIR / READY` と表示したら次を実行します
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (近道: プロンプトのテキストファイルを `uret.cmd` にドラッグするか、`uret.cmd docs\ornek_istem_R0.txt` を実行します。同じ 56 フレームの実行です)。動画は `runs\` にあります。次に自分のプロンプトをテキストファイルに書き(英語の 1 段落、任意で `audio:` の文)、当方が対応する最長のクリップを実行します(既定、約 57 分 [実測: 実行 U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko：4 GB の GTX 1050 Ti で MiniMax H3 の text-to-video を動かす�
 | OS | Windows 10/11、64 ビット |
 | GPU | NVIDIA、4 GB 以上。テスト済みは GTX 1050 Ti（sm_61）のみ。余裕は小さい（209 フレームで 3777/4096 MiB）ため、重い画面表示やブラウザーで実行が失敗することがあります。他の 4 GB カードは未試行 |
 | RAM | 16 GB（ピーク約 11 GB。他のプログラムは閉じてください） |
-| ディスク | 空き 32 GiB 以上、モデルは SSD に置く（NVMe 推奨） |
+| ディスク | 空き 32 GiB 以上(40 GiB 以上を推奨。32〜40 GiB のあいだはインストーラーが警告を出します。`[VT-W-DISK-PAY]` [実測: 空き容量を模擬した `-Kuru` 実行])、モデルは SSD に(NVMe 推奨) |
 | ダウンロード | エンジン zip 36.8 MB + CUDA ランタイム zip 567.5 MB [実測] + モデル 31,473,112,040 バイト（約 29.3 GiB）[読了: サイズは `scripts/modeller.json`]。合計約 30 GiB |
 | モデル | 同梱していません。MiniMax のライセンスに基づきインストーラーが取得します（下の警告を参照）。モデル（29.3 GiB、`scripts/modeller.json` の 31,473,112,040 バイト）はこのリポジトリにもリリースにも含まれません。GitHub のファイルサイズ・リリースサイズの制限があるため、`kur.ps1` が公式の配布元から sha256 検証つきでダウンロードします。 |
 
 `kur.ps1` の終了コード：0 READY、1 エラー、2 ユーザーの入力が必要（ライセンス、またはリリース・zip がまだない）、3 ハードウェアまたはディスクが不足、4 停止（DUR ファイル）。`uret.ps1` は、`.avi` が存在し、フレーム数が正しく、ログに問題がない場合にだけ実行結果を受理します [実測: リリースバイナリで `uret.ps1` 経由の実機 1 回の実行、実行 U209、209 フレーム、ゲート合格]。`uret.ps1` の終了コード：0 DONE（品質ゲート合格）、1 エラーまたは無効な出力（音声ストリームのない動画を含む）、2 停止（DUR ファイル）、5 `KAPI RED`（品質ゲート不合格：クリップは受理されず、判断はあなたに委ねられます）、6 ゲートを実行できなかった（クリップは受理されない）。詳細は AGENTS.md を参照してください。[実測: 偽のエンジンと偽のゲートを使ったシナリオで終了コード 0、1（音声なしの動画）、5、6 を確認。実際のエンジン：実行 U209 で終了コード 0]
 
 ### トラブルシューティング（詳細：`docs/SIK_HATALAR.md`）
+当方のスクリプトのエラー行には固定コードが付きます。例: `HATA: [VT-E-DLL] ...` や `UYARI: [VT-W-DISK-PAY] ...`。コードは [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md)(アンカーの例 `#vt-e-dll`)または `docs/hata_imzalari.json` で検索し、issue にもコードを書いてください。下の表の最初の列は出力のままです(コードとログの文は翻訳しません)。
+
 | 表示 | 意味と対処 |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found`（#13） | `sd-cli.exe` を手動で起動しないでください。`scripts\kur.ps1` を実行すると CUDA の DLL が正しく配置されます。 |
@@ -48,6 +58,8 @@ VideoTurko：4 GB の GTX 1050 Ti で MiniMax H3 の text-to-video を動かす�
 | 終了コードが空なのに「完了」と表示される（#14） | ラッパーが終了コードを早く読みすぎています。再実行し、動画ファイルが存在することを確認してください。 |
 | システムが遅くなる、スワップする（#18） | エンジンは約 10〜11 GB の RAM を使います。ブラウザーなど他のプログラムを閉じてください。 |
 | sha256 の不一致 / ダウンロード失敗 | 多くはダウンロードの中断です。同じコマンドをもう一度実行してください。検証済みのファイルはスキップされます。 |
+
+**困ったとき・気になるとき** [`SUPPORT.md`](SUPPORT.md)(質問先。返信時間は目標であり約束ではありません)· [`PRIVACY.md`](PRIVACY.md)(テレメトリーなし。ネットワークはエンジンとモデルのダウンロードにのみ、記載のホストから使います)· [`SECURITY.md`](SECURITY.md)(非公開での報告)· [`CONTRIBUTING.md`](CONTRIBUTING.md)(5 ステップで最初のプルリクエスト。ドキュメントとスクリプトに GPU は不要)。
 
 ### v0.1.1 の新機能：オプションの追加（詳細：`AGENTS.md`、`docs/SIK_HATALAR.md` 19-23）
 これらのオプションを使わなければ、4 GB カードでの動作は何も変わりません（当方の基準に対する 56 フレームのバイトチェックは、v0.1.1 でも再び合格しました [実測]）。どのコマンドにも `-Kuru` を付けると、何が実行されるかを確認できます。
@@ -95,7 +107,7 @@ stable-diffusion.cpp 向けの小さなメモリ・スケジューリング用�
 ## モデルライセンスに関する警告
 **VideoTurko に含まれるのはパッチとスクリプト（MIT）だけです。モデルとその出力を使う人は、MiniMax のライセンスについて自分で責任を負います。** 法的助言ではありません。以下は MiniMax H3 Community License（2026 年 8 月 2 日）の条項を番号つきで要約したものです。拘束力があるのはライセンス本文です：https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-このリポジトリにはモデルの重みを一切含みません（MiniMax H3、HyperFlow-H3-Flash の GGUF、VAE のファイルはありません）。このプロジェクトは MiniMax と提携しておらず、承認も受けていません。商用利用は禁止されていません（非商用ライセンスではありません）。条件は以下のとおりです。
+このリポジトリの MIT ライセンスはモデルの重みを対象としません。[`NOTICE`](NOTICE) を参照してください。 このリポジトリにはモデルの重みを一切含みません（MiniMax H3、HyperFlow-H3-Flash の GGUF、VAE のファイルはありません）。このプロジェクトは MiniMax と提携しておらず、承認も受けていません。商用利用は禁止されていません（非商用ライセンスではありません）。条件は以下のとおりです。
 
 **地域（Applicable Territory）**
 - **前文、I.3、I.5：** 世界全域です。ただし欧州連合、英国、大韓民国、米国を除きます。モデルを使用すると、ライセンスに同意したものとみなされます。
@@ -164,4 +176,4 @@ stable-diffusion.cpp 向けの小さなメモリ・スケジューリング用�
 - **クリーンルートテストは未実施：** インストールと実行のスクリプトは、この手順だけを使って空のフォルダーから検証したことがまだありません。そのテスト（基準に対する 56 フレームのバイト比較を含む）を記録した時点で、このセクションを更新します。
 - 生成した動画は、ここには同梱していません。
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

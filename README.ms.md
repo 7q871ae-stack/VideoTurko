@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · Bahasa Melayu
 
+Terjemahan mengikuti README bahasa Inggeris ini. Jika terjemahan berbeza atau ketinggalan, teks bahasa Inggeris yang terpakai, terutamanya untuk teks lesen dan keselamatan ([`SECURITY.md`](SECURITY.md) dan [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) hanya disimpan dalam bahasa Inggeris dan Turki).
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **Sebelum bermula (lesen, wilayah):** repositori ini berlesen MIT dan hanya mengandungi patch dan skrip. Model MiniMax H3 yang dimuat turunnya tertakluk kepada MiniMax H3 Community License: wilayahnya tidak termasuk Kesatuan Eropah, United Kingdom, Korea Selatan dan Amerika Syarikat, dan model, terbitan **serta output (video yang anda jana)** tidak boleh digunakan, diedarkan atau dipaparkan di sana (V.4). Penggunaan komersial dibenarkan dalam had syarat lesen. Baca [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) sebelum memasang; ini bukan nasihat undang-undang.
 
 > **Dalam 30 saat:** kad grafik 4 GB boleh menghasilkan video MiniMax H3 sepanjang 209 bingkai (8.7 saat) dalam satu laluan: disahkan pada satu mesin (GTX 1050 Ti 4 GB; pemasangan penuh `kur.ps1` pada folder kosong belum disahkan dari awal hingga akhir) [diukur: 209 bingkai dengan binari keluaran melalui `uret.ps1`, larian U209; latent sama bait demi bait dengan larian binaan pembangunan; bingkai dan audio dalam video sama, sha fail berbeza kerana bekas (container); bukti disimpan oleh penulis, tiada dalam repositori ini]; dengan `-InitImg` (imej ke video) paling banyak 192 bingkai (8.0 saat) [diukur: larian B192]; 209 bingkai mengambil masa kira-kira 57 minit, had masa lalai 80 minit [diukur: larian U209]; 3 langkah di bawah ialah cara menjalankannya.
 
@@ -12,14 +16,18 @@ VideoTurko: tampalan memori stable-diffusion.cpp beserta resipi untuk menjalanka
 **Status: skrip pemasangan/penggunaan di bawah masih disiapkan dan ujian clean-root belum dibuat; tiada apa-apa di sini didakwa berfungsi sehingga ujian itu lulus (lihat "Status dan had").**
 
 1. **Muat turun** repositori ini (butang hijau **Code**, kemudian **Download ZIP**) dan ekstrak ke folder PENDEK, contohnya `C:\vt`.
-2. **Pasang**: buka PowerShell dalam folder itu (taip `powershell` pada bar alamat Explorer) dan jalankan
+2. **Pasang: klik dua kali `kur.cmd`** (tetingkap hitam dibuka dan menunjukkan setiap langkah; menutupnya menghentikan pemasangan, dan menjalankannya semula menyambung dari tempat ia berhenti: fail model yang dimuat turun separuh disambung semula [dibaca: skrip muat turun menyimpan fail `.part` dan menyambung daripadanya; sambungan penuh 29 GiB belum diukur]). Jika Windows memberi amaran tentang fail yang dimuat turun, gunakan arahan PowerShell di bawah sebagai ganti [nasihat, belum diuji pada ZIP yang dimuat turun]. Lebih suka baris arahan? Buka PowerShell dalam folder itu (taip `powershell` pada bar alamat Explorer) dan jalankan pemasangan yang sama:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Akar pemasangan ialah folder yang anda ekstrak (enjin masuk ke `engine\bin`, model ke `model`); untuk menggunakan tempat lain, tetapkan pemboleh ubah persekitaran `VT_ROOT` terlebih dahulu. Skrip menyemak GPU, pemacu, RAM dan cakera, mengambil enjin dan model (zip enjin dan fail model yang baru dimuat turun disemak sha256; fail model yang sudah ada dengan saiz yang betul hanya disemak saiznya, `scripts\modelleri_indir.ps1 -Dogrula` menjalankan semakan sha256 penuh), menjalankan semakan sebenar yang ringkas, dan mencetak READY hanya jika semakan itu lulus [reka bentuk: `kur.ps1` belum pernah dijalankan sepenuhnya dalam folder bersih; ayat ini dikemas kini selepas ujian folder bersih]. `-ExecutionPolicy Bypass` hanya terpakai pada proses ini; baca `scripts\kur.ps1` dahulu, seperti pada mana-mana pemasang.
    Zip enjin diambil daripada keluaran GitHub v0.1.0 (diterbitkan pada 2026-11-19; sha256 baginya ditetapkan dalam `kur.ps1`). Jika di luar talian atau menggunakan binaan anda sendiri, berikan zip tempatan: `-MotorZip <path> -CudaZip <path>`. Zip tempatan juga disemak dengan sha256 tetap yang sama (fail `.sha256` di sebelahnya diabaikan), jadi ia mesti zip keluaran; untuk binaan anda sendiri, tetapkan dahulu `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` kepada sha256 binaan itu. sha256 yang salah menghentikan proses dengan exit 1. Hanya `.exe`/`.dll` masuk ke `engine\bin`; lesen dan README masuk ke `engine\lisanslar\<zip name>\`. [dicuba dengan zip dist sebelum keluaran: `.sha256` sisian beserta amaran rujukan-sendiri, binari dan DLL diletakkan, `sd-cli --help` berjalan; sha binari yang dipasang sepadan (`c5cebe78...`, `e5d3d329...`); langkah model dan semakan 5 bingkai `kur.ps1` BELUM dijalankan pada GPU sebenar]
    **Lesen model:** sebelum langkah model, pemasang mencetak ringkasan lesen (`docs/LISANS_KABUL.txt`, teks penuh `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, had wilayah yang turut meliputi video yang dijana, peraturan komersial dan label AI) dan meminta anda menerimanya (`E` = ya). Bacalah dahulu. Untuk larian tanpa pengawasan anda boleh memberikan `-LisansKabul E`, yang bermaksud anda sendiri telah membaca dan menerimanya; jangan tambahkannya bagi pihak orang lain. (Ejen AI: ikut `AGENTS.md`; jangan sekali-kali menaip E tanpa persetujuan pengguna.) Tanpa persetujuan, `kur.ps1` berhenti dengan kod keluar 2 dan tidak memuat turun sebarang model.
-3. **Jana**: letakkan prompt anda dalam fail teks (satu perenggan bahasa Inggeris, ayat `audio:` pilihan) dan jalankan
+3. **Video pertama anda (56 bingkai, kira-kira 11 min pada GTX 1050 Ti kami** [diukur: 641 s, larian R0, `docs/OLCUMLER.md`; kad lain tidak diukur]**)**: apabila pemasang mencetak `HAZIR / READY`, jalankan
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (jalan pintas: seret fail teks prompt ke atas `uret.cmd`, atau jalankan `uret.cmd docs\ornek_istem_R0.txt`: larian 56 bingkai yang sama). Video berada dalam `runs\`. Kemudian tulis prompt anda sendiri dalam fail teks (satu perenggan bahasa Inggeris, ayat `audio:` pilihan) dan jalankan klip terpanjang yang kami liputi (lalai, kira-kira 57 min [diukur: larian U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko: tampalan memori stable-diffusion.cpp beserta resipi untuk menjalanka
 | OS | Windows 10/11, 64-bit |
 | GPU | NVIDIA, 4 GB atau lebih; diuji hanya pada GTX 1050 Ti (sm_61); margin nipis (3777/4096 MiB pada 209 bingkai): skrin atau pelayar yang sibuk boleh menggagalkan larian; tiada kad 4 GB lain dicuba |
 | RAM | 16 GB (puncak sekitar 11 GB; tutup program lain) |
-| Cakera | 32 GiB atau lebih ruang kosong, model pada SSD (NVMe lebih baik) |
+| Cakera | sekurang-kurangnya 32 GiB kosong (40 GiB atau lebih disyorkan: antara 32 dan 40 pemasang mencetak amaran, `[VT-W-DISK-PAY]` [diukur: larian `-Kuru` dengan cakera simulasi]), model pada SSD (NVMe lebih baik) |
 | Muat turun | zip enjin 36.8 MB + zip runtime CUDA 567.5 MB [diukur] + model 31,473,112,040 bait (kira-kira 29.3 GiB) [dibaca: saiz dalam `scripts/modeller.json`]; kira-kira 30 GiB kesemuanya |
 | Model | tidak disertakan; diambil oleh pemasang di bawah lesen MiniMax (lihat amaran di bawah). Model (29.3 GiB, 31,473,112,040 bait dalam `scripts/modeller.json`) tidak terdapat dalam repositori atau keluaran ini: had saiz fail/keluaran GitHub terpakai, dan `kur.ps1` memuat turunnya daripada sumber rasmi dengan pengesahan sha256. |
 
 Kod keluar `kur.ps1`: 0 READY, 1 ralat, 2 input pengguna diperlukan (lesen, atau belum ada keluaran/zip), 3 perkakasan atau cakera tidak mencukupi, 4 dihentikan (fail DUR). `uret.ps1` hanya menerima larian jika fail `.avi` wujud, bilangan bingkai betul dan log bersih [diukur: satu larian sebenar melalui `uret.ps1` pada binari keluaran, larian U209, 209 bingkai, pintu lulus]. Kod keluar `uret.ps1`: 0 DONE (pintu kualiti lulus), 1 ralat atau output tidak sah (termasuk video tanpa aliran audio), 2 dihentikan (fail DUR), 5 `KAPI RED` (pintu kualiti gagal: klip tidak diterima, keputusan di tangan anda), 6 pintu tidak dapat dijalankan (klip tidak diterima). Butiran dalam AGENTS.md. [diukur: kod keluar 0, 1 (video senyap), 5 dan 6 dalam senario dengan enjin palsu dan pintu palsu; enjin sebenar: exit 0 dalam larian U209]
 
 ### Penyelesaian masalah (butiran: `docs/SIK_HATALAR.md`)
+Baris ralat skrip kami membawa kod tetap, contohnya `HATA: [VT-E-DLL] ...` atau `UYARI: [VT-W-DISK-PAY] ...`. Cari kod itu dalam [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md) (contoh sauh `#vt-e-dll`) atau dalam `docs/hata_imzalari.json`, dan tulis kod itu dalam issue anda. Lajur pertama jadual di bawah kekal seperti yang dicetak (jangan terjemah kod dan teks log).
+
 | Apa yang anda lihat | Maksudnya, dan apa yang perlu dibuat |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found` (#13) | Jangan mulakan `sd-cli.exe` secara manual; jalankan `scripts\kur.ps1`, yang meletakkan DLL CUDA pada tempatnya. |
@@ -48,6 +58,8 @@ Kod keluar `kur.ps1`: 0 READY, 1 ralat, 2 input pengguna diperlukan (lesen, atau
 | Kod keluar kosong tetapi "finished" (#14) | Pembungkus (wrapper) membaca kod keluar terlalu awal; jalankan semula, dan semak bahawa fail video wujud. |
 | Sistem menjadi perlahan, swapping (#18) | Enjin menggunakan kira-kira 10-11 GB RAM; tutup pelayar dan program lain. |
 | sha256 tidak sepadan / muat turun gagal | Biasanya muat turun terganggu: jalankan arahan yang sama sekali lagi, fail yang telah disahkan dilangkau. |
+
+**Tersekat atau ingin tahu?** [`SUPPORT.md`](SUPPORT.md) (tempat bertanya; masa balasan ialah sasaran, bukan komitmen) · [`PRIVACY.md`](PRIVACY.md) (tiada telemetri; rangkaian hanya digunakan untuk memuat turun enjin dan model, daripada hos yang disenaraikan) · [`SECURITY.md`](SECURITY.md) (laporan peribadi) · [`CONTRIBUTING.md`](CONTRIBUTING.md) (pull request pertama dalam 5 langkah; GPU tidak diperlukan untuk dokumen dan skrip).
 
 ### Baharu dalam v0.1.1: lebih banyak pilihan (butiran: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
 Tanpa pilihan ini, tiada apa-apa yang berubah pada kad 4 GB (semakan bait 56 bingkai terhadap rujukan kami lulus semula dengan v0.1.1 [diukur]). Tambahkan `-Kuru` pada mana-mana arahan untuk melihat apa yang akan dijalankan.
@@ -95,7 +107,7 @@ Tetapan anda ialah milik anda: 209 bingkai ialah lalai yang kami uji pada kad 4 
 ## Amaran lesen model
 **VideoTurko hanya mengandungi tampalan dan skrip (MIT); sesiapa yang menggunakan model dan outputnya bertanggungjawab sendiri terhadap lesen MiniMax.** Bukan nasihat undang-undang. Di bawah ialah klausa MiniMax H3 Community License (2 Ogos 2026) yang diringkaskan beserta nombornya; lesen itu sendiri yang mengikat: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-Repositori ini TIDAK mengandungi berat model (tiada MiniMax H3, GGUF HyperFlow-H3-Flash atau fail VAE). Projek ini tidak berafiliasi dengan atau disokong oleh MiniMax. Penggunaan komersial TIDAK dilarang (ini bukan lesen bukan-komersial); syaratnya ada di bawah.
+Lesen MIT repositori ini tidak meliputi pemberat model; lihat [`NOTICE`](NOTICE). Repositori ini TIDAK mengandungi berat model (tiada MiniMax H3, GGUF HyperFlow-H3-Flash atau fail VAE). Projek ini tidak berafiliasi dengan atau disokong oleh MiniMax. Penggunaan komersial TIDAK dilarang (ini bukan lesen bukan-komersial); syaratnya ada di bawah.
 
 **Wilayah (Applicable Territory)**
 - **Preamble, I.3, I.5:** Seluruh dunia, KECUALI Kesatuan Eropah, United Kingdom, Republik Korea dan Amerika Syarikat. Menggunakan model dikira sebagai menerima lesen.
@@ -164,4 +176,4 @@ Nama larian yang digunakan dalam kurungan (nama larian dalaman kami, bukan fail 
 - **Ujian clean-root belum dibuat:** skrip pemasangan dan larian belum disahkan daripada folder kosong hanya dengan arahan ini; bahagian ini akan dikemas kini apabila ujian itu (termasuk perbandingan bait 56 bingkai dengan rujukan) direkodkan.
 - Tiada video yang dijana disertakan di sini.
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->

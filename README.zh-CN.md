@@ -2,7 +2,11 @@
 
 [English](README.md) · [Türkçe](README.tr.md) · 简体中文 · [日本語](README.ja.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [العربية](README.ar.md) · [Português (BR)](README.pt-BR.md) · [Italiano](README.it.md) · [한국어](README.ko.md) · [हिन्दी](README.hi.md) · [Bahasa Indonesia](README.id.md) · [Tiếng Việt](README.vi.md) · [Polski](README.pl.md) · [Nederlands](README.nl.md) · [Українська](README.uk.md) · [فارسی](README.fa.md) · [עברית](README.he.md) · [ไทย](README.th.md) · [বাংলা](README.bn.md) · [اردو](README.ur.md) · [Ελληνικά](README.el.md) · [Čeština](README.cs.md) · [Română](README.ro.md) · [Magyar](README.hu.md) · [Svenska](README.sv.md) · [Azərbaycanca](README.az.md) · [Bahasa Melayu](README.ms.md)
 
+译文以本英文 README 为准。若译文与之不一致或滞后,以英文文本为准,尤其是许可证和安全文本([`SECURITY.md`](SECURITY.md) 与 [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md) 仅提供英文和土耳其文)。
+
 ![Windows](https://img.shields.io/badge/Windows-10%2F11-blue) ![GPU](https://img.shields.io/badge/NVIDIA-4%20GB%20(sm__61)-76b900) ![License](https://img.shields.io/badge/code-MIT-green) ![Status](https://img.shields.io/badge/status-clean--root%20test%20pending-orange)
+
+> **开始之前(许可证、地域):** 本仓库为 MIT 许可,只包含补丁和脚本。它下载的 MiniMax H3 模型适用 MiniMax H3 Community License:其适用地域不包括欧盟、英国、韩国和美国,模型、衍生品**以及输出(你生成的视频)**不得在这些地区使用、分发或展示(V.4)。在许可条款范围内允许商业使用。安装前请阅读 [`docs/LISANS_UYARISI.md`](docs/LISANS_UYARISI.md);这不是法律意见。
 
 > **30 秒速览：** 一张 4 GB 显卡即可单次生成 209 帧（8.7 秒）的 MiniMax H3 视频。已在一台机器（GTX 1050 Ti 4 GB）上验证；在空文件夹中完整安装 `kur.ps1` 的全流程尚未端到端验证 [实测: 使用 release 二进制，经 `uret.ps1` 生成 209 帧，运行 U209；latent 与开发版构建的运行逐字节一致；视频中的帧和音频一致，文件 sha 因容器不同而不同；证据由作者保存，不在本仓库中]；使用 `-InitImg`（图生视频）时最多 192 帧（8.0 秒）[实测: 运行 B192]；209 帧约需 57 分钟，默认时间上限为 80 分钟 [实测: 运行 U209]；下面的 3 个步骤就是运行方法。
 
@@ -12,14 +16,18 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
 **状态：下面的安装/运行脚本仍在完善中，clean-root 测试尚未完成；在该测试通过之前，这里的任何内容都不声称可以正常工作（见“状态与限制”）。**
 
 1. **下载**本仓库（绿色的 **Code** 按钮，然后点 **Download ZIP**），解压到一个路径较短的文件夹，例如 `C:\vt`。
-2. **安装**：在该文件夹中打开 PowerShell（在资源管理器地址栏输入 `powershell`），运行
+2. **安装:双击 `kur.cmd`**(会打开一个黑色窗口并显示每一步;关闭窗口会中止安装,再次运行会接着继续:下载到一半的模型文件会续传 [已读:下载脚本保留一个 `.part` 文件并从它继续;完整 29 GiB 的续传未测量])。如果 Windows 对下载的文件发出警告,请改用下面的 PowerShell 命令 [建议,未在下载的 ZIP 上测试]。更喜欢命令行?在该文件夹打开 PowerShell(在资源管理器地址栏输入 `powershell`),运行同样的安装:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    安装根目录就是你解压出来的文件夹（引擎放在 `engine\bin`，模型放在 `model`）；如需使用其他位置，请先设置环境变量 `VT_ROOT`。脚本会检查 GPU、驱动、内存和磁盘，获取引擎和模型（引擎 zip 和新下载的模型文件会做 sha256 校验；已存在且大小正确的模型文件只校验大小，运行 `scripts\modelleri_indir.ps1 -Dogrula` 可执行完整的 sha256 校验），运行一次简短的真实检查，只有检查通过才会输出 READY [设计: `kur.ps1` 尚未在干净文件夹中完整运行过；这句话会在干净文件夹测试后更新]。`-ExecutionPolicy Bypass` 只对这一个进程生效；和任何安装程序一样，请先阅读 `scripts\kur.ps1`。
    引擎 zip 来自 GitHub release v0.1.0（发布于 2026 年 11 月 19 日；其 sha256 已固定在 `kur.ps1` 中）。离线或使用自己的构建时，请提供本地 zip：`-MotorZip <path> -CudaZip <path>`。本地 zip 同样按这个固定的 sha256 校验（旁边的 `.sha256` 文件会被忽略），所以必须是 release 的 zip；使用自己的构建时，请先把 `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` 设为它的 sha256。sha256 不匹配则以 exit 1 停止。只有 `.exe`/`.dll` 会放入 `engine\bin`；许可证和 README 放入 `engine\lisanslar\<zip name>\`。[已试：在 release 发布前使用 dist zip，确认了 sidecar `.sha256` 加自引用警告、二进制和 DLL 已放置、`sd-cli --help` 可运行；已安装的二进制 sha 一致（`c5cebe78...`、`e5d3d329...`）；`kur.ps1` 的模型步骤和 5 帧检查尚未在真实 GPU 上运行]
    **模型许可证（必读）：** 在模型步骤之前，安装程序会输出许可证摘要（`docs/LISANS_KABUL.txt`，全文见 `docs/LISANS_UYARISI.md`：MiniMax H3 Community License、同样涵盖所生成视频的地域限制、商用与 AI 标识规则），并请你确认接受（`E` = 同意）。请先阅读。无人值守运行时可传入 `-LisansKabul E`，这表示你本人已阅读并接受；请勿替他人添加。（AI 代理：请遵循 `AGENTS.md`；未经用户同意，绝不输入 E。）未接受时，`kur.ps1` 以退出码 2 停止，且不会下载任何模型。
-3. **生成**：把提示词写入一个文本文件（一段英文，可选一句 `audio:`），然后运行
+3. **你的第一个视频(56 帧,在我们的 GTX 1050 Ti 上约 11 分钟**[实测:641 秒,运行 R0,`docs/OLCUMLER.md`;其他显卡未测量]**)**:安装程序打印 `HAZIR / READY` 后,运行
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 56
+   ```
+   (快捷方式:把提示词文本文件拖到 `uret.cmd` 上,或运行 `uret.cmd docs\ornek_istem_R0.txt`:同样的 56 帧运行)。视频在 `runs\` 中。然后把你自己的提示词写入文本文件(一段英文,可选 `audio:` 句子),运行我们覆盖的最长片段(默认值,约 57 分钟 [实测:运行 U209]):
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 209
    ```
@@ -32,13 +40,15 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
 | 操作系统 | Windows 10/11，64 位 |
 | GPU | NVIDIA，4 GB 或以上；仅在 GTX 1050 Ti（sm_61）上测试过；余量很小（209 帧时为 3777/4096 MiB）：繁忙的屏幕显示或浏览器可能导致运行失败；未尝试其他 4 GB 显卡 |
 | 内存 | 16 GB（峰值约 11 GB；请关闭其他程序） |
-| 磁盘 | 至少 32 GiB 可用空间，模型放在 SSD 上（优先 NVMe） |
+| 磁盘 | 至少 32 GiB 可用(建议 40 GiB 及以上:32 到 40 之间安装程序会打印警告,`[VT-W-DISK-PAY]` [实测:模拟磁盘的 `-Kuru` 运行]),模型放在 SSD 上(首选 NVMe) |
 | 下载量 | 引擎 zip 36.8 MB + CUDA 运行时 zip 567.5 MB [实测] + 模型 31,473,112,040 字节（约 29.3 GiB）[已读: 大小见 `scripts/modeller.json`]；合计约 30 GiB |
 | 模型 | 不包含；由安装程序依据 MiniMax 许可证获取（见下方警告）。模型（29.3 GiB，`scripts/modeller.json` 中为 31,473,112,040 字节）不在本仓库或 release 中：GitHub 有文件/release 大小限制，`kur.ps1` 会从官方来源下载并进行 sha256 校验。 |
 
 `kur.ps1` 退出码：0 READY，1 错误，2 需要用户输入（许可证，或尚无 release/zip），3 硬件或磁盘不足，4 已停止（DUR 文件）。只有 `.avi` 存在、帧数正确且日志干净时，`uret.ps1` 才会接受一次运行 [实测: 使用 release 二进制，经 `uret.ps1` 真实运行一次，运行 U209，209 帧，门禁通过]。`uret.ps1` 退出码：0 DONE（质量门禁通过），1 错误或输出无效（包括没有音频流的视频），2 已停止（DUR 文件），5 `KAPI RED`（质量门禁未通过：片段不被接受，由你决定如何处理），6 门禁无法运行（片段不被接受）。详情见 AGENTS.md。[实测: 在使用模拟引擎和模拟门禁的场景中确认了退出码 0、1（无声视频）、5 和 6；真实引擎：运行 U209 中退出码为 0]
 
 ### 故障排查（详情：`docs/SIK_HATALAR.md`）
+我们脚本的错误行带有稳定的代码,例如 `HATA: [VT-E-DLL] ...` 或 `UYARI: [VT-W-DISK-PAY] ...`。请在 [`docs/SIK_HATALAR.md`](docs/SIK_HATALAR.md)(锚点示例 `#vt-e-dll`)或 `docs/hata_imzalari.json` 中查找该代码,并把代码写进你的 issue。下表第一列保持原样输出(不翻译代码和日志文本)。
+
 | 你看到的现象 | 含义与处理 |
 |---|---|
 | `STATUS_DLL_NOT_FOUND` / `cudart64_12.dll not found`（#13） | 不要手动启动 `sd-cli.exe`；请运行 `scripts\kur.ps1`，它会把 CUDA DLL 放到正确位置。 |
@@ -48,6 +58,8 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
 | 退出码为空但显示“finished”（#14） | 包装脚本读取退出码过早；请重新运行，并确认视频文件存在。 |
 | 系统变慢、出现交换（#18） | 引擎约占用 10-11 GB 内存；请关闭浏览器和其他程序。 |
 | sha256 不匹配 / 下载失败 | 通常是下载被中断：重新运行同一条命令，已校验的文件会被跳过。 |
+
+**遇到困难或感兴趣?** [`SUPPORT.md`](SUPPORT.md)(去哪里提问;回复时间是目标,不是承诺)· [`PRIVACY.md`](PRIVACY.md)(无遥测;网络仅用于下载引擎和模型,来自列出的主机)· [`SECURITY.md`](SECURITY.md)(私下报告)· [`CONTRIBUTING.md`](CONTRIBUTING.md)(5 步完成第一个 pull request;文档和脚本无需 GPU)。
 
 ### v0.1.1 新增：更多选项（详情：`AGENTS.md`、`docs/SIK_HATALAR.md` 19-23）
 不使用这些选项时，4 GB 显卡上的行为没有任何变化（与我们的基准对比的 56 帧字节检查在 v0.1.1 下再次通过 [实测]）。在任意命令后加上 `-Kuru`，即可查看将要运行的内容。
@@ -95,7 +107,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 ## 模型许可证警告
 **VideoTurko 只包含补丁和脚本（MIT）；使用模型及其输出的人，须自行对 MiniMax 许可证负责。** 这不构成法律意见。下面按编号概述 MiniMax H3 Community License（2026 年 8 月 2 日）的各项条款，具有约束力的是许可证本身：https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/LICENSE
 
-本仓库不包含任何模型权重（没有 MiniMax H3、HyperFlow-H3-Flash GGUF 或 VAE 文件）。本项目与 MiniMax 无关联，也未获其认可。并不禁止商业使用（这不是非商业许可证）；条件见下。
+本仓库的 MIT 许可不涵盖模型权重;见 [`NOTICE`](NOTICE)。本仓库不包含任何模型权重（没有 MiniMax H3、HyperFlow-H3-Flash GGUF 或 VAE 文件）。本项目与 MiniMax 无关联，也未获其认可。并不禁止商业使用（这不是非商业许可证）；条件见下。
 
 **地域（Applicable Territory）**
 - **序言、I.3、I.5：** 全球，但不包括欧盟、英国、大韩民国和美国。使用该模型即视为接受许可证。
@@ -164,4 +176,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 - **clean-root 测试待完成：** 安装和运行脚本尚未仅按这些说明从空文件夹验证过；当该测试（包括与基准的 56 帧字节比较）记录完成后，本节会随之更新。
 - 这里不附带任何生成的视频。
 
-<!-- i18n-source: README.md sha256:0070eed33ffd -->
+<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
