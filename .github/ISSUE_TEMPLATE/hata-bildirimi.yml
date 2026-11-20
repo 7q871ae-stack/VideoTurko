@@ -29,6 +29,14 @@ body:
     validations:
       required: true
   - type: textarea
+    id: tani
+    attributes:
+      label: "Diagnosis report (optional) / Tani raporu (istege bagli)"
+      description: "Run `tani.cmd` and paste the content of `tani_raporu.txt`. It sends nothing; read it first, the privacy filter is a rough pattern, not a guarantee. / `tani.cmd` calistirin, `tani_raporu.txt` icerigini yapistirin. Hicbir sey gondermez; once okuyun, gizlilik suzgeci kaba bir desendir, garanti degildir."
+      render: text
+    validations:
+      required: false
+  - type: textarea
     id: beklenen
     attributes:
       label: "Expected vs what happened / Beklenen ve olan"

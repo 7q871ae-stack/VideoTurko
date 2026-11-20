@@ -950,6 +950,23 @@
    "ilk_adim_en": "Optional: winget install Gyan.FFmpeg (new window) or set VT_FFMPEG. The gate decision is unchanged without it.",
    "ilk_adim_tr": "Istege bagli: winget install Gyan.FFmpeg (yeni pencere) ya da VT_FFMPEG. Bunsuz de kapi karari degismez.",
    "capa": "docs/SIK_HATALAR.md#vt-w-ffmpeg"
+  },
+  {
+   "kod": "VT-E-PYTHON",
+   "tur": "hata",
+   "sik_hatalar": "31",
+   "yayinlayan": [],
+   "baslik_en": "on_kontrol.ps1: Python 3 not found (contributor pre-PR check, exit 1 or 3)",
+   "baslik_tr": "on_kontrol.ps1: Python 3 bulunamadi (PR oncesi katki kontrolu)",
+   "imza": [
+    "[VT-E-PYTHON]"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-PYTHON] Python 3 bulunamadi. / Python 3 was not found."
+   ],
+   "ilk_adim_en": "Install Python 3 (python.org, tick Add python.exe to PATH), open a NEW terminal, or set VT_PYTHON to its python.exe. This is published by scripts/on_kontrol.ps1 only, not by kur/uret.",
+   "ilk_adim_tr": "Python 3 kurun (python.org, Add python.exe to PATH), YENI terminal acin ya da VT_PYTHON ile python.exe yolunu verin. Bu kodu yalniz scripts/on_kontrol.ps1 yazar, kur/uret degil.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-python"
   }
  ]
 }
