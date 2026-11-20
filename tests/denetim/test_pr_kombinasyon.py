@@ -42,7 +42,8 @@ def degis(yol, satirlar):
 
 def gercek_satirlar(rel, bas=0, say=40):
     try:
-        t = open(os.path.join(KOK, rel), encoding='utf-8').read().replace('\r\n', '\n').split('\n')
+        with open(os.path.join(KOK, rel), encoding='utf-8') as f:
+            t = f.read().replace('\r\n', '\n').split('\n')
     except OSError:
         return []
     return [x for x in t[bas:bas + say]]

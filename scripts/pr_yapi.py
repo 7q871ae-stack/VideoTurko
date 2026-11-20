@@ -123,7 +123,8 @@ def hf_depolari():
     if _HF is None:
         s = set(HF_DEPO_BELGE)
         try:
-            ham = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modeller.json'), encoding='utf-8').read()
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'modeller.json'), encoding='utf-8') as f:
+                ham = f.read()
             for m in re.finditer(r'huggingface\.co/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/', ham):
                 s.add(m.group(1).lower())
         except (OSError, ValueError):
