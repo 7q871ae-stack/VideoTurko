@@ -4,13 +4,15 @@
 >
 > **EN:** Upstream VideoTurko focuses on single-pass clips (≤209 frames, 8.7 s). This guide summarizes practical rules for generating sequential 8-second clips via `--init-img` on RTX 5060 (`sm_120`) and stitching them cleanly with `ffmpeg`.
 
+> **Kanıt / Evidence:** Bu rehber katkıcının RTX 5060 deneyimidir [kullanıcı bildirdi]; süreler onun ölçümü, `ffmpeg` tarifleri ve "aynı tohum tutarlılığı korur" gibi yorumlar bizim tarafımızdan ölçülmedi [denenmedi]. / This guide is the contributor's RTX 5060 experience [user-reported]; timings are their measurements, and the `ffmpeg` recipes and remarks such as "the same seed keeps consistency" were not measured by us [not tried].
+
 ---
 
 ## 1. Motor Sınırları / Engine Limits
 - **Kare ızgarası / Frame grid:** `17k + 5` (5, 22, 39, 56 … 192, 209).
 - **Üst sınırlar / Maximums:** Metinden en fazla **209 kare (8.7 s)**; `--init-img` ile en fazla **192 kare (8.0 s)**.
 - **Biçim / Format:** 640×384, 24 fps, gömülü ses (ayrı TTS yok).
-- **RTX 5060 (`sm_120`) süreleri / Timings:** 56 kare ≈ 2 dk, 192 kare (`init_image`) ≈ 6.3–7.0 dk, 209 kare ≈ 6 dk. Tek GPU → aynı anda tek iş.
+- **RTX 5060 (`sm_120`) süreleri / Timings [kullanıcı bildirdi / user-reported]:** 56 kare ≈ 2 dk, 192 kare (`init_image`) ≈ 6.3–7.0 dk, 209 kare ≈ 6 dk. Tek GPU → aynı anda tek iş.
 
 ---
 

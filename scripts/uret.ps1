@@ -23,8 +23,11 @@
 #   VT_CUDA_BIN (cudart/cublas DLL klasoru, istege bagli), VT_PYTHON (kalite kapisi icin python + opencv),
 #   VT_MAX_JETON (4 GB kartta standart disi boyut icin jeton tavanini gecici ezer; sonuc garanti degil), VT_GPU_CC / VT_GPU_VRAM (compute capability / toplam VRAM MiB okumasini ezer, test icin).
 # Deneysel / teshis anahtarlari (varsayilan KAPALI; ayarlanmazsa varsayilan davranis degismez; bkz. docs\RTX5060_SM120_DERLEME.md):
-#   VT_ATTN_BUDGET (varsayilan 0.05), VT_IKI_ASAMA=1 (iki asamayi zorlar), VT_NO_FA=1 (--flash-attn off),
-#   VT_TT_RULES (--tensor-type-rules), VT_DIT (alternatif DiT GGUF yolu), VT_MAX_VRAM (--max-vram), VT_CHUNK_MB (QKV/MLP chunk MB, varsayilan 64).
+#   VT_ATTN_BUDGET (0..1, varsayilan 0.05), VT_IKI_ASAMA=1 (iki asamayi zorlar), VT_NO_FA=1 (--flash-attn off),
+#   VT_MAX_VRAM (--max-vram, GB, sayi > 0), VT_CHUNK_MB (QKV/MLP chunk MB, 1..4096, varsayilan 64).
+#   Gecersiz deger yok sayilir (UYARI). Ayarliysa UYARI yazilir ve runs\olaylar.txt'ye kaydedilir: bu cikti kalite kurallari
+#   (AGENTS.md Hard rules) disina cikabilir ve kalite kapisi bunu yakalamaz; olcum ya da paylasim icin kullanmayin.
+#   Model/nicemleme degistiren anahtar (alternatif DiT, --tensor-type-rules) bilerek YOK.
 # Durdurma / stop: <VT_ROOT>\DUR dosyasi olusturun; betik DURDU yazar, sd-cli'yi kapatir (latent kaldiysa yeniden baslatinca devam etmez, bastan kosar).
 param(
     [Parameter(Mandatory)][string]$Istem,
@@ -64,6 +67,7 @@ if (Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue) {
 if ($env:VT_GPU_CC) { $tmpC = 0.0; if ([double]::TryParse($env:VT_GPU_CC.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpC)) { $GpuCc = $tmpC } else { Write-Output ("UYARI: VT_GPU_CC='{0}' sayi olarak okunamadi, yok sayildi (ornek: 8.9 ya da 8,9)" -f $env:VT_GPU_CC) } }
 if ($env:VT_GPU_VRAM) { $tmpV = 0.0; if ([double]::TryParse($env:VT_GPU_VRAM.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpV) -and $tmpV -gt 0) { $GpuTop = [int][Math]::Floor($tmpV) } else { Write-Output ("UYARI: VT_GPU_VRAM='{0}' sayi (MiB) olarak okunamadi, yok sayildi (ornek: 12282)" -f $env:VT_GPU_VRAM) } }
 if ($GpuSayi -gt 1) { Write-Output ("bilgi: {0} GPU goruldu; sd-cli CUDA 0'i kullanir. Betik temkinli tarafla karar verir: en kucuk VRAM {1} MiB, en kucuk compute capability {2} (f32 yalniz tum kartlar >= 7.0 ise). Yalniz tek GPU ile olculdu; karti CUDA_VISIBLE_DEVICES ile secebilirsiniz." -f $GpuSayi, $GpuTop, $(if ($GpuCc -lt 0) { 'okunamadi' } else { $GpuCc.ToString($Inv) })) }
+if ($GpuCc -ge 12.0) { Write-Output ("UYARI: compute capability {0} (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli; bir kullanici bu kartta 56+ karede siyah video bildirdi (v0.1.0 betigiyle; v0.1.1 f32 ayariyla denenmedi). Once 56 kare deneyin; video siyahsa motoru sm_120 icin derleyip VT_ENGINE_BINi ona verin: docs\RTX5060_SM120_DERLEME.md. Kendi sm_120 derlemenizi kullaniyorsaniz bu uyariyi yok sayin." -f $GpuCc.ToString($Inv)) }
 $KucukKart = ($GpuTop -lt $KucukKartMiB)   # VRAM okunamadiysa (-1) kucuk sayilir (temkinli)
 $KareEndTavan = $(if ($KucukKart) { $KareEnd4GB } else { $KareInit })
 if ($EndImg -and $KareVarsayilan) { $Kare = $KareEndTavan }
@@ -92,9 +96,21 @@ if (-not $Standart -and ($KucukKart -or $env:VT_MAX_JETON) -and $Jeton -gt $Jeto
 if (-not (Test-Path -LiteralPath $Istem)) { throw "istem dosyasi yok: $Istem" }
 if ($InitImg -and -not (Test-Path -LiteralPath $InitImg -PathType Leaf)) { throw "-InitImg dosyasi bulunamadi: $InitImg (ilk kare gorseli, PNG/JPG; video boyutunda verin)" }
 if ($EndImg -and -not (Test-Path -LiteralPath $EndImg -PathType Leaf)) { throw "-EndImg dosyasi bulunamadi: $EndImg (son kare gorseli, PNG/JPG; video boyutunda verin, motor farkli boyutu esnetir)" }
+# --- deneysel VT_* anahtarlari: dogrula; gecersizse varsayilan + UYARI; aktifse UYARI + olaylar kaydi ---
+$VtAktif = @()
+$VtAttn = '0.05'; $VtChunk = '64'; $VtMaxVram = ''; $VtNoFa = $false; $VtIki = $false
+if ($env:VT_ATTN_BUDGET) { $tmpA = 0.0; if ([double]::TryParse($env:VT_ATTN_BUDGET.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpA) -and $tmpA -ge 0 -and $tmpA -le 1) { $VtAttn = $tmpA.ToString($Inv); $VtAktif += "VT_ATTN_BUDGET=$VtAttn" } else { Write-Output ("UYARI: VT_ATTN_BUDGET='{0}' 0 ile 1 arasi sayi olarak okunamadi, yok sayildi" -f $env:VT_ATTN_BUDGET) } }
+if ($env:VT_CHUNK_MB) { $tmpC2 = 0; if ([int]::TryParse($env:VT_CHUNK_MB.Trim(), [Globalization.NumberStyles]::Integer, $Inv, [ref]$tmpC2) -and $tmpC2 -ge 1 -and $tmpC2 -le 4096) { $VtChunk = "$tmpC2"; $VtAktif += "VT_CHUNK_MB=$VtChunk" } else { Write-Output ("UYARI: VT_CHUNK_MB='{0}' 1..4096 tam sayi (MB) olarak okunamadi, yok sayildi" -f $env:VT_CHUNK_MB) } }
+if ($env:VT_MAX_VRAM) { $tmpM = 0.0; if ([double]::TryParse($env:VT_MAX_VRAM.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpM) -and $tmpM -gt 0 -and $tmpM -le 1024) { $VtMaxVram = $tmpM.ToString($Inv); $VtAktif += "VT_MAX_VRAM=$VtMaxVram" } else { Write-Output ("UYARI: VT_MAX_VRAM='{0}' sayi (> 0) olarak okunamadi, yok sayildi" -f $env:VT_MAX_VRAM) } }
+if ($env:VT_NO_FA -eq '1') { $VtNoFa = $true; $VtAktif += 'VT_NO_FA=1' }
+if ($env:VT_IKI_ASAMA -eq '1') { $VtIki = $true; $VtAktif += 'VT_IKI_ASAMA=1' }
+if ($VtAktif.Count -gt 0) {
+    $VtMesaj = 'UYARI: deneysel VT_* aktif (' + ($VtAktif -join ' ') + '); cikti kalite kurallari disina cikabilir, kalite kapisi bunu yakalamaz: olcum/paylasim icin kullanmayin'
+    Write-Output $VtMesaj
+    if (-not $Kuru) { try { New-Item -ItemType Directory -Force (Join-Path $Root 'runs') | Out-Null; Add-Content -LiteralPath (Join-Path $Root 'runs\olaylar.txt') -Value ((Get-Date -Format 'HH:mm:ss') + ' | ' + $VtMesaj) -Encoding ASCII } catch { } }
+}
 $sd = Join-Path $Motor 'sd-cli.exe'
 $DiT = Join-Path $ModelDir 'minimax_h3_fl2va_hyperflow_flash_14b-Q4_K_M.gguf'
-if ($env:VT_DIT) { $DiT = $env:VT_DIT }
 $TE = Join-Path $ModelDir 'qwen3vl_32b_minimax_h3-Q4_K_M.gguf'
 $VAE = Join-Path $ModelDir 'minimax_h3_sol_vae_fp16.safetensors'
 $AVAE = Join-Path $ModelDir 'minimax_h3_audio_vae_fp32.safetensors'
@@ -117,16 +133,14 @@ $AlanKat = ($W * $H) / 245760.0   # 640x384 = 1,0 (varsayilanda tavan degismez)
 if ($TavanDk -le 0) { $TavanDk = [int][Math]::Max(30, [Math]::Ceiling(80.0 * $Kare / 209 * $AlanKat)) }   # 209 kare = 80 dk (olculen ~48 dk DiT + VAE, x1,4 pay); alanla olceklenir
 
 function Ortak-Arg([string]$Out) {
-    $faVal = $(if ($env:VT_NO_FA -eq '1') { 'off' } else { 'off,diffusion=on' })
-    $attnBudget = $(if ($env:VT_ATTN_BUDGET) { $env:VT_ATTN_BUDGET } else { '0.05' })
+    $faVal = $(if ($VtNoFa) { 'off' } else { 'off,diffusion=on' })
     $a = @('-M', 'vid_gen', '--diffusion-model', $DiT, '--llm', $TE, '--vae', $VAE, '--audio-vae', $AVAE,
         '--prompt-file', $Istem, '-W', "$W", '-H', "$H", '--video-frames', "$Kare", '--fps', '24',
         '--steps', '6', '--sampling-method', 'euler', '--sigmas', 'hyperflow-h3-flash-6', '--cfg-scale', '1.0',
         '--rng', 'cpu', '--seed', "$Seed", '-t', '4', '--flash-attn', $faVal,   # varsayilan: eski --diffusion-fa ile ayni ayar
-        '--model-args', "minimax_h3_attn_chunk_budget=$attnBudget",
+        '--model-args', "minimax_h3_attn_chunk_budget=$VtAttn",
         '--offload-to-cpu', '--mmap', '--backend', 'te=cpu')
-    if ($env:VT_TT_RULES) { $a += @('--tensor-type-rules', $env:VT_TT_RULES) }
-    if ($env:VT_MAX_VRAM) { $a += @('--max-vram', $env:VT_MAX_VRAM) }
+    if ($VtMaxVram) { $a += @('--max-vram', $VtMaxVram) }
     if ($InitImg) { $a += @('--init-img', $InitImg) }
     if ($EndImg) { $a += @('--end-img', $EndImg) }
     $a += @('--log-level', 'debug', '-o', $Out)
@@ -135,10 +149,10 @@ function Ortak-Arg([string]$Out) {
 # Ortam: jeton > 7680 iki asama (640x384'te 108+ kare ile ayni; dogrulanmis tarif: 209 icin DiT asamasi + ayri VAE asamasi; 141 icin ayri VAE kare+ses md5 bayt aynisi).
 # -TekAsama: elle tek surec (buyuk VRAM'li kart); varsayilan degismez.
 # -EndImg kucuk kartta (< $KucukKartMiB) her zaman iki asama: tek asamada 56 karede bile sigmadi [olctum 1050 Ti FLF56; iki asamada FLF56b GECTI].
-$IkiAsama = (($Jeton -gt 7680) -or ($EndImg -and $KucukKart) -or ($env:VT_IKI_ASAMA -eq '1')) -and -not $TekAsama
+$IkiAsama = (($Jeton -gt 7680) -or ($EndImg -and $KucukKart) -or $VtIki) -and -not $TekAsama
 $Env1 = [ordered]@{}
 $Env2 = [ordered]@{}
-$ChunkMB = $(if ($env:VT_CHUNK_MB) { $env:VT_CHUNK_MB } else { '64' })
+$ChunkMB = $VtChunk
 if ($IkiAsama) {
     $Env1['SD_VRAM_MARGIN_MB'] = '1'; $Env1['SD_H3_EMBED_CUT'] = '1'; $Env1['SD_H3_DROP_QUEUED'] = '1'; $Env1['SD_H3_EVICT_PAST'] = '1'
     $Env1['SD_ATTN_SET_OUT'] = '1'; $Env1['SD_QKV_CHUNK_MB'] = $ChunkMB; $Env1['SD_QKV_SET_OUT'] = '1'; $Env1['SD_MLP_CHUNK_MB'] = $ChunkMB

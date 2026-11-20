@@ -1,13 +1,13 @@
 __pycache__/
 *.pyc
-model/
-model_sm120/
-engine/
-toolchain/
-build_work/
-indirme/
-runs/
-docs/prd/
-*.avi
-*.mp4
-*.png
+# yerel agir/uretim klasorleri (yalniz kokte; /yol ile sabit)
+/model/
+/model_sm120/
+/engine/
+/toolchain/
+/build_work/
+/indirme/
+/runs/
+# kokte duran uretilen videolar (alt klasorlerdeki ornek medya serbest)
+/*.avi
+/*.mp4

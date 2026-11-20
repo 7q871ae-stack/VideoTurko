@@ -18,7 +18,11 @@ Visual Studio 2022 Build Tools (x64 tools), CMake + Ninja, CUDA 12.8 (nvcc). Bui
 cmake -S <ROOT>/src -B <ROOT>/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSD_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=61 -DGGML_NATIVE=OFF -DGGML_BACKEND_DL=ON
 cmake --build <ROOT>/build
 ```
+For RTX 50 series (Blackwell, compute capability 12.x): first try the release engine with the v0.1.1 script at 56 frames; if the video is black, build with `-DCMAKE_CUDA_ARCHITECTURES=120` and CUDA 12.8.1 or newer [user-reported, not measured by us]. Step-by-step recipe: `docs/RTX5060_SM120_DERLEME.md`; test report: `docs/RTX5060_TEST_RAPORU.md`.
+
 Apply `patches/` onto the pinned stable-diffusion.cpp commit first. Put the CUDA runtime DLLs (cudart, cublas) on PATH, otherwise `sd-cli` exits with STATUS_DLL_NOT_FOUND. Before publishing a binary, scan it for personal paths (UTF-8 and UTF-16): the count must be 0.
+
+TR: RTX 50 serisi (compute capability 12.x): önce hazır motoru v0.1.1 betiğiyle 56 karede dene; video siyahsa `-DCMAKE_CUDA_ARCHITECTURES=120` ve CUDA 12.8.1+ ile derle [kullanıcı bildirdi, biz ölçmedik]. Tarif: `docs/RTX5060_SM120_DERLEME.md`.
 
 TR: VS 2022 Build Tools + CMake/Ninja + CUDA 12.8; nötr kısa kökte derle; yamaları sabit commit'e uygula; cudart/cublas DLL'leri PATH'e; yayından önce ikiliyi kişisel yol için tara (UTF-8 + UTF-16 sıfır olmalı).
 

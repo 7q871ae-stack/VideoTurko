@@ -63,3 +63,8 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 23. **12 GB+ kartta her kosuda "VRAM ince marj" uyarisi** [kullanici bildirdi, issue #1]
    - Neden: v0.1.0 esigi sabit 3800 MiB idi; `--offload-to-cpu` buyuk kartta da karti doldurur.
    - Cozum: v0.1.1 esigi "tepede bos VRAM <= 296 MiB" yapti (4096 MiB kartta eskisiyle ayni).
+
+24. **RTX 50 serisinde (compute capability 12.x) 56 kare ve ustunde video tamamen siyah** (`-InitImg` ile 22/39 karede de) [kullanici bildirdi: RTX 5060 Laptop 8 GB, PR #3; v0.1.0 betigiyle].
+   - Neden (ayrilmadi): hazir motor yalniz `sm_61` icin derli; katkicinin hipotezi surucunun bu kodu calisirken cevirmesi [tahmin]. v0.1.1'in otomatik `f32` ayari bu kartta denenmedi.
+   - Cozum sirasi: (1) v0.1.1 betigi ve hazir motorla 56 kare dene; (2) yine siyahsa motoru `-DCMAKE_CUDA_ARCHITECTURES=120` ve CUDA 12.8.1+ ile derle, `VT_ENGINE_BIN`'i o klasore ver. Tarif ve test raporu: `docs/RTX5060_SM120_DERLEME.md`, `docs/RTX5060_TEST_RAPORU.md`. Bizde RTX 50 kart yok, olcmedik; (1)'in sonucunu issue olarak bildirirseniz kok neden netlesir.
+   - EN: all-black video on RTX 50 reported with the v0.1.0 script; first try the release engine with the v0.1.1 script (f32 on), then build natively for sm_120 (`docs/RTX5060_SM120_DERLEME.md`).

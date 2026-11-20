@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Community contributions from @baadir (thanks!), merged as PR #2 and PR #3:
+  - RTX 50 series (Blackwell, compute capability 12.x): native `sm_120` build recipe (`docs/RTX5060_SM120_DERLEME.md`), RTX 5060 Laptop 8 GB test report (`docs/RTX5060_TEST_RAPORU.md`: 209 frames in 356 s) and a clip chaining guide (`docs/KLIP_ZINCIRI.md`) [user-reported, not measured by us].
+  - Local stdio MCP server (`mcp/`, setup in `mcp/README.md`).
+  - Opt-in diagnostic `VT_*` switches in `uret.ps1`, all off by default; the default command line is unchanged [measured: `-Kuru` at 56/141/209 frames, and a real 56-frame run on the GTX 1050 Ti byte-identical to the reference].
+- Maintainer follow-ups: MCP job state follows the real `uret.ps1` exit code (gate RED is `rejected`, not `done`; a `throw` gives exit 1), safer `init_image` quoting, cancel through the `DUR` file first, process start-time check before a kill [tested with a fake `uret.ps1` only]; `VT_*` values are validated and logged with a warning, and the model/quantization switches (`VT_DIT`, `VT_TT_RULES`) were not taken over because they would bypass the fixed-quality rule; `.gitignore` anchored to the root; a maintainer note in the test report (the black runs predate the v0.1.1 `f32` setting); `uret.ps1` warns on compute capability 12+; new `docs/KART_PROFILLERI.md` (per-card results); AGENTS.md sections for RTX 50 and MCP. README unchanged.
+
 ## v0.1.1 (2026-11-20)
 Scripts and docs only: the engine zip, its sha256 and the `kur.ps1` download address stay at v0.1.0. Without the new options the GTX 1050 Ti command is unchanged except the flash-attention flag spelling. Thanks to @SinanC73 for the RTX 4070 Ti report and the elimination tests (#1).
 

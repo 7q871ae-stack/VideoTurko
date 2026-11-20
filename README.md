@@ -75,12 +75,6 @@ A set of small memory/scheduling patches for stable-diffusion.cpp plus the run r
 - Quality settings are never lowered: same model/quantization, 6 steps, cfg 1, 640x384, same seed, non-tiled VAE.
 - We do not claim to be the first: we searched and found no outside example of this on 4 GB, which is not proof that none exists.
 
-## RTX 5060 / `sm_120` (Blackwell) support
-On Blackwell GPUs (e.g., RTX 5060 Laptop 8 GB, compute capability 12.0), the `sm_61`-only release binary produces ~97% `NaN` (black video) at 56+ frames or with `--init-img` due to `compute_61` PTX JIT compilation. Building natively with CUDA 12.8.1+ and `CMAKE_CUDA_ARCHITECTURES=120` (`engine\bin_sm120`) resolves this and passes all quality gates up to 209 frames (356 s, peak VRAM 7438 / 8151 MiB) and 192 frames with `--init-img` (~6.3–7.0 min).
-- Native `sm_120` build recipe & opt-in `VT_*` diagnostic switches in `scripts/uret.ps1` (all off by default): [`docs/RTX5060_SM120_DERLEME.md`](docs/RTX5060_SM120_DERLEME.md)
-- Root cause analysis & RTX 5060 acceptance test report: [`docs/RTX5060_TEST_RAPORU.md`](docs/RTX5060_TEST_RAPORU.md)
-- Optional `--init-img` + `ffmpeg` clip-chaining guide: [`docs/KLIP_ZINCIRI.md`](docs/KLIP_ZINCIRI.md)
-
 ## Layout
 - `patches/` patches against a pinned stable-diffusion.cpp commit (see the notes there)
 - `scripts/` build, run, separate-process VAE, gate/consistency helpers (`doku_norm.py`: see the scale note below)

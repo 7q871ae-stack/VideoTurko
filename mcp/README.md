@@ -15,7 +15,7 @@ Exposes local MiniMax H3 (`sd-cli`, CUDA) text-to-video and image-to-video gener
 
 ## Kurulum ve Çalıştırma / Setup & Usage
 
-Gereksinim / Requirements: Python 3.10+ ve `mcp` paketi (`pip install mcp`).
+Gereksinim / Requirements: Python 3.10+ ve `mcp` paketi (`pip install "mcp>=1.2,<2"`; aralık [tahmin]: bu aralıkta hangi sürümün denendiği henüz yazılmadı). Yalnız Windows (süreç denetimi `kernel32`). MCP isteğe bağlıdır; ana hat (`uret.ps1`) bağımlılıksız kalır.
 
 ```json
 {
@@ -36,6 +36,7 @@ Gereksinim / Requirements: Python 3.10+ ve `mcp` paketi (`pip install mcp`).
 | `VT_ENGINE_BIN` | `engine/bin_sm120` (varsa) veya `engine/bin` | `sd-cli.exe` klasörü / engine binary folder |
 | `VT_MODEL_DIR` | `<VT_ROOT>/model` | Model ağırlıklarının klasörü / model weights directory |
 | `VT_MCP_MAX_FRAMES` | `209` | İzin verilen en yüksek kare sayısı / max allowed frames |
+| `VT_MCP_CANCEL_WAIT` | `40` | `cancel_job` için `DUR` sonrası nazik bekleme (sn) |
 | `VT_MCP_ALLOW_INIT` | `1` | `0` yapılırsa `init_image` kapatılır / set `0` to disable `init_image` |
 
 ---
@@ -43,8 +44,17 @@ Gereksinim / Requirements: Python 3.10+ ve `mcp` paketi (`pip install mcp`).
 ## Araçlar / Tools
 - `status()`: Motor (`sd-cli.exe`), 4 model dosyası, GPU (`nvidia-smi`), çalışan işler ve geçerli kare listesini döner.
 - `generate_video(prompt, frames=209, seed=42, init_image="")`: Arka planda üretim başlatır, `job_id` ve çıktı yolunu (`runs/mcp_jobs/<job_id>/video.avi`) döner.
-- `job_status(job_id, log_lines=15)`: İş durumunu (`running` / `done` / `failed` / `cancelled`), çıkış kodunu, kalite kapısı sonucunu ve son log satırlarını döner.
-- `cancel_job(job_id)`: `DUR` dosyası + süreç ağacı sonlandırma ile çalışan işi durdurur.
+- `job_status(job_id, log_lines=15)`: İş durumunu, `uret.ps1` çıkış kodunu, kalite kapısı sonucunu ve son log satırlarını döner. Yalnız `done` (çıkış kodu 0) kapıdan geçmiş videodur. Kapı lisans uygunluğunu denetlemez (`docs/LISANS_UYARISI.md`).
+
+  | `state` | `uret.ps1` çıkış kodu | Anlam |
+  |---|---|---|
+  | `running` | - | süreç canlı (PID + başlama zamanı eşleşir) |
+  | `done` | 0 | video var, kalite kapısı GEÇTİ |
+  | `rejected` | 5 | video var ama kapı RED: kabul edilmez, karar kullanıcının |
+  | `gate_not_run` | 6 | kapı çalışmadı (python/opencv yok): kabul edilmedi sayılır |
+  | `cancelled` | 2 ya da iptal | `cancel_job` ile durduruldu |
+  | `failed` | 1 / kodsuz | hata (`log_tail`, `runs/olaylar.txt`) ya da süreç dışarıdan öldürüldü |
+- `cancel_job(job_id)`: önce `DUR` dosyası (uret.ps1 temiz kapanır; `VT_MCP_CANCEL_WAIT`=40 sn'ye kadar beklenir); olmazsa süreç ağacı sonlandırılır (`forced_kill: true`) ve `runs/gpu.kilit` temizlenir.
 - `list_jobs(limit=10)`: Son işleri listeler.
 
 ---

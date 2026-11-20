@@ -74,6 +74,8 @@ cmake -S <BUILD>\src -B <BUILD>\build -G Ninja `
 cmake --build <BUILD>\build --target sd-cli
 ```
 
+> `-DGGML_BACKEND_DL=ON` ile CUDA arka ucu ayrı bir DLL (`ggml-cuda.dll`) olarak derlenir. `build\bin` içinde `ggml-cuda.dll` yoksa hedefsiz derleyin: `cmake --build <BUILD>\build` [tahmin: CMake hedef bağımlılığı denenmedi]. / With `-DGGML_BACKEND_DL=ON` the CUDA backend is a separate DLL; if `ggml-cuda.dll` is missing in `build\bin`, build without `--target` [guess: not tested].
+
 ### Çıktıların Yerleştirilmesi / Installing Binaries
 
 Mevcut `engine\bin\` klasörüne dokunmadan yeni derlemeyi `engine\bin_sm120\` altına kopyalayın:
@@ -117,12 +119,14 @@ Aşağıdaki ortam değişkenleri yalnızca teşhis ve deney amaçlıdır; **var
 
 | Değişken / Variable | Varsayılan / Default | Açıklama (TR) | Description (EN) |
 |---|---|---|---|
-| `VT_ATTN_BUDGET` | `0.05` | `minimax_h3_attn_chunk_budget` değerini ezer | Overrides `minimax_h3_attn_chunk_budget` |
+| `VT_ATTN_BUDGET` | `0.05` | `minimax_h3_attn_chunk_budget` değerini ezer (0..1 sayı; geçersizse yok sayılır) | Overrides `minimax_h3_attn_chunk_budget` (number 0..1; invalid values are ignored) |
 | `VT_IKI_ASAMA` | kapalı / off | `1` ise 108 kare altında da iki aşamalı (DiT + ayrı VAE) koşuyu zorlar (`-TekAsama` verilmedikçe) | When `1`, forces two-stage (DiT + separate VAE) even below 108 frames (unless `-TekAsama`) |
 | `VT_NO_FA` | kapalı / off | `1` ise `--flash-attn off` geçirir (varsayılan: `--flash-attn off,diffusion=on`) | When `1`, passes `--flash-attn off` instead of default `--flash-attn off,diffusion=on` |
-| `VT_TT_RULES` | boş / unset | `--tensor-type-rules <değer>` ekler | Appends `--tensor-type-rules <value>` |
-| `VT_DIT` | boş / unset | Alternatif DiT `.gguf` dosya yolu belirtir | Overrides the DiT `.gguf` file path |
-| `VT_MAX_VRAM` | boş / unset | `--max-vram <değer>` ekler | Appends `--max-vram <value>` |
-| `VT_CHUNK_MB` | `64` | İki aşamalı modda `SD_QKV_CHUNK_MB` ve `SD_MLP_CHUNK_MB` boyutunu (MB) ayarlar | Sets `SD_QKV_CHUNK_MB` and `SD_MLP_CHUNK_MB` (in MB) in two-stage mode |
+| `VT_MAX_VRAM` | boş / unset | `--max-vram <değer>` ekler (0 < sayı <= 1024) | Appends `--max-vram <value>` (0 < number <= 1024) |
+| `VT_CHUNK_MB` | `64` | İki aşamalı modda `SD_QKV_CHUNK_MB` ve `SD_MLP_CHUNK_MB` boyutunu (MB, 1..4096) ayarlar | Sets `SD_QKV_CHUNK_MB` and `SD_MLP_CHUNK_MB` (in MB) in two-stage mode |
 
+> **Uyarı / Warning (TR):** Bu anahtarlar çıktıyı `AGENTS.md` "Hard rules" dışına çıkarabilir ve kalite kapısı bunu yakalamaz. Aktifken `uret.ps1` UYARI yazar ve `runs\olaylar.txt`'ye kaydeder. Model/nicemleme değiştiren anahtar (alternatif DiT, `--tensor-type-rules`) bilerek yoktur; bunun için `sd-cli`'yi elle çalıştırın ve çıktıyı ölçüm olarak sunmayın.
+>
+> **Warning (EN):** These switches can take the output outside the `AGENTS.md` "Hard rules" and the quality gate will not catch it. When active, `uret.ps1` prints a WARNING and records it in `runs\olaylar.txt`. There is deliberately no switch that changes the model or quantization (alternative DiT, `--tensor-type-rules`); run `sd-cli` by hand for that and do not present the result as a measurement.
+>
 > **Doğrulama / Verification:** `powershell -NoProfile -File scripts\uret.ps1 -Istem docs\ornek_istem_R0.txt -Kare 209 -Kuru` komutu, hiçbir `VT_*` değişkeni ayarlı değilken upstream komut satırını ve ortam değişkenlerini değiştirmeden üretir.
