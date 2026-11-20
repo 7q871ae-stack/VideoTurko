@@ -11,3 +11,4 @@ __pycache__/
 # kokte duran uretilen videolar (alt klasorlerdeki ornek medya serbest)
 /*.avi
 /*.mp4
+/tani_raporu.txt

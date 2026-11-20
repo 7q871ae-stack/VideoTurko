@@ -6,7 +6,7 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 
 ## A. Bellek ve kapi (VRAM)
 
-1. **VRAM kapisi `blocks.0` agirlik hazirliginda dusuyor** (`segment 5/52 (blocks.0) failed during weight preparation`) [olctum]
+1. <a id="vt-e-vram"></a>**VRAM kapisi `blocks.0` agirlik hazirliginda dusuyor** (`segment 5/52 (blocks.0) failed during weight preparation`) [olctum]
    - Neden: yukleme kapisi `ihtiyac = bekleyen + eksik + marj`; kare sayisi buyudukce compute tamponu artar, tahliye yetmez.
    - Cozum: marj icin `SD_VRAM_MARGIN_MB=1` kullan. **`0` degeri "ayarsiz" sayilir ve 1024 MB'lik tuzaga duser** [okudum]. Kare tavani tablosu: `OLCUMLER.md`.
 2. **`SD_CAPACITY_LOG` satirlari bir sonraki segmentin kapisini gosterir** (etiket kaymasi) [olctum]
@@ -18,20 +18,20 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 
 ## B. VAE ve uretim
 
-6. **Karoli VAE'ye sessiz dusus (`retrying with temporal tiling`)**: cikti gecersiz sayilir [olctum]. Cozum: DiT ve VAE'yi AYRI surecte kos (latent kaydet/yukle), `SD_VAE_NO_TILING_FALLBACK=1` ile dusus yerine hizli hata ver. 192 ve 209 kare bu yolla uretildi.
-7. **Sure tavani (`-TavanDk`) kare sayisina gore ayarlanmadi**: 209 karede 6 DiT adimi bittikten sonra VAE sirasinda 50 dk tavanda olduruldu [olctum]. Kural: tavan = tahmini sure x 1,4; 209 icin en az 80 dk.
+6. <a id="vt-e-tiling"></a>**Karoli VAE'ye sessiz dusus (`retrying with temporal tiling`)**: cikti gecersiz sayilir [olctum]. Cozum: DiT ve VAE'yi AYRI surecte kos (latent kaydet/yukle), `SD_VAE_NO_TILING_FALLBACK=1` ile dusus yerine hizli hata ver. 192 ve 209 kare bu yolla uretildi.
+7. <a id="vt-e-tavan"></a>**Sure tavani (`-TavanDk`) kare sayisina gore ayarlanmadi**: 209 karede 6 DiT adimi bittikten sonra VAE sirasinda 50 dk tavanda olduruldu [olctum]. Kural: tavan = tahmini sure x 1,4; 209 icin en az 80 dk.
 8. **Kopyalanan satirda latent/cikti yolu eski adda kaldi** (yeni kosu eski `*_latent.bin` uzerine yazdi) [olctum]: kopyada `-Deney`, `-Cikti`, `-OutDir`, `SD_VIDEO_LATENT_SAVE` ve `-TavanDk` ayri ayri dogrulanir.
 9. **Zincirleme (`--init-img`) icin onceki videonun GERCEK son karesi kullanilmadi** (205. kare verildi, son kare 208'di): dikis SSIM 0,659 [olctum]. Cozum: kare sayisini `ffprobe` ile al, son kareyi cikar, orijinal videoyla 0,00 fark dogrula; birlestirirken onceki videoyu kirp, tekrar eden ilk kareyi at.
 10. **Karolu VAE yedegi, adim/cfg/cozunurluk dusurmek kalite yolu degildir**: bu proje sabit ayar kullanir (6 adim, cfg 1, varsayilan 640x384; `-W/-H` alani yalniz buyutebilir, kucultemez), bellek yamalari yalniz hesabin NEREDE yapildigini degistirir ve 56/141 kare kapilarinda bayt-aynidir.
 
 ## C. Kalite kapisi
 
-11. **Ham gurultu olcusu sahne dokusuna baglidir**: gri karelerde her 8. karede ortalama |kare - 3x3 medyan| yuksek frekansli dokuyu (dal, cim, toz, yakin ucak) da sayar; Z3_175 klibi 1,86 ile RED aldi ama gozle ve zamansal olcuyle bozulma yoktu [olctum]. Ek olarak dokuya normalize N (medyan artik / Sobel doku gucu) kullanilir; esik kapiyi gevsetmez, yalniz RED nedenini raporlar. Hangi `doku_norm` surumunun hangi olcekte oldugunu belgeleyin (iki surumun degerleri farkli olcekte).
-12. **Bayt kapisi bayrak setiyle yapilir**: bir yama 56 karede R0'a bayt-ayni gecmediyse reddedilir; kapi hangi env bayraklariyla kosulduysa uretim de o setle kosulmalidir. 158-209 kare icin dogrudan bayt referansi YOKTUR: "ayni bayrak ve ikili zinciri" dur [okudum].
+11. <a id="vt-e-kapi-red"></a>**Ham gurultu olcusu sahne dokusuna baglidir**: gri karelerde her 8. karede ortalama |kare - 3x3 medyan| yuksek frekansli dokuyu (dal, cim, toz, yakin ucak) da sayar; Z3_175 klibi 1,86 ile RED aldi ama gozle ve zamansal olcuyle bozulma yoktu [olctum]. Ek olarak dokuya normalize N (medyan artik / Sobel doku gucu) kullanilir; esik kapiyi gevsetmez, yalniz RED nedenini raporlar. Hangi `doku_norm` surumunun hangi olcekte oldugunu belgeleyin (iki surumun degerleri farkli olcekte).
+12. <a id="vt-w-deneysel"></a>**Bayt kapisi bayrak setiyle yapilir**: bir yama 56 karede R0'a bayt-ayni gecmediyse reddedilir; kapi hangi env bayraklariyla kosulduysa uretim de o setle kosulmalidir. 158-209 kare icin dogrudan bayt referansi YOKTUR: "ayni bayrak ve ikili zinciri" dur [okudum].
 
 ## D. Kosucu ve Windows
 
-13. **DLL bulunamadi (`STATUS_DLL_NOT_FOUND` / 0xC0000135)**: `cudart`/`cublas` DLL'lerini calistirma PATH'ine ekle [olctum].
+13. <a id="vt-e-dll"></a>**DLL bulunamadi (`STATUS_DLL_NOT_FOUND` / 0xC0000135)**: `cudart`/`cublas` DLL'lerini calistirma PATH'ine ekle [olctum].
 14. **Cikis kodu bos "bitti" yazildi**: `Process` bitmeden `ExitCode` okundu; `WaitForExit()` sonrasi oku [olctum].
 15. **Turkce kulturde ondalik virgul CSV'yi kaydirdi**: bicimlemede `InvariantCulture` kullan [olctum].
 16. **Durdurma isareti (`DUR` dosyasi) kosan satiri da oldurur**: "kosan satir dogal bitsin" isteniyorsa isaret satir bitince konur; satirin ozet dosyasi (`ozet=`) olmadan koşucu cikis=0'i BITTI sayar, kanit yoktur: uretim ve kapi satirlarinda ozet zorunlu [olctum].
@@ -40,12 +40,12 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 
 ## E. Diger kartlar ve kapi araclari (v0.1.1, issue #1)
 
-19. **Yeni kartta (compute capability 7.0+) 141 kare ve ustunde video tamamen siyah** (kare ortalamasi 0; latent NaN). 56 ve 107 kare sorunsuz [kullanici bildirdi: RTX 4070 Ti 12 GB, issue #1].
+19. <a id="vt-e-siyah"></a>**Yeni kartta (compute capability 7.0+) 141 kare ve ustunde video tamamen siyah** (kare ortalamasi 0; latent NaN). 56 ve 107 kare sorunsuz [kullanici bildirdi: RTX 4070 Ti 12 GB, issue #1].
    - Neden (iki aday, ayrilmadi): cuBLAS'in fp16 hesap modu uzun dizide tasiyor OLABILIR; ya da `GGML_CUDA_CUBLAS_COMPUTE_TYPE` ayarlaninca kapanan bf16 birlesik cekirdek (yalniz 8.x ve ustu kartlarda devrede) [okudum: motor `src/core/cuda/bf16.cu`; neden: tahmin]. GTX 1050 Ti'de (6.1) iki yol da zaten devre disi, bu yuzden orada gorulmedi [okudum: `ggml-cuda/common.cuh` fast_fp16_hardware_available].
    - Cozum: v0.1.1 `uret.ps1`, kart 7.0+ ise ve sen ayarlamadiysan `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` yapar; `-Kuru` ciktisinda gorunur. Hiz farki olculemedi (141 kare DiT 211,8 sn ile 209,9 sn) [kullanici bildirdi, issue #1]. Eski surumde elle, ayni PowerShell penceresinde `uret.ps1`'den once:
      `$env:GGML_CUDA_CUBLAS_COMPUTE_TYPE = 'f32'`
    - EN: all-black (NaN) video at 141+ frames on compute capability 7.0+ cards; v0.1.1 sets `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` there unless you set it yourself.
-20. **"KAPI RED" ama video duzgun gorunuyor; olaylar.txt'de `dikis_denetim cikti ayristirilamadi`** [olctum: ekip testi 2026-11-20, `No module named 'cv2'` veren sahte python ile; kayit yazarlarda, repoda yok]
+20. <a id="vt-w-py"></a><a id="vt-e-py"></a>**"KAPI RED" ama video duzgun gorunuyor; olaylar.txt'de `dikis_denetim cikti ayristirilamadi`** [olctum: ekip testi 2026-11-20, `No module named 'cv2'` veren sahte python ile; kayit yazarlarda, repoda yok]
    - Neden: python var ama `opencv-python`/`numpy` yok; v0.1.0 bunu yanlislikla RED (cikis 5) sayiyordu.
    - Ozel durum: Windows'ta python kurulu degilken bile `python` komutu bulunur (Microsoft Store kisayolu `WindowsApps\python.exe`); calistirilinca yalniz 9009 ile cikar. `Get-Command` bunu ayirmaz.
    - Cozum: v0.1.1 `uret.ps1` GPU isinden ONCE `python -I -c "import cv2, numpy"` dener; olmazsa **cikis 6** verir ve video uretmez (uzun kosu bosa gitmez). Kapi tek basina kosulursa da bu durumlarda **cikis 6 `KAPI CALISMADI`** (RED degil). Python 3'u python.org'dan kur, paketleri kur, `uret.ps1`'i yeniden calistir; elinde v0.1.0'dan kalan video varsa yalniz kapiyi kos:
@@ -53,18 +53,52 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
      `powershell -NoProfile -File scripts\uretim_kapi.ps1 -Dizin <cikti klasoru> -Ad video -Kare <kare>`
    - Python baska yerdeyse: `$env:VT_PYTHON = '<python.exe tam yolu>'`.
    - EN: no Python, the Windows Store alias (exit 9009) or a Python without OpenCV now gives exit 6, checked before the GPU job (no video made), never 5 (RED). Install Python 3 and `opencv-python numpy`, then run again.
-21. **Kirmizi "ffmpeg is not recognized" satiri, pafta (12 karelik onizleme) yok** [olctum: ekip testi 2026-11-20, uc senaryo (yanlis VT_FFMPEG, PATH'te ffmpeg yok, EAP=Stop sarmali): KAPI GECTI, cikis 0; kayit yazarlarda, repoda yok]
+21. <a id="vt-w-ffmpeg"></a>**Kirmizi "ffmpeg is not recognized" satiri, pafta (12 karelik onizleme) yok** [olctum: ekip testi 2026-11-20, uc senaryo (yanlis VT_FFMPEG, PATH'te ffmpeg yok, EAP=Stop sarmali): KAPI GECTI, cikis 0; kayit yazarlarda, repoda yok]
    - Neden: ffmpeg yalniz paftayi cizer; kapi olcutu (kare, gurultu, akis) OpenCV'den gelir. v0.1.0 yalniz `VT_FFMPEG` ve PATH'e bakiyordu.
    - Cozum: v0.1.1 ffmpeg'i `VT_FFMPEG`, PATH ve `engine\bin`'de arar (release ffmpeg icermez; `engine\bin` yalniz siz koyarsaniz ise yarar); bulamazsa acik BILGI satiri yazar, paftayi atlar. Kurmak icin `winget install Gyan.FFmpeg` (sonra yeni pencere ac) ya da `$env:VT_FFMPEG = '<ffmpeg.exe tam yolu>'`.
    - EN: ffmpeg only draws the contact sheet; when it is missing v0.1.1 warns and skips the sheet, the gate decision is unchanged.
-22. **`-W 720` reddedildi** [okudum: motor `request.cpp` hizalama]
+22. <a id="vt-e-boyut"></a>**`-W 720` reddedildi** [okudum: motor `request.cpp` hizalama]
    - Neden: motor genislik/yuksekligi 32'nin katina yukari yuvarlar (720 -> 736); betik bu sessiz degisikligi kabul etmez. Dikey ornekler: 384x640, 480x832, 576x1024, 736x1280 (hepsi 32'nin kati).
    - Not: 640x384 disindaki boyutlar 4 GB'ta denenmedi; kapi esikleri 640x384'te kalibre, buyuk boyutta gurultu dusuk okunur [olctum: ekip testi 2026-11-20, F209V2 klibi 1280x768'e buyutulunce gurultu 1,08 -> 0,32, N 0,048 -> 0,020; kayit yazarlarda, repoda yok].
-23. **12 GB+ kartta her kosuda "VRAM ince marj" uyarisi** [kullanici bildirdi, issue #1]
+23. <a id="vt-w-vram-marj"></a>**12 GB+ kartta her kosuda "VRAM ince marj" uyarisi** [kullanici bildirdi, issue #1]
    - Neden: v0.1.0 esigi sabit 3800 MiB idi; `--offload-to-cpu` buyuk kartta da karti doldurur.
    - Cozum: v0.1.1 esigi "tepede bos VRAM <= 296 MiB" yapti (4096 MiB kartta eskisiyle ayni).
 
-24. **RTX 50 serisinde (compute capability 12.x) 56 kare ve ustunde video tamamen siyah** (`-InitImg` ile 22/39 karede de) [kullanici bildirdi: RTX 5060 Laptop 8 GB, PR #3; v0.1.0 betigiyle].
+24. <a id="vt-w-blackwell"></a>**RTX 50 serisinde (compute capability 12.x) 56 kare ve ustunde video tamamen siyah** (`-InitImg` ile 22/39 karede de) [kullanici bildirdi: RTX 5060 Laptop 8 GB, PR #3; v0.1.0 betigiyle].
    - Neden (ayrilmadi): hazir motor yalniz `sm_61` icin derli; katkicinin hipotezi surucunun bu kodu calisirken cevirmesi [tahmin]. v0.1.1'in otomatik `f32` ayari bu kartta denenmedi.
    - Cozum sirasi: (1) v0.1.1 betigi ve hazir motorla 56 kare dene; (2) yine siyahsa motoru `-DCMAKE_CUDA_ARCHITECTURES=120` ve CUDA 12.8.1+ ile derle, `VT_ENGINE_BIN`'i o klasore ver. Tarif ve test raporu: `docs/RTX5060_SM120_DERLEME.md`, `docs/RTX5060_TEST_RAPORU.md`. Bizde RTX 50 kart yok, olcmedik; (1)'in sonucunu issue olarak bildirirseniz kok neden netlesir.
    - EN: all-black video on RTX 50 reported with the v0.1.0 script; first try the release engine with the v0.1.1 script (f32 on), then build natively for sm_120 (`docs/RTX5060_SM120_DERLEME.md`).
+
+## F. Kurulum, ortam ve girdi hatalari: kararli kodlar (v0.1.2)
+
+Betikler `HATA:` / `UYARI:` basliginin ardindan `[VT-E-...]` ya da `[VT-W-...]` kodu yazar (basliklar ve cikis kodlari degismez). Kod listesi, EN/TR ilk adim ve log imzalari: `docs/hata_imzalari.json` (imzalar duz alt dizedir). Yeni kod ekleyince bu dosyada ayni kucuk harfli cipa (`<a id="vt-e-...">`) acilir; `tests/test_hata_imzalari.py` ikisini kiyaslar.
+Codes: scripts print `[VT-E-...]` / `[VT-W-...]` after the `HATA:` / `UYARI:` heading (headings and exit codes never change); first steps in EN/TR and log signatures are in `docs/hata_imzalari.json`.
+
+25. <a id="vt-e-gpu"></a><a id="vt-e-gpu-vram"></a><a id="vt-e-gpu-cc"></a><a id="vt-w-gpu-denenmedi"></a>**Kullanilabilir NVIDIA kart yok / VRAM az / kart eski** (`VT-E-GPU`, `VT-E-GPU-VRAM`, `VT-E-GPU-CC`, `VT-W-GPU-DENENMEDI`) [okudum: kur.ps1 kontrol0]
+   - Neden: `nvidia-smi` yok ya da cikti vermiyor (surucu yok); kart 3800 MiB altinda VRAM ya da compute capability 6.1 altinda. Motor yalniz NVIDIA CUDA.
+   - Cozum: NVIDIA surucusunu kurun/guncelleyin, yeni terminalde `nvidia-smi` calistirin. `-Zorla` yalniz VRAM/capability kontrolunu atlar, sonuc garanti degil. Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB; baska kartlar issue'larda kullanici bildirimidir.
+   - EN: no usable NVIDIA GPU (driver missing, under 3800 MiB VRAM or compute capability under 6.1); install the driver and run `nvidia-smi`; `-Zorla` only skips the check.
+26. <a id="vt-e-os"></a>**Windows surumu eski** (`VT-E-OS`) [okudum]: betikler Windows 10 ya da ustu ve Windows PowerShell 5.1 icindir.
+27. <a id="vt-e-ram"></a><a id="vt-w-ram"></a><a id="vt-w-ram-bos"></a>**RAM az** (`VT-E-RAM`, `VT-W-RAM`, `VT-W-RAM-BOS`) [olctum: motor RAM tepesi ~11,5 GB, `OLCUMLER.md`]
+   - Cozum: 16 GB RAM onerilir, 12 GB alti desteklenmez. Uretimden once tarayici ve buyuk programlari kapatin; bos RAM uyarisi kurulumu etkilemez.
+   - EN: 16 GB RAM recommended, under 12 GB unsupported; close big programs before generating.
+28. <a id="vt-e-disk"></a><a id="vt-e-disk-kok"></a><a id="vt-w-disk-pay"></a><a id="vt-w-hdd"></a>**Disk yeri ve disk turu** (`VT-E-DISK`, `VT-E-DISK-KOK`, `VT-W-DISK-PAY`, `VT-W-HDD`) [olctum: modeller.json toplam 29,31 GiB; en kotu an ~31,4 GiB]
+   - Neden: model surucusunde eksik model varsa en az 32 GiB bos gerekir (HATA); 32-40 GiB arasi UYARI: pay dar. Kurulum kokunun surucusu baska ise motor zipleri icin 3 GiB gerekir. HDD'de ilk adimlar cok yavas.
+   - Cozum: yer acin ya da `VT_MODEL_DIR` / `VT_ROOT` ile genis bir surucu secin; NVMe/SSD onerilir. Indirme sirasinda disk dolarsa indirme durur, yarim `.part` korunur ve ayni komut yer acinca kaldigi yerden surer [okudum: `.part` + Range; `.part`'li rapor `-Kuru` ile olculdu, 29 GiB'lik gercek yeniden baslatma olculmedi].
+   - EN: model drive needs 32 GiB free (HATA), 32-40 GiB is a WARNING (narrow margin); a partial download keeps its `.part` and the same command continues.
+29. <a id="vt-e-hash"></a><a id="vt-w-part"></a><a id="vt-w-range"></a><a id="vt-e-url"></a><a id="vt-e-yol"></a>**Indirme: sha256, yarim dosya, adres reddi** (`VT-E-HASH`, `VT-W-PART`, `VT-W-RANGE`, `VT-E-URL`, `VT-E-YOL`) [okudum: modelleri_indir.ps1]
+   - `VT-E-HASH`: dosya `modeller.json` sabitiyle eslesmedi; bozuk dosya silinir ve kullanilmaz. Indiriciyi tekrar calistirin; tekrarlarsa bu satirla issue acin, kontrolu atlamayin.
+   - `VT-W-PART` / `VT-W-RANGE`: yarim `.part` Range istegiyle surer; sunucu Range kabul etmezse dosya bastan iner (yavas ama dogru).
+   - `VT-E-URL` / `VT-E-YOL`: yalniz `huggingface.co` / `hf.co` uzerinde https ve model klasoru icinde bir hedef kabul edilir. `scripts/modeller.json` degismediyse issue acin.
+   - Duzeltilen hata (v0.1.2) [olctum, PS 5.1]: yarim `.part` varken `-Kuru` raporu ve indirme `Cannot convert ... to Int32` ile coker ve devam edemezdi (`[math]::Max(0, long)` Int32 secenegine dusuyordu); duzeltildi, `tests/test_hata_imzalari.py` ayni durumu sinar.
+   - EN: sha256 mismatch deletes the file and never uses it; a partial `.part` resumes with a Range request; only https on huggingface.co / hf.co is accepted. Fixed in v0.1.2: a leftover `.part` over 2 GiB made the status report crash instead of resuming.
+30. <a id="vt-e-lisans"></a>**Lisans kabul edilmedi** (`VT-E-LISANS`, cikis 2): model indirmesi baslamaz. `docs/LISANS_KABUL.txt` metnini okuyun; yalniz kabul ediyorsaniz `-LisansKabul E` (TR) ya da `Y` (EN). Yapay zeka ajanlari kullanici adina asla kabul etmez (`AGENTS.md`).
+31. <a id="vt-e-motor"></a><a id="vt-e-motor-zip"></a><a id="vt-e-kontrol"></a>**Motor adimi ve kontrol uretimi** (`VT-E-MOTOR`, `VT-E-MOTOR-ZIP`, `VT-E-KONTROL`) [okudum]
+   - Motor: ag hatasinda ayni komut tekrar calisir (zip curl `-C -` ile surer); yerel zip: `-MotorZip` / `-CudaZip`. Release adresi yoksa `VT-E-MOTOR-ZIP`.
+   - Kontrol: 5 karelik gercek uretim basarisizsa HAZIR yazilmaz; iletide adi gecen `ham_err_*` dosyasina bakin; sik nedenler: `VT-E-DLL` (madde 13), eski surucu, eksik/bozuk model, VRAM/RAM.
+32. <a id="vt-w-vc"></a><a id="vt-w-yol-bosluk"></a><a id="vt-w-yol-ascii"></a><a id="vt-w-yol-onedrive"></a><a id="vt-w-yol-unc"></a><a id="vt-w-yol-uzun"></a>**Visual C++ eksik ve sorunlu yollar** (`VT-W-VC`, `VT-W-YOL-BOSLUK`, `VT-W-YOL-ASCII`, `VT-W-YOL-ONEDRIVE`, `VT-W-YOL-UNC`, `VT-W-YOL-UZUN`)
+   - Hepsi UYARI, kurulum durmaz. VC++ 2015-2022 x64 Redistributable yoksa `sd-cli` acilmayabilir (madde 13). Bosluklu, Turkce karakterli, OneDrive, ag ya da cok uzun yollarda gercek kosu denenmedi; `C:\vt` gibi kisa ASCII yol ve `VT_ROOT` onerilir. (Betik bosluklu ve Turkce karakterli yolda `-Kuru` ile ve `kur.cmd` ile denendi: yalniz rapor; tam video kosusu degil.)
+33. <a id="vt-e-kare"></a><a id="vt-e-istem"></a><a id="vt-e-dosya"></a><a id="vt-e-kilit"></a><a id="vt-e-cikti"></a><a id="vt-e-latent"></a><a id="vt-e-karesayisi"></a><a id="vt-e-ses"></a>**uret.ps1 girdi ve kosu denetimleri** (`VT-E-KARE`, `VT-E-ISTEM`, `VT-E-DOSYA`, `VT-E-KILIT`, `VT-E-CIKTI`, `VT-E-LATENT`, `VT-E-KARESAYISI`, `VT-E-SES`) [okudum: uret.ps1]
+   - `VT-E-KARE`: 17k+5, en fazla 209 (`-InitImg` 192, 4 GB kartta `-EndImg` 175). `VT-E-ISTEM`: istem/gorsel yolu yok. `VT-E-DOSYA`: motor/model yok, once `kur.ps1`. `VT-E-KILIT`: baska `uret.ps1` GPU'yu kullaniyor, tek GPU isi (olu surecten kalan kilit yok sayilir).
+   - `VT-E-CIKTI` / `VT-E-LATENT` / `VT-E-KARESAYISI` / `VT-E-SES`: cikti gecersiz sayilir; yanindaki `ham_err_*` ve `ham_out_*` loglarini okuyun, tekrarlarsa loglarla issue acin.
+   - EN: frame count 17k+5 up to 209; missing prompt/engine/model files; one GPU job at a time; an invalid output (missing file, wrong frame count, no audio) is rejected on purpose.

@@ -67,23 +67,23 @@ if (Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue) {
 if ($env:VT_GPU_CC) { $tmpC = 0.0; if ([double]::TryParse($env:VT_GPU_CC.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpC)) { $GpuCc = $tmpC } else { Write-Output ("UYARI: VT_GPU_CC='{0}' sayi olarak okunamadi, yok sayildi (ornek: 8.9 ya da 8,9)" -f $env:VT_GPU_CC) } }
 if ($env:VT_GPU_VRAM) { $tmpV = 0.0; if ([double]::TryParse($env:VT_GPU_VRAM.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpV) -and $tmpV -gt 0) { $GpuTop = [int][Math]::Floor($tmpV) } else { Write-Output ("UYARI: VT_GPU_VRAM='{0}' sayi (MiB) olarak okunamadi, yok sayildi (ornek: 12282)" -f $env:VT_GPU_VRAM) } }
 if ($GpuSayi -gt 1) { Write-Output ("bilgi: {0} GPU goruldu; sd-cli CUDA 0'i kullanir. Betik temkinli tarafla karar verir: en kucuk VRAM {1} MiB, en kucuk compute capability {2} (f32 yalniz tum kartlar >= 7.0 ise). Yalniz tek GPU ile olculdu; karti CUDA_VISIBLE_DEVICES ile secebilirsiniz." -f $GpuSayi, $GpuTop, $(if ($GpuCc -lt 0) { 'okunamadi' } else { $GpuCc.ToString($Inv) })) }
-if ($GpuCc -ge 12.0) { Write-Output ("UYARI: compute capability {0} (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli; bir kullanici bu kartta 56+ karede siyah video bildirdi (v0.1.0 betigiyle; v0.1.1 f32 ayariyla denenmedi). Once 56 kare deneyin; video siyahsa motoru sm_120 icin derleyip VT_ENGINE_BINi ona verin: docs\RTX5060_SM120_DERLEME.md. Kendi sm_120 derlemenizi kullaniyorsaniz bu uyariyi yok sayin." -f $GpuCc.ToString($Inv)) }
+if ($GpuCc -ge 12.0) { Write-Output ("UYARI: [VT-W-BLACKWELL] compute capability {0} (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli; bir kullanici bu kartta 56+ karede siyah video bildirdi (v0.1.0 betigiyle; v0.1.1 f32 ayariyla denenmedi). Once 56 kare deneyin; video siyahsa motoru sm_120 icin derleyip VT_ENGINE_BINi ona verin: docs\RTX5060_SM120_DERLEME.md. Kendi sm_120 derlemenizi kullaniyorsaniz bu uyariyi yok sayin." -f $GpuCc.ToString($Inv)) }
 $KucukKart = ($GpuTop -lt $KucukKartMiB)   # VRAM okunamadiysa (-1) kucuk sayilir (temkinli)
 $KareEndTavan = $(if ($KucukKart) { $KareEnd4GB } else { $KareInit })
 if ($EndImg -and $KareVarsayilan) { $Kare = $KareEndTavan }
 
 # --- dogrulamalar ---
-if ($Kare -lt 5 -or (($Kare - 5) % 17) -ne 0) { throw "Kare sayisi 17k+5 olmali (5, 22, 39, ... 17k+5; en fazla $KareSabit). Verilen: $Kare" }
-if ($InitImg -and $Kare -gt $KareInit) { throw "-InitImg ile en fazla $KareInit kare (8,0 sn) desteklenir: bu GPU'da $KareSabit kare -InitImg ile bellege sigmadi; baska GPU'larda denenmedi. -Kare $KareInit ya da daha kucugunu verin. Verilen: $Kare" }
-if ($EndImg -and $KucukKart -and $Kare -gt $KareEnd4GB) { throw "-EndImg ile bu kartta (VRAM $(if ($GpuTop -lt 0) { 'okunamadi, 8 GB alti sayildi' } else { "$GpuTop MiB; 8 GB alti" })) en fazla $KareEnd4GB kare (7,3 sn): 192 bu kartta sigmadi, 175 olculdu (GTX 1050 Ti, iki asama). -Kare $KareEnd4GB ya da daha kucugunu verin. Verilen: $Kare" }
-if ($EndImg -and $Kare -gt $KareInit) { throw "-EndImg ile en fazla $KareInit kare (8,0 sn) desteklenir (-InitImg ile ayni tavan; 8 GB ve ustu kartta FLF bizce olculmedi). -Kare $KareInit ya da daha kucugunu verin. Verilen: $Kare" }
+if ($Kare -lt 5 -or (($Kare - 5) % 17) -ne 0) { throw "[VT-E-KARE] Kare sayisi 17k+5 olmali (5, 22, 39, ... 17k+5; en fazla $KareSabit). Verilen: $Kare" }
+if ($InitImg -and $Kare -gt $KareInit) { throw "[VT-E-KARE] -InitImg ile en fazla $KareInit kare (8,0 sn) desteklenir: bu GPU'da $KareSabit kare -InitImg ile bellege sigmadi; baska GPU'larda denenmedi. -Kare $KareInit ya da daha kucugunu verin. Verilen: $Kare" }
+if ($EndImg -and $KucukKart -and $Kare -gt $KareEnd4GB) { throw "[VT-E-KARE] -EndImg ile bu kartta (VRAM $(if ($GpuTop -lt 0) { 'okunamadi, 8 GB alti sayildi' } else { "$GpuTop MiB; 8 GB alti" })) en fazla $KareEnd4GB kare (7,3 sn): 192 bu kartta sigmadi, 175 olculdu (GTX 1050 Ti, iki asama). -Kare $KareEnd4GB ya da daha kucugunu verin. Verilen: $Kare" }
+if ($EndImg -and $Kare -gt $KareInit) { throw "[VT-E-KARE] -EndImg ile en fazla $KareInit kare (8,0 sn) desteklenir (-InitImg ile ayni tavan; 8 GB ve ustu kartta FLF bizce olculmedi). -Kare $KareInit ya da daha kucugunu verin. Verilen: $Kare" }
 # Kare tavani = $KareSabit (dogrulanan en uzun kare). VT_MAX_KARE ile gecici ezilir (sonuc garanti degil).
 $KareTavan = $(if ($env:VT_MAX_KARE) { [int]$env:VT_MAX_KARE } else { $KareSabit })
-if ($Kare -gt $KareTavan) { throw "Kare sayisi $KareTavan degerinden buyuk desteklenmiyor (denenmedi). Verilen: $Kare" }
+if ($Kare -gt $KareTavan) { throw "[VT-E-KARE] Kare sayisi $KareTavan degerinden buyuk desteklenmiyor (denenmedi). Verilen: $Kare" }
 # Cozunurluk: motor W/H'yi 32'nin katina YUKARI yuvarlar (720 -> 736); sessiz degisiklik olmasin diye burada reddedilir.
-if ($PSBoundParameters.ContainsKey('W') -xor $PSBoundParameters.ContainsKey('H')) { throw "-W ve -H birlikte verilmeli (yalniz biri verilirse oteki 640/384 kalir ve beklenmedik boyut cikar). Dikey: -W 384 -H 640. Verilen: ${W}x${H}" }
-if ($W -le 0 -or $H -le 0 -or ($W % 32) -ne 0 -or ($H % 32) -ne 0) { throw "-W ve -H 32'nin kati olmali (motor yukari yuvarlar: 720 -> 736). Ornek: 640x384, 384x640, 832x480, 1280x736. Verilen: ${W}x${H}" }
-if (($W * $H) -lt (640 * 384)) { throw "-W x -H alani en az 640x384 (245760 piksel) olmali: kalite dusurulmez. Dikey icin -W 384 -H 640. Verilen: ${W}x${H}" }
+if ($PSBoundParameters.ContainsKey('W') -xor $PSBoundParameters.ContainsKey('H')) { throw "[VT-E-BOYUT] -W ve -H birlikte verilmeli (yalniz biri verilirse oteki 640/384 kalir ve beklenmedik boyut cikar). Dikey: -W 384 -H 640. Verilen: ${W}x${H}" }
+if ($W -le 0 -or $H -le 0 -or ($W % 32) -ne 0 -or ($H % 32) -ne 0) { throw "[VT-E-BOYUT] -W ve -H 32'nin kati olmali (motor yukari yuvarlar: 720 -> 736). Ornek: 640x384, 384x640, 832x480, 1280x736. Verilen: ${W}x${H}" }
+if (($W * $H) -lt (640 * 384)) { throw "[VT-E-BOYUT] -W x -H alani en az 640x384 (245760 piksel) olmali: kalite dusurulmez. Dikey icin -W 384 -H 640. Verilen: ${W}x${H}" }
 $Standart = ($W -eq 640 -and $H -eq 384)
 $LatKare = $(if ($Kare -le 5) { 2 } else { [int][Math]::Floor(($Kare - 5) / 17) * 5 + 2 })
 $Jeton = [int](($W / 32) * ($H / 32) * $LatKare)
@@ -91,11 +91,11 @@ $Jeton = [int](($W / 32) * ($H / 32) * $LatKare)
 $JetonTavan = $(if ($EndImg) { 12480 } elseif ($InitImg) { 13680 } else { 14880 })
 if ($env:VT_MAX_JETON) { $JetonTavan = [int]$env:VT_MAX_JETON }
 if (-not $Standart -and ($KucukKart -or $env:VT_MAX_JETON) -and $Jeton -gt $JetonTavan) {
-    throw ("{0}x{1} ve {2} kare = {3} jeton; bu kartta tavan {4} jeton (4 GB'da olculen en buyuk is; VRAM {5}). Daha kisa -Kare ya da daha kucuk boyut verin; VT_MAX_JETON ile gecici ezilir (sonuc garanti degil){6}." -f $W, $H, $Kare, $Jeton, $JetonTavan, $(if ($GpuTop -lt 0) { 'okunamadi, 8 GB alti sayildi' } else { "$GpuTop MiB" }), $(if ($GpuTop -lt 0) { '; nvidia-smi VRAM okuyamadi: buyuk kartiniz varsa VT_GPU_VRAM=<MiB> ile toplam VRAM verilebilir (test amacli, sonuc garanti degil)' } else { '' }))
+    throw ("[VT-E-BOYUT] {0}x{1} ve {2} kare = {3} jeton; bu kartta tavan {4} jeton (4 GB'da olculen en buyuk is; VRAM {5}). Daha kisa -Kare ya da daha kucuk boyut verin; VT_MAX_JETON ile gecici ezilir (sonuc garanti degil){6}." -f $W, $H, $Kare, $Jeton, $JetonTavan, $(if ($GpuTop -lt 0) { 'okunamadi, 8 GB alti sayildi' } else { "$GpuTop MiB" }), $(if ($GpuTop -lt 0) { '; nvidia-smi VRAM okuyamadi: buyuk kartiniz varsa VT_GPU_VRAM=<MiB> ile toplam VRAM verilebilir (test amacli, sonuc garanti degil)' } else { '' }))
 }
-if (-not (Test-Path -LiteralPath $Istem)) { throw "istem dosyasi yok: $Istem" }
-if ($InitImg -and -not (Test-Path -LiteralPath $InitImg -PathType Leaf)) { throw "-InitImg dosyasi bulunamadi: $InitImg (ilk kare gorseli, PNG/JPG; video boyutunda verin)" }
-if ($EndImg -and -not (Test-Path -LiteralPath $EndImg -PathType Leaf)) { throw "-EndImg dosyasi bulunamadi: $EndImg (son kare gorseli, PNG/JPG; video boyutunda verin, motor farkli boyutu esnetir)" }
+if (-not (Test-Path -LiteralPath $Istem)) { throw "[VT-E-ISTEM] istem dosyasi yok: $Istem" }
+if ($InitImg -and -not (Test-Path -LiteralPath $InitImg -PathType Leaf)) { throw "[VT-E-ISTEM] -InitImg dosyasi bulunamadi: $InitImg (ilk kare gorseli, PNG/JPG; video boyutunda verin)" }
+if ($EndImg -and -not (Test-Path -LiteralPath $EndImg -PathType Leaf)) { throw "[VT-E-ISTEM] -EndImg dosyasi bulunamadi: $EndImg (son kare gorseli, PNG/JPG; video boyutunda verin, motor farkli boyutu esnetir)" }
 # --- deneysel VT_* anahtarlari: dogrula; gecersizse varsayilan + UYARI; aktifse UYARI + olaylar kaydi ---
 $VtAktif = @()
 $VtAttn = '0.05'; $VtChunk = '64'; $VtMaxVram = ''; $VtNoFa = $false; $VtIki = $false
@@ -105,7 +105,7 @@ if ($env:VT_MAX_VRAM) { $tmpM = 0.0; if ([double]::TryParse($env:VT_MAX_VRAM.Tri
 if ($env:VT_NO_FA -eq '1') { $VtNoFa = $true; $VtAktif += 'VT_NO_FA=1' }
 if ($env:VT_IKI_ASAMA -eq '1') { $VtIki = $true; $VtAktif += 'VT_IKI_ASAMA=1' }
 if ($VtAktif.Count -gt 0) {
-    $VtMesaj = 'UYARI: deneysel VT_* aktif (' + ($VtAktif -join ' ') + '); cikti kalite kurallari disina cikabilir, kalite kapisi bunu yakalamaz: olcum/paylasim icin kullanmayin'
+    $VtMesaj = 'UYARI: [VT-W-DENEYSEL] deneysel VT_* aktif (' + ($VtAktif -join ' ') + '); cikti kalite kurallari disina cikabilir, kalite kapisi bunu yakalamaz: olcum/paylasim icin kullanmayin'
     Write-Output $VtMesaj
     if (-not $Kuru) { try { New-Item -ItemType Directory -Force (Join-Path $Root 'runs') | Out-Null; Add-Content -LiteralPath (Join-Path $Root 'runs\olaylar.txt') -Value ((Get-Date -Format 'HH:mm:ss') + ' | ' + $VtMesaj) -Encoding ASCII } catch { } }
 }
@@ -115,7 +115,7 @@ $TE = Join-Path $ModelDir 'qwen3vl_32b_minimax_h3-Q4_K_M.gguf'
 $VAE = Join-Path $ModelDir 'minimax_h3_sol_vae_fp16.safetensors'
 $AVAE = Join-Path $ModelDir 'minimax_h3_audio_vae_fp32.safetensors'
 if (-not $Kuru) {
-    foreach ($f in @($sd, $DiT, $TE, $VAE, $AVAE)) { if (-not (Test-Path -LiteralPath $f)) { throw "dosya yok: $f (once scripts\kur.ps1 calistirin)" } }
+    foreach ($f in @($sd, $DiT, $TE, $VAE, $AVAE)) { if (-not (Test-Path -LiteralPath $f)) { throw "[VT-E-DOSYA] dosya yok: $f (once scripts\kur.ps1 calistirin)" } }
     if ($InitImg -and -not (Test-Path -LiteralPath $InitImg)) { throw "InitImg yok: $InitImg" }
 }
 
@@ -175,7 +175,7 @@ if (-not $Kontrol) {
         try { $null = & $pyK -I -c "import cv2, numpy" 2>&1; $pyKod = "$LASTEXITCODE"; $pyTamam = ($LASTEXITCODE -eq 0) } catch { $pyKod = 'calistirilamadi' } finally { $ErrorActionPreference = $eapP }
     }
     if (-not $pyTamam) {
-        $pyMesaj = "KAPI CALISAMAZ: python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu, python kurulu degil). Python 3 kurun (python.org), sonra 'py -3 -m pip install opencv-python numpy'; ya da VT_PYTHON ile python.exe yolunu verin."
+        $pyMesaj = "KAPI CALISAMAZ: [VT-E-PY] python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu, python kurulu degil). Python 3 kurun (python.org), sonra 'py -3 -m pip install opencv-python numpy'; ya da VT_PYTHON ile python.exe yolunu verin."
         if ($Kuru) { Write-Output "bilgi: $pyMesaj (-Kuru: yalniz bilgi)" }
         else { Write-Output "$pyMesaj Video uretilmedi: GPU isi baslamadan durduruldu (cikis 6)."; exit 6 }
     }
@@ -199,7 +199,7 @@ $Kilit = Join-Path $Root 'runs\gpu.kilit'
 New-Item -ItemType Directory -Force (Split-Path -Parent $Kilit) | Out-Null
 if (Test-Path -LiteralPath $Kilit) {
     $eskiPid = 0; [int]::TryParse((Get-Content -LiteralPath $Kilit -ErrorAction SilentlyContinue | Select-Object -First 1), [ref]$eskiPid) | Out-Null
-    if ($eskiPid -gt 0 -and (Get-Process -Id $eskiPid -ErrorAction SilentlyContinue)) { throw "GPU baska bir uret.ps1 tarafindan kullaniliyor (PID $eskiPid). Tek GPU isi calistirin." }
+    if ($eskiPid -gt 0 -and (Get-Process -Id $eskiPid -ErrorAction SilentlyContinue)) { throw "[VT-E-KILIT] GPU baska bir uret.ps1 tarafindan kullaniliyor (PID $eskiPid). Tek GPU isi calistirin." }
 }
 Set-Content -LiteralPath $Kilit -Value $PID -Encoding ASCII
 
@@ -219,7 +219,7 @@ function Asama-Kos([string]$Etiket, $EnvHash) {
             $smi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
             if ($smi) { $m = 0; if ([int]::TryParse((& nvidia-smi.exe --query-gpu=memory.used --format=csv,noheader,nounits 2>$null | Select-Object -First 1), [ref]$m) -and $m -gt $script:VramTepe) { $script:VramTepe = $m } }
             if (Test-Path -LiteralPath $DurDosya) { & taskkill.exe /T /F /PID $sp.Id | Out-Null; Write-Output "DURDU (DUR dosyasi) asama$Etiket"; exit 2 }
-            if (((Get-Date) - $t0).TotalMinutes -gt $TavanDk) { & taskkill.exe /T /F /PID $sp.Id | Out-Null; throw "TAVAN: asama$Etiket $TavanDk dk'yi asti, kesildi (uzun kosu icin -TavanDk arttirin)" }
+            if (((Get-Date) - $t0).TotalMinutes -gt $TavanDk) { & taskkill.exe /T /F /PID $sp.Id | Out-Null; throw "[VT-E-TAVAN] TAVAN: asama$Etiket $TavanDk dk'yi asti, kesildi (uzun kosu icin -TavanDk arttirin)" }
         }
         $sp.WaitForExit(); $kod = $sp.ExitCode
     } finally {
@@ -255,7 +255,7 @@ function Vram-Ipucu {
         if ((Test-Path -LiteralPath $p) -and (Select-String -LiteralPath $p -Pattern 'failed during weight preparation|ALLOC_FAILED|cannot make enough memory|out of memory|vae decode compute failed' -Quiet)) { $bulundu = $true }
     }
     if ($bulundu) {
-        Write-Output 'VRAM yetmedi olabilir (kesin degil): logda bellek ayirma/agirlik hazirlama hatasi var.'
+        Write-Output '[VT-E-VRAM] VRAM yetmedi olabilir (kesin degil): logda bellek ayirma/agirlik hazirlama hatasi var.'
         Write-Output '  Once: diger uygulamalari ve ikinci ekrani kapatin, yeniden deneyin (ekran yuku VRAM tepesini artirir).'
         if ($Kare - 17 -ge 56) { Write-Output ("  Olmazsa daha kisa deneyin: -Kare {0} (56..$KareSabit, 17k+5 gridi). Ayrinti: docs\SIK_HATALAR.md A.1" -f ($Kare - 17)) }
         else { Write-Output '  Ayrinti: docs\SIK_HATALAR.md A.1 (bu kare sayisindan daha kisasi onerilmiyor)' }
@@ -279,17 +279,17 @@ try {
     if (Test-Path -LiteralPath $Cikti) { Remove-Item -LiteralPath $Cikti -Force }   # eski avi basari sayilmasin
     $k1 = Asama-Kos '_a1' $Env1
     if ($IkiAsama) {
-        if (-not (Test-Path -LiteralPath $Latent) -or (Get-Item -LiteralPath $Latent).Length -lt 1MB) { throw "asama 1 latent yazmadi (cikis $k1); ham_err_${Ad}_a1.txt'e bakin" }
+        if (-not (Test-Path -LiteralPath $Latent) -or (Get-Item -LiteralPath $Latent).Length -lt 1MB) { throw "[VT-E-LATENT] asama 1 latent yazmadi (cikis $k1); ham_err_${Ad}_a1.txt'e bakin" }
         Write-Output ("asama 1 tamam (latent {0:N1} MB), asama 2 (ayri surec VAE) basliyor" -f ((Get-Item -LiteralPath $Latent).Length / 1MB))
         if (Test-Path -LiteralPath $Cikti) { Remove-Item -LiteralPath $Cikti -Force }
         $k2 = Asama-Kos '_a2' $Env2
         if ($k2 -ne 0) { Write-Output "UYARI: asama 2 cikis kodu '$k2' (tek basina basari olcutu degil; avi + kare sayisi + log denetlenir)" }
-        if (-not (Log-Temiz '_a2')) { throw "asama 2 logunda karolu VAE geri-dususu ya da bellek hatasi: cikti GECERSIZ" }
+        if (-not (Log-Temiz '_a2')) { throw "[VT-E-TILING] asama 2 logunda karolu VAE geri-dususu ya da bellek hatasi: cikti GECERSIZ" }
     } else {
         if ($k1 -ne 0) { Write-Output "UYARI: sd-cli cikis kodu '$k1' (tek basina basari olcutu degil; avi + kare sayisi + log denetlenir)" }
-        if (-not (Log-Temiz '_a1')) { throw "logda karolu VAE geri-dususu ya da bellek hatasi: cikti GECERSIZ" }
+        if (-not (Log-Temiz '_a1')) { throw "[VT-E-TILING] logda karolu VAE geri-dususu ya da bellek hatasi: cikti GECERSIZ" }
     }
-    if (-not (Test-Path -LiteralPath $Cikti) -or (Get-Item -LiteralPath $Cikti).Length -lt 10KB) { throw "cikti dosyasi yok ya da cok kucuk: $Cikti" }
+    if (-not (Test-Path -LiteralPath $Cikti) -or (Get-Item -LiteralPath $Cikti).Length -lt 10KB) { throw "[VT-E-CIKTI] cikti dosyasi yok ya da cok kucuk: $Cikti" }
     # BASARI OLCUTU (birlikte): avi var + kare sayisi + log temiz (+ VRAM tepe uyarisi); cikis kodu tek basina olcut degil. [tasarim, gercek kosuda gorulecek]
     $ffprobe = $null; foreach ($c in @((Join-Path $Motor 'ffprobe.exe'), 'ffprobe')) { $g = Get-Command $c -ErrorAction SilentlyContinue; if ($g) { $ffprobe = $g.Source; break } }
     $n = -1
@@ -297,7 +297,7 @@ try {
     $kaynak = 'ffprobe'
     if ($n -lt 0) { $n = Avi-KareSayisi $Cikti; $kaynak = 'avi basligi' }
     if ($n -ge 0) {
-        if ($n -ne $Kare) { throw "kare sayisi $n ($kaynak), beklenen ${Kare}: cikti GECERSIZ" }
+        if ($n -ne $Kare) { throw "[VT-E-KARESAYISI] kare sayisi $n ($kaynak), beklenen ${Kare}: cikti GECERSIZ" }
         Write-Output "kare sayisi dogrulandi: $n ($kaynak)"
     } else { Write-Output "UYARI: kare sayisi okunamadi (ffprobe yok, avi basligi okunamadi); dogrulanmadi" }
     if ($script:VramTepe -gt 0) {
@@ -305,32 +305,32 @@ try {
         else { Write-Output ("VRAM tepe (nvidia-smi, tum kart, 5 sn ornek): {0} MiB" -f $script:VramTepe) }
         # Esik: bos VRAM <= 296 MiB (4096 MiB kartta eski "tepe >= 3800" ile ayni); toplam okunamazsa eski kural.
         $incemarj = $(if ($script:VramTop -gt 0) { ($script:VramTop - $script:VramTepe) -le 296 } else { $script:VramTepe -ge 3800 })
-        if ($incemarj) { Write-Output 'UYARI: bos VRAM 296 MiB ya da alti: ince marj, baska ekran/uygulama yuku varsa sonraki kosu dusebilir (docs\SIK_HATALAR.md A.1)' }
+        if ($incemarj) { Write-Output 'UYARI: [VT-W-VRAM-MARJ] bos VRAM 296 MiB ya da alti: ince marj, baska ekran/uygulama yuku varsa sonraki kosu dusebilir (docs\SIK_HATALAR.md A.1)' }
     }
     # ses akisi: model ses uretir (olculen cikti: video + pcm_s16le ses); ffprobe akis listesini okuyabildi ve ses yoksa GECERSIZ. [tasarim, gercek kosuda gorulecek]
     if ($ffprobe) {
         try { $eap = $ErrorActionPreference; $ErrorActionPreference = 'Continue'; $tur = @(& $ffprobe -v error -show_entries stream=codec_type -of csv=p=0 $Cikti 2>$null) } catch { $tur = @() } finally { $ErrorActionPreference = $eap }
         $tur = @($tur | ForEach-Object { "$_".Trim() } | Where-Object { $_ })
         if ($tur -contains 'video') {
-            if ($tur -contains 'audio') { Write-Output 'ses akisi var' } else { throw 'ses akisi yok: cikti GECERSIZ (model ses uretir; ham_out logunu ve istemdeki audio: cumlesini kontrol edin)' }
+            if ($tur -contains 'audio') { Write-Output 'ses akisi var' } else { throw '[VT-E-SES] ses akisi yok: cikti GECERSIZ (model ses uretir; ham_out logunu ve istemdeki audio: cumlesini kontrol edin)' }
         } else { Write-Output 'UYARI: ffprobe akis listesini okuyamadi, ses akisi dogrulanmadi' }
     }
     # kalite kapisi: sonuc basari olcutune DAHIL. TAMAM yalniz kapi gecince. Esiklere dokunulmaz (docs\KAPILAR.md). Cikis: 5 = KAPI RED, 6 = kapi calismadi.
     if (-not $Kontrol) {
         $py = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } else { 'python' })
         if (-not (Get-Command $py -ErrorAction SilentlyContinue)) {
-            Write-Output ("VIDEO URETILDI ama KAPI CALISMADI (python yok; VT_PYTHON ayarlayin, opencv-python gerekir): klip kabul edilmedi sayilir: {0}" -f $Cikti)
+            Write-Output ("VIDEO URETILDI ama KAPI CALISMADI [VT-E-PY] (python yok; VT_PYTHON ayarlayin, opencv-python gerekir): klip kabul edilmedi sayilir: {0}" -f $Cikti)
             exit 6
         }
         & powershell.exe -NoProfile -File (Join-Path $PSScriptRoot 'uretim_kapi.ps1') -Dizin $Dizin -Ad $Ad -Kare $Kare -DokuNorm
         $kapiKod = $LASTEXITCODE
         if (-not $Standart) { Write-Output ("UYARI: kalite kapisi esikleri 640x384 icin kalibre; {0}x{1} boyutunda gurultu/N degerleri karsilastirilamaz (yuksek cozunurlukte gurultu dogal olarak dusuk okunur). Videoyu gozle izleyin (docs\KAPILAR.md)." -f $W, $H) }
         if ($kapiKod -eq 6) {
-            Write-Output ("VIDEO URETILDI ama KAPI CALISMADI (python'da opencv-python/numpy yok ya da python calismadi; 'py -3 -m pip install opencv-python numpy', VT_PYTHON): klip kabul edilmedi sayilir: {0}" -f $Cikti)
+            Write-Output ("VIDEO URETILDI ama KAPI CALISMADI [VT-E-PY] (python'da opencv-python/numpy yok ya da python calismadi; 'py -3 -m pip install opencv-python numpy', VT_PYTHON): klip kabul edilmedi sayilir: {0}" -f $Cikti)
             exit 6
         }
         if ($kapiKod -ne 0) {
-            Write-Output 'KAPI RED: klip kabul edilmez, karar kullanicinindir; nedenini docs\KAPILAR.md ve runs\olaylar.txt icinde okuyun (dokulu sahnede sigma-HH ile de bakin).'
+            Write-Output 'KAPI RED: [VT-E-KAPI-RED] klip kabul edilmez, karar kullanicinindir; nedenini docs\KAPILAR.md ve runs\olaylar.txt icinde okuyun (dokulu sahnede sigma-HH ile de bakin).'
             Write-Output 'Kalite kapisi lisans uygunlugunu denetlemez; cikti kullanimi (bolge V.4, AI etiketi A-12, ticari IV) sizin sorumlulugunuzdadir: docs\LISANS_UYARISI.md'
             Write-Output "This gate does not check motion consistency (object scale or position jumps): watch the whole video before accepting it."
             Write-Output 'Bu kapi hareket tutarliligini (nesne olcegi/konum sicramasi) denetlemez: kabul etmeden once videonun tamamini izleyin.'

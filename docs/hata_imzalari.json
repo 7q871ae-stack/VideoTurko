@@ -1,0 +1,955 @@
+{
+ "surum": 1,
+ "aciklama_en": "Stable error/warning codes for VideoTurko scripts. Each code is printed as [VT-E-...] / [VT-W-...] after the HATA:/UYARI: heading (headings and exit codes never change). imza = plain case-insensitive substrings (no regular expressions on purpose: no ReDoS on untrusted log text). ornek_log = log pieces (quoted from SIK_HATALAR, the line the script prints, or the standard Windows/PowerShell message) that tests match against imza. sik_hatalar = item number in docs/SIK_HATALAR.md; anchor = lowercase code (docs/SIK_HATALAR.md#vt-e-dll).",
+ "aciklama_tr": "VideoTurko betikleri icin kararli hata/uyari kodlari. Her kod HATA:/UYARI: basliginin ardindan [VT-E-...] / [VT-W-...] olarak yazilir (basliklar ve cikis kodlari degismez). imza = duz, buyuk/kucuk harf duyarsiz alt dizeler (bilerek duzenli ifade yok: guvenilmeyen log metninde ReDoS olmaz). ornek_log = testlerin imzayla esledigi log parcalari (SIK_HATALAR dosyasindan alinti, betigin yazdigi satir ya da standart Windows/PowerShell iletisi). sik_hatalar = docs/SIK_HATALAR.md madde numarasi; capa = kucuk harfli kod (docs/SIK_HATALAR.md#vt-e-dll).",
+ "kodlar": [
+  {
+   "kod": "VT-E-OS",
+   "tur": "hata",
+   "sik_hatalar": "26",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Windows 10 or newer required",
+   "baslik_tr": "Windows 10 ya da ustu gerekir",
+   "imza": [
+    "[VT-E-OS]"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-OS] Windows 10 ya da ustu gerekir"
+   ],
+   "ilk_adim_en": "Use Windows 10 or 11 (the scripts are Windows PowerShell 5.1 scripts).",
+   "ilk_adim_tr": "Windows 10 ya da 11 kullanin (betikler Windows PowerShell 5.1 icindir).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-os"
+  },
+  {
+   "kod": "VT-E-GPU",
+   "tur": "hata",
+   "sik_hatalar": "25",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "No usable NVIDIA GPU (nvidia-smi missing or silent)",
+   "baslik_tr": "Kullanilabilir NVIDIA kart yok (nvidia-smi yok ya da cikti vermiyor)",
+   "imza": [
+    "[VT-E-GPU]",
+    "nvidia-smi yok",
+    "'nvidia-smi' is not recognized"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA)."
+   ],
+   "ilk_adim_en": "Install or update the NVIDIA driver, open a new terminal, run nvidia-smi. The engine is NVIDIA CUDA only (no AMD, no Intel, no CPU mode).",
+   "ilk_adim_tr": "NVIDIA surucusunu kurun ya da guncelleyin, yeni terminal acin, nvidia-smi calistirin. Motor yalniz NVIDIA CUDA (AMD, Intel, islemci modu yok).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-gpu"
+  },
+  {
+   "kod": "VT-E-GPU-VRAM",
+   "tur": "hata",
+   "sik_hatalar": "25",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Card has less than about 4 GB VRAM",
+   "baslik_tr": "Kartta yaklasik 4 GB VRAM yok",
+   "imza": [
+    "[VT-E-GPU-VRAM]",
+    "en az 4 GB VRAM gerekir"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-GPU-VRAM] en az 4 GB VRAM gerekir"
+   ],
+   "ilk_adim_en": "The check needs at least 3800 MiB. -Zorla skips the check only; the result is not guaranteed.",
+   "ilk_adim_tr": "Kontrol en az 3800 MiB ister. -Zorla yalniz kontrolu atlar; sonuc garanti degil.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-gpu-vram"
+  },
+  {
+   "kod": "VT-E-GPU-CC",
+   "tur": "hata",
+   "sik_hatalar": "25",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Compute capability below 6.1 (older than Pascal)",
+   "baslik_tr": "Compute capability 6.1 altinda (Pascal oncesi)",
+   "imza": [
+    "[VT-E-GPU-CC]",
+    "compute capability 6.1 (Pascal) ya da ustu gerekir"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-GPU-CC] compute capability 6.1 (Pascal) ya da ustu gerekir"
+   ],
+   "ilk_adim_en": "Older cards are not supported. -Zorla skips the check only; the result is not guaranteed.",
+   "ilk_adim_tr": "Daha eski kartlar desteklenmez. -Zorla yalniz kontrolu atlar; sonuc garanti degil.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-gpu-cc"
+  },
+  {
+   "kod": "VT-W-GPU-DENENMEDI",
+   "tur": "uyari",
+   "sik_hatalar": "25",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Card is not the verified GTX 1050 Ti",
+   "baslik_tr": "Kart dogrulanmis GTX 1050 Ti degil",
+   "imza": [
+    "[VT-W-GPU-DENENMEDI]",
+    "Dogrulanmis donanim yalniz GTX 1050 Ti"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61)."
+   ],
+   "ilk_adim_en": "You can continue; other cards were reported by users (see issues) but are not verified by the authors.",
+   "ilk_adim_tr": "Devam edebilirsiniz; baska kartlar kullanicilarca bildirildi (issue listesi) ama yazarlarca dogrulanmadi.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-gpu-denenmedi"
+  },
+  {
+   "kod": "VT-E-RAM",
+   "tur": "hata",
+   "sik_hatalar": "27",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Less than 12 GB total RAM",
+   "baslik_tr": "Toplam RAM 12 GB altinda",
+   "imza": [
+    "[VT-E-RAM]",
+    "en az 16 GB RAM onerilir"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-RAM] en az 16 GB RAM onerilir (olculen RAM tepe ~11,5 GB); 12 GB alti desteklenmez"
+   ],
+   "ilk_adim_en": "Use a machine with 16 GB RAM. -Zorla skips the check only.",
+   "ilk_adim_tr": "16 GB RAM olan makine kullanin. -Zorla yalniz kontrolu atlar.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-ram"
+  },
+  {
+   "kod": "VT-W-RAM",
+   "tur": "uyari",
+   "sik_hatalar": "27",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "RAM 12 to 15.5 GB: 16 GB recommended",
+   "baslik_tr": "RAM 12-15,5 GB: 16 GB onerilir",
+   "imza": [
+    "[VT-W-RAM]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-RAM] RAM 12 GB: 16 GB onerilir; kosu sirasinda diger uygulamalari kapatin"
+   ],
+   "ilk_adim_en": "Close other applications while generating; swapping slows the run.",
+   "ilk_adim_tr": "Uretim sirasinda diger uygulamalari kapatin; takas yavaslatir.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-ram"
+  },
+  {
+   "kod": "VT-W-RAM-BOS",
+   "tur": "uyari",
+   "sik_hatalar": "27",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Free RAM right now is below 11 GB",
+   "baslik_tr": "Su an bos RAM 11 GB altinda",
+   "imza": [
+    "[VT-W-RAM-BOS]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-RAM-BOS] Bos RAM su an 8 GB: motor video kosusunda tepe ~11 GB kullanir."
+   ],
+   "ilk_adim_en": "Install is not affected. Before generating a video close the browser and large programs, then measure again.",
+   "ilk_adim_tr": "Kurulum etkilenmez. Video uretmeden once tarayici ve buyuk programlari kapatin, sonra tekrar olcun.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-ram-bos"
+  },
+  {
+   "kod": "VT-E-DISK",
+   "tur": "hata",
+   "sik_hatalar": "28",
+   "yayinlayan": [
+    "kur.ps1",
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "Not enough free disk space on the model drive (under 32 GiB)",
+   "baslik_tr": "Model surucusunde bos yer yetersiz (32 GiB alti)",
+   "imza": [
+    "[VT-E-DISK]",
+    "DISK YETERSIZ",
+    "model indirmek icin model surucusunde en az"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-DISK] model indirmek icin model surucusunde en az 32 GiB bos gerekir (29,31 GiB model + motor/CUDA zip ve acma payi; bos 10 GiB)."
+   ],
+   "ilk_adim_en": "Free space or point VT_MODEL_DIR to another drive. A partial download keeps its .part file, so freed space continues it.",
+   "ilk_adim_tr": "Yer acin ya da VT_MODEL_DIR ile baska surucu secin. Yarim indirme .part dosyasini korur; yer acinca ayni komut surer.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-disk"
+  },
+  {
+   "kod": "VT-E-DISK-KOK",
+   "tur": "hata",
+   "sik_hatalar": "28",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Install root drive has under 3 GiB free for the engine zips",
+   "baslik_tr": "Kurulum kokunun surucusunde motor zipleri icin 3 GiB bos yok",
+   "imza": [
+    "[VT-E-DISK-KOK]"
+   ],
+   "ornek_log": [
+    "HATA: [VT-E-DISK-KOK] kurulum kokunun suruculerinde (C:) motor ve CUDA zipleri icin en az 3 GiB bos gerekir (bos 2 GiB)"
+   ],
+   "ilk_adim_en": "Free 3 GiB on that drive or set VT_ROOT to a drive with room.",
+   "ilk_adim_tr": "O surucuda 3 GiB acin ya da VT_ROOT ile yeri genis bir surucu secin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-disk-kok"
+  },
+  {
+   "kod": "VT-W-DISK-PAY",
+   "tur": "uyari",
+   "sik_hatalar": "28",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Free space between 32 and 40 GiB: margin is narrow",
+   "baslik_tr": "Bos yer 32-40 GiB arasi: pay dar",
+   "imza": [
+    "[VT-W-DISK-PAY]",
+    "pay dar"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-DISK-PAY] model surucusunde bos yer 35 GiB: esik (32 GiB) gecildi ama pay dar (bu kurulum icin gereken ~31,4 GiB)."
+   ],
+   "ilk_adim_en": "Prefer 40 GiB or more free. If the disk fills during the download it stops, keeps the .part file and the same command continues after you free space.",
+   "ilk_adim_tr": "40 GiB ya da uzeri bos yer onerilir. Indirme sirasinda disk dolarsa indirme durur, .part korunur, yer acinca ayni komut kaldigi yerden surer.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-disk-pay"
+  },
+  {
+   "kod": "VT-W-HDD",
+   "tur": "uyari",
+   "sik_hatalar": "28",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Model folder is on an HDD",
+   "baslik_tr": "Model klasoru HDD uzerinde",
+   "imza": [
+    "[VT-W-HDD]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-HDD] Model klasoru HDD uzerinde: ilk adimlar 15-25 kat yavas olur (olculdu)."
+   ],
+   "ilk_adim_en": "Prefer an NVMe/SSD drive (VT_MODEL_DIR).",
+   "ilk_adim_tr": "NVMe/SSD surucu onerilir (VT_MODEL_DIR).",
+   "capa": "docs/SIK_HATALAR.md#vt-w-hdd"
+  },
+  {
+   "kod": "VT-W-VC",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Visual C++ 2015-2022 x64 runtime not found",
+   "baslik_tr": "Visual C++ 2015-2022 x64 calisma zamani bulunamadi",
+   "imza": [
+    "[VT-W-VC]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-VC] Visual C++ 2015-2022 x64 Redistributable bulunamadi"
+   ],
+   "ilk_adim_en": "Install the Microsoft Visual C++ 2015-2022 x64 Redistributable. If sd-cli does not start, this is the cause (see VT-E-DLL).",
+   "ilk_adim_tr": "Microsoft Visual C++ 2015-2022 x64 Redistributable kurun. sd-cli acilmazsa nedeni budur (bkz. VT-E-DLL).",
+   "capa": "docs/SIK_HATALAR.md#vt-w-vc"
+  },
+  {
+   "kod": "VT-W-YOL-BOSLUK",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Install path contains a space",
+   "baslik_tr": "Yolda bosluk var",
+   "imza": [
+    "[VT-W-YOL-BOSLUK]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-YOL-BOSLUK] Kurulum koku yolu bosluk iceriyor"
+   ],
+   "ilk_adim_en": "No real run was tried on such paths. Use a short ASCII path such as C:\\vt and set VT_ROOT.",
+   "ilk_adim_tr": "Bu tur yollarda gercek kosu denenmedi. C:\\vt gibi kisa bir ASCII yol kullanin ve VT_ROOT ile ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-yol-bosluk"
+  },
+  {
+   "kod": "VT-W-YOL-ASCII",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Install path contains non-ASCII characters",
+   "baslik_tr": "Yolda ASCII disi karakter var",
+   "imza": [
+    "[VT-W-YOL-ASCII]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-YOL-ASCII] Kurulum koku yolu ASCII disi karakter iceriyor"
+   ],
+   "ilk_adim_en": "No real run was tried on such paths. Use a short ASCII path such as C:\\vt and set VT_ROOT.",
+   "ilk_adim_tr": "Bu tur yollarda gercek kosu denenmedi. C:\\vt gibi kisa bir ASCII yol kullanin ve VT_ROOT ile ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-yol-ascii"
+  },
+  {
+   "kod": "VT-W-YOL-ONEDRIVE",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Path is inside OneDrive",
+   "baslik_tr": "Yol OneDrive icinde",
+   "imza": [
+    "[VT-W-YOL-ONEDRIVE]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-YOL-ONEDRIVE] Kurulum koku yolu OneDrive icinde"
+   ],
+   "ilk_adim_en": "No real run was tried on such paths. Use a short ASCII path such as C:\\vt and set VT_ROOT.",
+   "ilk_adim_tr": "Bu tur yollarda gercek kosu denenmedi. C:\\vt gibi kisa bir ASCII yol kullanin ve VT_ROOT ile ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-yol-onedrive"
+  },
+  {
+   "kod": "VT-W-YOL-UNC",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Path is a network (UNC) path",
+   "baslik_tr": "Yol bir ag yolu (UNC)",
+   "imza": [
+    "[VT-W-YOL-UNC]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-YOL-UNC] Kurulum koku yolu bir ag yolu (UNC)"
+   ],
+   "ilk_adim_en": "No real run was tried on such paths. Use a short ASCII path such as C:\\vt and set VT_ROOT.",
+   "ilk_adim_tr": "Bu tur yollarda gercek kosu denenmedi. C:\\vt gibi kisa bir ASCII yol kullanin ve VT_ROOT ile ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-yol-unc"
+  },
+  {
+   "kod": "VT-W-YOL-UZUN",
+   "tur": "uyari",
+   "sik_hatalar": "32",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Path is long (over 100 characters)",
+   "baslik_tr": "Yol uzun (100 karakter ustu)",
+   "imza": [
+    "[VT-W-YOL-UZUN]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-YOL-UZUN] Kurulum koku yolu uzun"
+   ],
+   "ilk_adim_en": "No real run was tried on such paths. Use a short ASCII path such as C:\\vt and set VT_ROOT.",
+   "ilk_adim_tr": "Bu tur yollarda gercek kosu denenmedi. C:\\vt gibi kisa bir ASCII yol kullanin ve VT_ROOT ile ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-yol-uzun"
+  },
+  {
+   "kod": "VT-W-PY",
+   "tur": "uyari",
+   "sik_hatalar": "20",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Python + opencv-python + numpy not ready (needed by the quality gate)",
+   "baslik_tr": "Python + opencv-python + numpy hazir degil (kalite kapisi ister)",
+   "imza": [
+    "[VT-W-PY]"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-PY] Python + opencv-python + numpy hazir degil (python, sonuc 9009; 9009 = Windows Store kisayolu)"
+   ],
+   "ilk_adim_en": "Install Python 3, then py -3 -m pip install opencv-python numpy (or set VT_PYTHON). Install is unaffected but uret.ps1 will not make a video without it.",
+   "ilk_adim_tr": "Python 3 kurun, sonra py -3 -m pip install opencv-python numpy (ya da VT_PYTHON). Kurulum etkilenmez ama bunsuz uret.ps1 video uretmez.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-py"
+  },
+  {
+   "kod": "VT-E-MOTOR",
+   "tur": "hata",
+   "sik_hatalar": "31",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Engine step stopped (download or unpack failed)",
+   "baslik_tr": "Motor adimi durdu (indirme ya da acma basarisiz)",
+   "imza": [
+    "[VT-E-MOTOR]",
+    "MOTOR ADIMI DURDU"
+   ],
+   "ornek_log": [
+    "MOTOR ADIMI DURDU: [VT-E-MOTOR] indirme basarisiz: https://github.com/.../videoturko-motor-0.1.0-win64-cuda12.8-sm61.zip"
+   ],
+   "ilk_adim_en": "Check the network and rerun the same command (zip downloads resume with curl -C -). Or give a local zip: -MotorZip / -CudaZip.",
+   "ilk_adim_tr": "Aginizi kontrol edip ayni komutu tekrar calistirin (zip indirme curl -C - ile surer). Ya da yerel zip verin: -MotorZip / -CudaZip.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-motor"
+  },
+  {
+   "kod": "VT-E-MOTOR-ZIP",
+   "tur": "hata",
+   "sik_hatalar": "31",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "Engine zip missing (no release URL yet or local zip not found)",
+   "baslik_tr": "Motor zip dosyasi yok (release adresi yok ya da yerel zip bulunamadi)",
+   "imza": [
+    "[VT-E-MOTOR-ZIP]"
+   ],
+   "ornek_log": [
+    "MOTOR ADIMI DURDU: [VT-E-MOTOR-ZIP] yerel zip dosyasi bulunamadi: <zip yolu>"
+   ],
+   "ilk_adim_en": "Pass existing zip files with -MotorZip and -CudaZip (see docs/KURULUM.md).",
+   "ilk_adim_tr": "Var olan zip dosyalarini -MotorZip ve -CudaZip ile verin (docs/KURULUM.md).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-motor-zip"
+  },
+  {
+   "kod": "VT-E-HASH",
+   "tur": "hata",
+   "sik_hatalar": "29",
+   "yayinlayan": [
+    "kur.ps1",
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "sha256 mismatch: file rejected",
+   "baslik_tr": "sha256 tutmadi: dosya reddedildi",
+   "imza": [
+    "[VT-E-HASH]",
+    "sha256 TUTMADI",
+    "sha256 tutmadi"
+   ],
+   "ornek_log": [
+    "WARNING: [VT-E-HASH] sha256 TUTMADI, bozuk .part silindi: minimax_h3_sol_vae_fp16.safetensors"
+   ],
+   "ilk_adim_en": "The corrupt file is deleted and not used. Run the downloader again (it restarts that file clean). If it repeats, open an issue with this line; do not bypass the check.",
+   "ilk_adim_tr": "Bozuk dosya silinir ve kullanilmaz. Indiriciyi tekrar calistirin (o dosyayi temiz bastan indirir). Tekrarlarsa bu satirla issue acin; kontrolu atlamayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-hash"
+  },
+  {
+   "kod": "VT-W-PART",
+   "tur": "uyari",
+   "sik_hatalar": "29",
+   "yayinlayan": [
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "Partial download (.part) is oversized or incomplete",
+   "baslik_tr": "Yarim indirme (.part) bozuk ya da eksik",
+   "imza": [
+    "[VT-W-PART]"
+   ],
+   "ornek_log": [
+    "WARNING: [VT-W-PART] indirme eksik kaldi (100 / 200); .part korundu, -Baslat ile devam et"
+   ],
+   "ilk_adim_en": "Run the same command again: an incomplete .part continues with a Range request; an oversized one is deleted and restarts.",
+   "ilk_adim_tr": "Ayni komutu tekrar calistirin: eksik .part Range istegiyle surer; beklenenden buyuk olan silinip bastan iner.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-part"
+  },
+  {
+   "kod": "VT-W-RANGE",
+   "tur": "uyari",
+   "sik_hatalar": "29",
+   "yayinlayan": [
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "Server did not accept the Range request: restarting the file",
+   "baslik_tr": "Sunucu Range istegini kabul etmedi: dosya bastan iniyor",
+   "imza": [
+    "[VT-W-RANGE]"
+   ],
+   "ornek_log": [
+    "WARNING: [VT-W-RANGE] sunucu Range kabul etmedi; bastan iniyor"
+   ],
+   "ilk_adim_en": "Nothing to do; the file restarts from zero (slower). If it keeps happening on every run, check a proxy or VPN.",
+   "ilk_adim_tr": "Yapilacak bir sey yok; dosya sifirdan iner (daha yavas). Her kosuda oluyorsa proxy ya da VPN kontrol edin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-range"
+  },
+  {
+   "kod": "VT-E-LISANS",
+   "tur": "hata",
+   "sik_hatalar": "30",
+   "yayinlayan": [
+    "kur.ps1",
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "MiniMax H3 license not accepted yet (exit 2)",
+   "baslik_tr": "MiniMax H3 lisansi henuz kabul edilmedi (cikis 2)",
+   "imza": [
+    "[VT-E-LISANS]"
+   ],
+   "ornek_log": [
+    "[VT-E-LISANS] Lisans kabul gerekli"
+   ],
+   "ilk_adim_en": "Read docs/LISANS_KABUL.txt and, only if you accept, rerun with -LisansKabul E (TR) or Y (EN). AI agents must never accept for the user.",
+   "ilk_adim_tr": "docs/LISANS_KABUL.txt dosyasini okuyun; yalniz kabul ediyorsaniz -LisansKabul E (TR) ya da Y (EN) ile tekrar calistirin. Yapay zeka ajanlari kullanici adina asla kabul etmez.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-lisans"
+  },
+  {
+   "kod": "VT-E-URL",
+   "tur": "hata",
+   "sik_hatalar": "29",
+   "yayinlayan": [
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "Download address refused (not https or not an allowed host)",
+   "baslik_tr": "Indirme adresi reddedildi (https degil ya da izinli alan degil)",
+   "imza": [
+    "[VT-E-URL]",
+    "izinli olmayan alan"
+   ],
+   "ornek_log": [
+    "WARNING: [VT-E-URL] izinli olmayan alan: example.org"
+   ],
+   "ilk_adim_en": "Only https on huggingface.co / hf.co is accepted. Do not edit scripts/modeller.json; if it is unchanged, open an issue.",
+   "ilk_adim_tr": "Yalniz huggingface.co / hf.co uzerinde https kabul edilir. scripts/modeller.json dosyasini degistirmeyin; degismediyse issue acin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-url"
+  },
+  {
+   "kod": "VT-E-YOL",
+   "tur": "hata",
+   "sik_hatalar": "29",
+   "yayinlayan": [
+    "modelleri_indir.ps1"
+   ],
+   "baslik_en": "Target path escapes the model folder: refused",
+   "baslik_tr": "Hedef yol model klasorunun disina cikiyor: reddedildi",
+   "imza": [
+    "[VT-E-YOL]",
+    "hedef kok disina cikiyor"
+   ],
+   "ornek_log": [
+    "WARNING: [VT-E-YOL] hedef kok disina cikiyor: ..\\x"
+   ],
+   "ilk_adim_en": "Do not edit scripts/modeller.json. If the file is unchanged, open an issue.",
+   "ilk_adim_tr": "scripts/modeller.json dosyasini degistirmeyin. Degismediyse issue acin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-yol"
+  },
+  {
+   "kod": "VT-E-KONTROL",
+   "tur": "hata",
+   "sik_hatalar": "31",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "The 5-frame check generation failed (HAZIR is not printed)",
+   "baslik_tr": "5 karelik kontrol uretimi basarisiz (HAZIR yazilmaz)",
+   "imza": [
+    "[VT-E-KONTROL]",
+    "KONTROL BASARISIZ"
+   ],
+   "ornek_log": [
+    "KONTROL BASARISIZ [VT-E-KONTROL] (cikis 1, 12 sn): HAZIR YAZILMAZ."
+   ],
+   "ilk_adim_en": "Read the log line named in the message. Common causes: missing DLL or VC++ (VT-E-DLL), old driver, missing or corrupt model, not enough VRAM/RAM (close other programs).",
+   "ilk_adim_tr": "Iletide adi gecen log dosyasini okuyun. Sik nedenler: eksik DLL ya da VC++ (VT-E-DLL), eski surucu, eksik/bozuk model, VRAM/RAM yetersizligi (diger programlari kapatin).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-kontrol"
+  },
+  {
+   "kod": "VT-E-DLL",
+   "tur": "hata",
+   "sik_hatalar": "13",
+   "yayinlayan": [
+    "kur.ps1"
+   ],
+   "baslik_en": "DLL not found when starting sd-cli (0xC0000135)",
+   "baslik_tr": "sd-cli baslarken DLL bulunamadi (0xC0000135)",
+   "imza": [
+    "[VT-E-DLL]",
+    "STATUS_DLL_NOT_FOUND",
+    "0xC0000135",
+    "-1073741515"
+   ],
+   "ornek_log": [
+    "sd-cli DLL eksik (0xC0000135): cudart/cublas ve VC++ calisma zamanini kontrol edin"
+   ],
+   "ilk_adim_en": "Check that cudart64_12, cublas64_12, cublasLt64_12 are next to sd-cli.exe (or in VT_CUDA_BIN) and the Visual C++ runtime is installed.",
+   "ilk_adim_tr": "cudart64_12, cublas64_12, cublasLt64_12 dosyalari sd-cli.exe yaninda (ya da VT_CUDA_BIN icinde) mi ve Visual C++ calisma zamani kurulu mu kontrol edin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-dll"
+  },
+  {
+   "kod": "VT-E-KARE",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Invalid or too large frame count",
+   "baslik_tr": "Gecersiz ya da cok buyuk kare sayisi",
+   "imza": [
+    "[VT-E-KARE]",
+    "Kare sayisi 17k+5 olmali"
+   ],
+   "ornek_log": [
+    "[VT-E-KARE] Kare sayisi 17k+5 olmali (5, 22, 39, ... 17k+5; en fazla 209). Verilen: 100"
+   ],
+   "ilk_adim_en": "Use a value of the form 17k+5 up to 209: 5, 22, 39, 56, 73, 90, 107, 124, 141, 158, 175, 192, 209 (-InitImg max 192, -EndImg max 175 on a 4 GB card).",
+   "ilk_adim_tr": "17k+5 biciminde en fazla 209 verin: 5, 22, 39, 56, 73, 90, 107, 124, 141, 158, 175, 192, 209 (-InitImg en fazla 192, 4 GB kartta -EndImg en fazla 175).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-kare"
+  },
+  {
+   "kod": "VT-E-BOYUT",
+   "tur": "hata",
+   "sik_hatalar": "22",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Invalid resolution (-W/-H)",
+   "baslik_tr": "Gecersiz cozunurluk (-W/-H)",
+   "imza": [
+    "[VT-E-BOYUT]",
+    "-W ve -H 32'nin kati olmali"
+   ],
+   "ornek_log": [
+    "[VT-E-BOYUT] -W ve -H 32'nin kati olmali (motor yukari yuvarlar: 720 -> 736). Ornek: 640x384, 384x640, 832x480, 1280x736. Verilen: 720x400"
+   ],
+   "ilk_adim_en": "Give both -W and -H, multiples of 32, area at least 640x384 (vertical: -W 384 -H 640). Other sizes are not verified on 4 GB.",
+   "ilk_adim_tr": "-W ve -H birlikte, 32 katlari, alan en az 640x384 olmali (dikey: -W 384 -H 640). Baska boyutlar 4 GB kartta dogrulanmadi.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-boyut"
+  },
+  {
+   "kod": "VT-E-ISTEM",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Prompt or input image file not found",
+   "baslik_tr": "Istem ya da giris gorseli dosyasi bulunamadi",
+   "imza": [
+    "[VT-E-ISTEM]",
+    "istem dosyasi yok"
+   ],
+   "ornek_log": [
+    "[VT-E-ISTEM] istem dosyasi yok: istem.txt"
+   ],
+   "ilk_adim_en": "Check the path (relative paths start at your current folder). Try docs/ornek_istem_R0.txt.",
+   "ilk_adim_tr": "Yolu kontrol edin (goreli yol bulundugunuz klasorden baslar). docs/ornek_istem_R0.txt ile deneyin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-istem"
+  },
+  {
+   "kod": "VT-E-DOSYA",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Engine or model file missing",
+   "baslik_tr": "Motor ya da model dosyasi yok",
+   "imza": [
+    "[VT-E-DOSYA]"
+   ],
+   "ornek_log": [
+    "[VT-E-DOSYA] dosya yok: C:\\vt\\model\\minimax_h3_sol_vae_fp16.safetensors (once scripts\\kur.ps1 calistirin)"
+   ],
+   "ilk_adim_en": "Run scripts\\kur.ps1 first (it installs the engine and the 4 model files).",
+   "ilk_adim_tr": "Once scripts\\kur.ps1 calistirin (motoru ve 4 model dosyasini kurar).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-dosya"
+  },
+  {
+   "kod": "VT-E-KILIT",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Another uret.ps1 is using the GPU",
+   "baslik_tr": "GPU baska bir uret.ps1 tarafindan kullaniliyor",
+   "imza": [
+    "[VT-E-KILIT]",
+    "GPU baska bir uret.ps1"
+   ],
+   "ornek_log": [
+    "[VT-E-KILIT] GPU baska bir uret.ps1 tarafindan kullaniliyor (PID 1234). Tek GPU isi calistirin."
+   ],
+   "ilk_adim_en": "Run one GPU job at a time. A lock left by a dead process is ignored automatically [okudum: uret.ps1 checks Get-Process].",
+   "ilk_adim_tr": "Tek seferde bir GPU isi calistirin. Olu surecten kalan kilit otomatik yok sayilir [okudum: uret.ps1 Get-Process ile bakar].",
+   "capa": "docs/SIK_HATALAR.md#vt-e-kilit"
+  },
+  {
+   "kod": "VT-E-TAVAN",
+   "tur": "hata",
+   "sik_hatalar": "7",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Time limit exceeded: stage killed",
+   "baslik_tr": "Sure tavani asildi: asama kesildi",
+   "imza": [
+    "[VT-E-TAVAN]",
+    "TAVAN: asama"
+   ],
+   "ornek_log": [
+    "[VT-E-TAVAN] TAVAN: asama_a1 80 dk'yi asti, kesildi (uzun kosu icin -TavanDk arttirin)"
+   ],
+   "ilk_adim_en": "Raise -TavanDk (default is about 1.4 x the measured time) or close other GPU/disk-heavy programs.",
+   "ilk_adim_tr": "-TavanDk degerini arttirin (varsayilan olculen surenin yaklasik 1,4 kati) ya da GPU/disk yukleyen programlari kapatin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-tavan"
+  },
+  {
+   "kod": "VT-E-TILING",
+   "tur": "hata",
+   "sik_hatalar": "6",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "VAE fell back to tiled decoding or ran out of memory: output invalid",
+   "baslik_tr": "VAE karolu cozmeye dustu ya da bellek yetmedi: cikti gecersiz",
+   "imza": [
+    "[VT-E-TILING]",
+    "retrying with temporal tiling",
+    "temporal tiling",
+    "karolu VAE geri-dususu"
+   ],
+   "ornek_log": [
+    "retrying with temporal tiling",
+    "[VT-E-TILING] logda karolu VAE geri-dususu ya da bellek hatasi: cikti GECERSIZ"
+   ],
+   "ilk_adim_en": "The video is discarded on purpose (quality is never lowered). Close other programs and rerun; for 108+ frames the two-stage path is automatic.",
+   "ilk_adim_tr": "Video bilerek reddedilir (kalite dusurulmez). Diger programlari kapatip tekrar calistirin; 108+ karede iki asama otomatik acilir.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-tiling"
+  },
+  {
+   "kod": "VT-E-VRAM",
+   "tur": "hata",
+   "sik_hatalar": "1",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "VRAM ran out (weight preparation or allocation failed)",
+   "baslik_tr": "VRAM yetmedi (agirlik hazirlama ya da bellek ayirma basarisiz)",
+   "imza": [
+    "[VT-E-VRAM]",
+    "failed during weight preparation",
+    "ALLOC_FAILED",
+    "cannot make enough memory",
+    "vae decode compute failed"
+   ],
+   "ornek_log": [
+    "segment 5/52 (blocks.0) failed during weight preparation",
+    "[VT-E-VRAM] VRAM yetmedi olabilir (kesin degil): logda bellek ayirma/agirlik hazirlama hatasi var."
+   ],
+   "ilk_adim_en": "Close other applications and the second monitor, rerun. If it repeats try one step shorter (-Kare 17 less). Quality settings are never lowered.",
+   "ilk_adim_tr": "Diger uygulamalari ve ikinci ekrani kapatip tekrar deneyin. Tekrarlarsa 17 kare daha kisa deneyin. Kalite ayarlari dusurulmez.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-vram"
+  },
+  {
+   "kod": "VT-W-VRAM-MARJ",
+   "tur": "uyari",
+   "sik_hatalar": "23",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "VRAM margin was thin (200-300 MiB free at peak)",
+   "baslik_tr": "VRAM payi ince kaldi (tepede 200-300 MiB bos)",
+   "imza": [
+    "[VT-W-VRAM-MARJ]",
+    "VRAM ince marj"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-VRAM-MARJ] bos VRAM 296 MiB ya da alti: ince marj"
+   ],
+   "ilk_adim_en": "The video is valid. Another screen or app load may make the next run fail; keep other apps closed.",
+   "ilk_adim_tr": "Video gecerli. Baska ekran ya da uygulama yuku sonraki kosuyu dusurebilir; diger uygulamalari kapali tutun.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-vram-marj"
+  },
+  {
+   "kod": "VT-E-CIKTI",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Output file missing or too small",
+   "baslik_tr": "Cikti dosyasi yok ya da cok kucuk",
+   "imza": [
+    "[VT-E-CIKTI]"
+   ],
+   "ornek_log": [
+    "[VT-E-CIKTI] cikti dosyasi yok ya da cok kucuk: runs\\x\\video.avi"
+   ],
+   "ilk_adim_en": "Read ham_err_*_a1.txt next to the output; the engine log has the reason.",
+   "ilk_adim_tr": "Ciktinin yanindaki ham_err_*_a1.txt dosyasini okuyun; nedeni motor logunda.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-cikti"
+  },
+  {
+   "kod": "VT-E-LATENT",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Stage 1 wrote no latent file (two-stage run)",
+   "baslik_tr": "Asama 1 latent dosyasi yazmadi (iki asamali kosu)",
+   "imza": [
+    "[VT-E-LATENT]"
+   ],
+   "ornek_log": [
+    "[VT-E-LATENT] asama 1 latent yazmadi (cikis 1); ham_err_video_a1.txt'e bakin"
+   ],
+   "ilk_adim_en": "Read ham_err_*_a1.txt; usually a VRAM or model problem (see VT-E-VRAM).",
+   "ilk_adim_tr": "ham_err_*_a1.txt dosyasini okuyun; genelde VRAM ya da model sorunu (bkz. VT-E-VRAM).",
+   "capa": "docs/SIK_HATALAR.md#vt-e-latent"
+  },
+  {
+   "kod": "VT-E-KARESAYISI",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Frame count of the output differs from the request: output invalid",
+   "baslik_tr": "Ciktinin kare sayisi istenenden farkli: cikti gecersiz",
+   "imza": [
+    "[VT-E-KARESAYISI]"
+   ],
+   "ornek_log": [
+    "[VT-E-KARESAYISI] kare sayisi 50 (ffprobe), beklenen 56: cikti GECERSIZ"
+   ],
+   "ilk_adim_en": "Rerun. If it repeats, keep ham_out/ham_err logs and open an issue.",
+   "ilk_adim_tr": "Tekrar calistirin. Tekrarlarsa ham_out/ham_err loglarini saklayip issue acin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-karesayisi"
+  },
+  {
+   "kod": "VT-E-SES",
+   "tur": "hata",
+   "sik_hatalar": "33",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Output has no audio stream: output invalid",
+   "baslik_tr": "Ciktida ses akisi yok: cikti gecersiz",
+   "imza": [
+    "[VT-E-SES]"
+   ],
+   "ornek_log": [
+    "[VT-E-SES] ses akisi yok: cikti GECERSIZ (model ses uretir; ham_out logunu ve istemdeki audio: cumlesini kontrol edin)"
+   ],
+   "ilk_adim_en": "Check the audio: sentence in your prompt (docs/ISTEM_YAZIMI.md) and the ham_out log.",
+   "ilk_adim_tr": "Istemdeki audio: cumlenizi (docs/ISTEM_YAZIMI.md) ve ham_out logunu kontrol edin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-ses"
+  },
+  {
+   "kod": "VT-E-PY",
+   "tur": "hata",
+   "sik_hatalar": "20",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Quality gate could not run (Python/OpenCV missing): exit 6",
+   "baslik_tr": "Kalite kapisi calisamadi (Python/OpenCV yok): cikis 6",
+   "imza": [
+    "[VT-E-PY]",
+    "No module named 'cv2'",
+    "dikis_denetim cikti ayristirilamadi",
+    "KAPI CALISAMAZ",
+    "KAPI CALISMADI"
+   ],
+   "ornek_log": [
+    "ModuleNotFoundError: No module named 'cv2'",
+    "KAPI CALISAMAZ: [VT-E-PY] python + opencv-python + numpy hazir degil (python, sonuc 9009"
+   ],
+   "ilk_adim_en": "Install Python 3 and py -3 -m pip install opencv-python numpy (or VT_PYTHON). This is exit 6, not a quality RED.",
+   "ilk_adim_tr": "Python 3 kurup py -3 -m pip install opencv-python numpy calistirin (ya da VT_PYTHON). Bu cikis 6'dir, kalite RED degil.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-py"
+  },
+  {
+   "kod": "VT-E-KAPI-RED",
+   "tur": "hata",
+   "sik_hatalar": "11",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Quality gate RED (exit 5): clip not accepted",
+   "baslik_tr": "Kalite kapisi RED (cikis 5): klip kabul edilmedi",
+   "imza": [
+    "[VT-E-KAPI-RED]",
+    "KAPI RED"
+   ],
+   "ornek_log": [
+    "KAPI RED: [VT-E-KAPI-RED] klip kabul edilmez, karar kullanicinindir"
+   ],
+   "ilk_adim_en": "Read the reason in docs/KAPILAR.md and runs/olaylar.txt; the decision is yours. Watch the whole video: the gate does not check motion consistency.",
+   "ilk_adim_tr": "Nedeni docs/KAPILAR.md ve runs/olaylar.txt icinde okuyun; karar sizin. Videonun tamamini izleyin: kapi hareket tutarliligini denetlemez.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-kapi-red"
+  },
+  {
+   "kod": "VT-W-DENEYSEL",
+   "tur": "uyari",
+   "sik_hatalar": "12",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "Experimental VT_* switch is active (outside quality rules)",
+   "baslik_tr": "Deneysel VT_* anahtari aktif (kalite kurallari disinda)",
+   "imza": [
+    "[VT-W-DENEYSEL]",
+    "deneysel VT_* aktif"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-DENEYSEL] deneysel VT_* aktif (VT_NO_FA=1)"
+   ],
+   "ilk_adim_en": "Do not use such output for measurement or sharing; remove the VT_* variable to return to the verified settings.",
+   "ilk_adim_tr": "Bu cikti olcum ya da paylasim icin kullanilmaz; dogrulanmis ayarlara donmek icin VT_* degiskenini kaldirin.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-deneysel"
+  },
+  {
+   "kod": "VT-W-BLACKWELL",
+   "tur": "uyari",
+   "sik_hatalar": "24",
+   "yayinlayan": [
+    "uret.ps1"
+   ],
+   "baslik_en": "RTX 50 series (compute capability 12.x): black video was reported",
+   "baslik_tr": "RTX 50 serisi (compute capability 12.x): siyah video bildirildi",
+   "imza": [
+    "[VT-W-BLACKWELL]",
+    "RTX 50 serisi"
+   ],
+   "ornek_log": [
+    "UYARI: [VT-W-BLACKWELL] compute capability 12 (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli"
+   ],
+   "ilk_adim_en": "Try 56 frames first; if black, build the engine for sm_120 (docs/RTX5060_SM120_DERLEME.md). The authors have no RTX 50 card.",
+   "ilk_adim_tr": "Once 56 kare deneyin; siyahsa motoru sm_120 icin derleyin (docs/RTX5060_SM120_DERLEME.md). Yazarlarda RTX 50 kart yok.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-blackwell"
+  },
+  {
+   "kod": "VT-E-SIYAH",
+   "tur": "hata",
+   "sik_hatalar": "19",
+   "yayinlayan": [],
+   "baslik_en": "All-black video at 141+ frames on compute capability 7.0+ cards",
+   "baslik_tr": "Compute capability 7.0+ kartlarda 141+ karede tamamen siyah video",
+   "imza": [],
+   "ornek_log": [],
+   "ilk_adim_en": "Use v0.1.1 or newer (it sets GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32 on such cards) or set it yourself before uret.ps1.",
+   "ilk_adim_tr": "v0.1.1 ya da yenisini kullanin (bu kartlarda GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32 ayarlar) ya da uret.ps1 oncesi kendiniz ayarlayin.",
+   "capa": "docs/SIK_HATALAR.md#vt-e-siyah"
+  },
+  {
+   "kod": "VT-W-FFMPEG",
+   "tur": "uyari",
+   "sik_hatalar": "21",
+   "yayinlayan": [],
+   "baslik_en": "ffmpeg not found: contact sheet skipped, gate unaffected",
+   "baslik_tr": "ffmpeg bulunamadi: pafta atlanir, kapi etkilenmez",
+   "imza": [
+    "'ffmpeg' is not recognized"
+   ],
+   "ornek_log": [
+    "ffmpeg : The term 'ffmpeg' is not recognized as the name of a cmdlet, function, script file, or operable program."
+   ],
+   "ilk_adim_en": "Optional: winget install Gyan.FFmpeg (new window) or set VT_FFMPEG. The gate decision is unchanged without it.",
+   "ilk_adim_tr": "Istege bagli: winget install Gyan.FFmpeg (yeni pencere) ya da VT_FFMPEG. Bunsuz de kapi karari degismez.",
+   "capa": "docs/SIK_HATALAR.md#vt-w-ffmpeg"
+  }
+ ]
+}

@@ -34,16 +34,16 @@ function Sha256([string]$yol) { (Get-FileHash -Algorithm SHA256 -LiteralPath $yo
 function Guvenli-Hedef([string]$kok, [string]$goreli) {
     $kokTam = [IO.Path]::GetFullPath($kok).TrimEnd('\') + '\'
     $tam = [IO.Path]::GetFullPath((Join-Path $kok $goreli))
-    if (-not $tam.StartsWith($kokTam, [StringComparison]::OrdinalIgnoreCase)) { throw "hedef kok disina cikiyor: $goreli" }
+    if (-not $tam.StartsWith($kokTam, [StringComparison]::OrdinalIgnoreCase)) { throw "[VT-E-YOL] hedef kok disina cikiyor: $goreli" }
     return $tam
 }
 
 function Https-Dogrula([string]$url) {
     $u = [Uri]$url
-    if ($u.Scheme -ne 'https') { throw "yalniz https: $url" }
+    if ($u.Scheme -ne 'https') { throw "[VT-E-URL] yalniz https: $url" }
     $ok = $false
     foreach ($s in $izinliSonek) { if ($u.Host -eq $s -or $u.Host.EndsWith('.' + $s)) { $ok = $true } }
-    if (-not $ok) { throw "izinli olmayan alan: $($u.Host)" }
+    if (-not $ok) { throw "[VT-E-URL] izinli olmayan alan: $($u.Host)" }
 }
 
 function Dur-Var { (Test-Path -LiteralPath (Join-Path $Hedef 'DUR')) -or (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'DUR')) }
@@ -83,7 +83,7 @@ function Iste([string]$url, [long]$baslangic) {
 }
 
 function Indir($k, [string]$hedefYol, [string]$Sha256Beklenen) {
-    if ([string]::IsNullOrWhiteSpace($Sha256Beklenen) -or $Sha256Beklenen.Length -ne 64) { throw "sha256 sabiti yok/gecersiz: $($k.hedef) (indirme reddedildi)" }
+    if ([string]::IsNullOrWhiteSpace($Sha256Beklenen) -or $Sha256Beklenen.Length -ne 64) { throw "[VT-E-HASH] sha256 sabiti yok/gecersiz: $($k.hedef) (indirme reddedildi)" }
     $part = "$hedefYol.part"
     $boyut = [long]$k.boyut
     $var = 0L
@@ -91,7 +91,7 @@ function Indir($k, [string]$hedefYol, [string]$Sha256Beklenen) {
         $var = (Get-Item -LiteralPath $part).Length
         if ($var -gt $boyut) {
             Remove-Item -LiteralPath $part -Force
-            Write-Warning "bozuk .part (beklenenden buyuk) silindi: $(Split-Path $part -Leaf); bastan iner"
+            Write-Warning "[VT-W-PART] bozuk .part (beklenenden buyuk) silindi: $(Split-Path $part -Leaf); bastan iner"
             $var = 0L
         }
     }
@@ -99,7 +99,7 @@ function Indir($k, [string]$hedefYol, [string]$Sha256Beklenen) {
         $resp = Iste $k.url $var
         $kod = [int]$resp.StatusCode
         $mod = [IO.FileMode]::Append
-        if ($var -gt 0 -and $kod -ne 206) { $mod = [IO.FileMode]::Create; $var = 0L; Write-Warning 'sunucu Range kabul etmedi; bastan iniyor' }
+        if ($var -gt 0 -and $kod -ne 206) { $mod = [IO.FileMode]::Create; $var = 0L; Write-Warning '[VT-W-RANGE] sunucu Range kabul etmedi; bastan iniyor' }
         elseif ($var -eq 0) { $mod = [IO.FileMode]::Create }
         $akis = $resp.GetResponseStream()
         $fs = New-Object IO.FileStream($part, $mod, [IO.FileAccess]::Write, [IO.FileShare]::Read)
@@ -124,14 +124,14 @@ function Indir($k, [string]$hedefYol, [string]$Sha256Beklenen) {
     }
     $son = (Get-Item -LiteralPath $part).Length
     if ($son -ne $boyut) {
-        Write-Warning "indirme eksik kaldi ($son / $boyut); .part korundu, -Baslat ile devam et"
+        Write-Warning "[VT-W-PART] indirme eksik kaldi ($son / $boyut); .part korundu, -Baslat ile devam et"
         return $false
     }
     Write-Host "  $($k.adim): sha256 hesaplaniyor (birkac dk)..."
     $h = Sha256 $part
     if ($h -ne $Sha256Beklenen) {
         Remove-Item -LiteralPath $part -Force
-        Write-Warning "sha256 TUTMADI, bozuk .part silindi: $($k.hedef) | beklenen $Sha256Beklenen | gelen $h | Yeniden -Baslat ile temiz iner."
+        Write-Warning "[VT-E-HASH] sha256 TUTMADI, bozuk .part silindi: $($k.hedef) | beklenen $Sha256Beklenen | gelen $h | Yeniden -Baslat ile temiz iner."
         return $false
     }
     if (Test-Path -LiteralPath $hedefYol) { Remove-Item -LiteralPath $hedefYol -Force }
@@ -164,7 +164,7 @@ foreach ($k in $dosyalar) {
     } elseif (Test-Path -LiteralPath "$yol.part") {
         $plen = (Get-Item -LiteralPath "$yol.part").Length
         $d = "YARIM (.part {0:N0} / {1:N0})" -f $plen, $boyut
-        $eksikBayt += [math]::Max(0, $boyut - $plen)
+        $eksikBayt += [math]::Max([long]0, $boyut - $plen)
     } else { $eksikBayt += $boyut }
     $durum += [pscustomobject]@{ adim = $k.adim; dosya = $k.hedef; durum = $d }
     Write-Output ("  {0,-10} {1,-52} {2}" -f $k.adim, $k.hedef, $d)
@@ -184,7 +184,7 @@ if (-not $Baslat) {
 # ---- indirme kapilari ----
 if ($tamam) { Write-Output 'Tum dosyalar zaten var ve boyutlari dogru. Hash icin -Dogrula.'; exit 0 }
 if ($null -ne $bos -and $eksikGiB -gt 0 -and $bos -lt $MinBosGiB) {
-    Write-Output "DISK YETERSIZ: bos $bos GiB < gereken $MinBosGiB GiB. Indirme baslamadi."
+    Write-Output "DISK YETERSIZ: [VT-E-DISK] bos $bos GiB < gereken $MinBosGiB GiB. Indirme baslamadi."
     exit 3
 }
 if ($LisansKabul -notin @('E', 'e', 'Y', 'y')) {
@@ -192,7 +192,7 @@ if ($LisansKabul -notin @('E', 'e', 'Y', 'y')) {
     if (Test-Path -LiteralPath $LisansDosya) { Get-Content -LiteralPath $LisansDosya -Encoding UTF8 | Write-Output }
     else { Write-Output ("Lisans: MiniMax H3 Community License: " + $liste.lisans_metni) }
     Write-Output ''
-    Write-Output 'Okuyup kabul ediyorsaniz ayni komutu "-LisansKabul E" (TR) ya da "-LisansKabul Y" (EN) ile tekrar calistirin. Indirme BASLAMADI.'
+    Write-Output '[VT-E-LISANS] Okuyup kabul ediyorsaniz ayni komutu "-LisansKabul E" (TR) ya da "-LisansKabul Y" (EN) ile tekrar calistirin. Indirme BASLAMADI.'
     exit 2
 }
 if (-not (Test-Path -LiteralPath $Hedef)) { New-Item -ItemType Directory -Path $Hedef -Force | Out-Null }
