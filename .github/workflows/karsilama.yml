@@ -1,0 +1,63 @@
+# VideoTurko karsilama (kullanici karari 2026-11-21): yeni acilan issue ve PR'a bir kez, sabit, sicak ama kurumsal yorum.
+# Metin ve dil secimi scripts/karsilama.py'de (ag yok); bu is akisi yalniz olayi ona verir ve yorumu atar.
+#
+# Guvenlik (neden / bedel / gevseme). Bu dosya PR icin ayricalikli tetikleyici kullanan TEK is akisidir; tests/denetim/test_ci.py bunu mekanik denetler:
+#  - NEDEN ayricalikli tetik: fork PR'ina yorum yazmak yazma izinli jeton ister; sade `pull_request` fork'ta salt-okunurdur.
+#    BEDEL: bu tetikle is akisi TABAN dalin kodunu yazma izniyle calistirir. Bu yuzden asagidaki kurallarin HEPSI birden gecerli:
+#  - PR kodu ASLA getirilmez ve calistirilmaz: checkout'ta `ref`, `repository`, `token` YOK (varsayilan = taban dal / varsayilan dal),
+#    yalniz scripts/karsilama.py seyrek (sparse) alinir, kimlik bilgisi diske yazilmaz. PR'in kendi scripts/ klasoru hic okunmaz.
+#  - `permissions` en dar: contents: read, issues: write, pull-requests: write (yorum atmak icin; baska yazma izni yok).
+#  - PR/issue basligi, govdesi, yazar adi `${{ }}` ile kabuga GIRMEZ (betik enjeksiyonu): olayi betik GITHUB_EVENT_PATH'ten okur,
+#    kabuga yalniz betigin dogruladigi sayi ve ad girer (tirnakli). Ifade olarak yalniz `secrets.GITHUB_TOKEN` kullanilir.
+#  - Eylemler tam commit SHA'ya sabit (surum yorumda); Dependabot SHA'yi gunceller.
+#  - Yorumu `gh api` ile GITHUB_TOKEN atar; ayni konuya ikinci kez yazmaz (github-actions[bot]'un yorumlarinda gizli isaret aranir).
+#  - Ag cagrilari yalniz GitHub API: yorum listesi, yorum yazma ve yazarin herkese acik profil konumu (dil ipucu; konum yoruma YAZILMAZ).
+#  - Bot, depo sahibi ve `opened` disi olaylar betikte atlanir (yorum yok, API cagrisi yok).
+# GEVSEME: karsilama istenmezse bu dosya silinir (geri alma: git revert); bagimli baska is akisi yok.
+name: karsilama
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  karsilama:
+    name: karsilama
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/karsilama.py
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Karsilama yorumu (bir kez)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          N="$(python3 -I scripts/karsilama.py --numara)"
+          if [ -z "$N" ]; then
+            echo "atlandi: bot, depo sahibi ya da opened disi olay"
+            exit 0
+          fi
+          YAZAR="$(python3 -I scripts/karsilama.py --yazar)"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$N/comments" --jq '.[] | select(.user.login == "github-actions[bot]") | .body' > "$RUNNER_TEMP/yorumlar.txt"
+          # profil konumu yalniz dil ipucu (cogu zaman bos; hata olursa EN+TR'ye duser); yoruma yazilmaz
+          KARSILAMA_KONUM="$(gh api "users/$YAZAR" --jq '.location // ""' 2>/dev/null || true)"
+          export KARSILAMA_KONUM
+          python3 -I scripts/karsilama.py --yorumlar "$RUNNER_TEMP/yorumlar.txt" > "$RUNNER_TEMP/govde.md"
+          if [ -s "$RUNNER_TEMP/govde.md" ]; then
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$N/comments" -F "body=@$RUNNER_TEMP/govde.md" --silent
+            echo "karsilama yorumu atildi: #$N"
+          else
+            echo "atlandi: bu konuda karsilama zaten var"
+          fi

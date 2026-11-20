@@ -155,7 +155,9 @@ class Kombinasyon(unittest.TestCase):
         if g.returncode != 0:
             self.skipTest('git yok')
         beklenen_dosya = {'scripts/denetim.py', 'scripts/pr_kapi.py', 'scripts/pr_kombinasyon.py', 'scripts/pr_yapi.py', 'scripts/yama_bekcisi.py', 'scripts/gizlilik_denetimi.py',
-                          'scripts/dil_eslik_denetimi.py', 'scripts/gizlilik_borc.txt', 'scripts/dil_profili.json', 'patches/SHA256SUMS'}
+                          'scripts/dil_eslik_denetimi.py', 'scripts/gizlilik_borc.txt', 'scripts/dil_profili.json', 'patches/SHA256SUMS',
+                          # karsilama.yml: ayricalikli tetikli TEK is akisi (sahibin; test_ci.KarsilamaIsAkisi kosullari mekanik denetler). Katkici PR'i bunu eklerse KIRMIZI kalmali (tasarim)
+                          '.github/workflows/karsilama.yml'}
         beklenen_butunluk = {'scripts/kur.ps1', 'scripts/modeller.json'}
         beklenen_kok_betik = {'kur.cmd', 'uret.cmd', 'tani.cmd'}   # kokte YENI .cmd = katki PR'inda KIRMIZI (tasarim); bunlar sahibin kendi baslaticilari
         fazla = []
