@@ -95,7 +95,7 @@ class Baglam:
 
     def _liste(self):
         kok = self.kok
-        if os.path.isdir(os.path.join(kok, '.git')):
+        if os.path.exists(os.path.join(kok, '.git')):   # klasor ya da worktree isaretci dosyasi
             try:
                 p = subprocess.run(['git', '-C', kok, 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], capture_output=True, timeout=8,
                                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
@@ -115,6 +115,8 @@ class Baglam:
         for d, ds, fs in os.walk(kok):
             ds[:] = [x for x in ds if x not in atla]
             for f in fs:
+                if f == '.git':   # worktree isaretcisi: commit edilmez, mutlak yol tasir
+                    continue
                 out.append(os.path.relpath(os.path.join(d, f), kok).replace(os.sep, '/'))
         return sorted(out)
 
