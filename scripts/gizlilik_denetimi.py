@@ -38,7 +38,7 @@ YOL_PROFIL = re.compile(
     r'|(?<![\w.])/home/(?P<ad3>[A-Za-z0-9_.-]+)/'
     r'|(?<![\w.])/Users/(?P<ad4>[A-Za-z0-9_.-]+)/', re.A)
 YOL_SURUCU = re.compile(r'(?<![\w`])[D-Z]:[\\/]+[A-Za-z0-9_]', re.A)         # D:..Z: bu makineye ozgu; C:\vt gibi kisa kok yer tutucu sayilir
-YOL_KISA_AD = re.compile(r'[\\/][A-Za-z0-9_]{2,8}~[0-9][\\/]', re.A)         # 8.3 kisa ad (ornek ALEX25~1): kullanici adi sizdirir, kara listeyi atlatir
+YOL_KISA_AD = re.compile(r'[\\/][A-Za-z0-9_]{2,8}~[0-9][\\/]', re.A)         # 8.3 kisa ad (ornek KULLAN~1): kullanici adi sizdirir, kara listeyi atlatir
 EPOSTA = re.compile(r'(?<![A-Za-z0-9])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b', re.A)
 EPOSTA_SERBEST_ALAN = re.compile(r'(?i)(?:^|\.)(?:example\.(?:com|org|net)|localhost|invalid|users\.noreply\.github\.com)$')
 ZAMAN = re.compile(r'(?i)Europe/Is[t]anbul|\bUTC\s*\+\s*0?3\b|\bGMT\s*\+\s*0?3\b|\d\d:\d\d(?::\d\d)?\s*\+03:?00\b|T\d\d:\d\d(?::\d\d)?\+03:00|Turkey\s+time|T[u\u00fc]rkiye\s+saati', re.A)
