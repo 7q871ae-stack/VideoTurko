@@ -75,6 +75,12 @@ MiniMax H3'ü (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF'u çalıştırıyo
 - Kalite ayarları düşürülmez: aynı model/nicemleme, 6 adım, cfg 1, 640x384, aynı tohum, parçasız VAE.
 - "İlk" iddiası yok: aradık, 4 GB'ta benzer dış örnek bulamadık; bu, yok olduğunun kanıtı değildir.
 
+## RTX 5060 / `sm_120` (Blackwell) desteği
+Blackwell kartlarda (örn. RTX 5060 Laptop 8 GB, compute capability 12.0) yalnızca `sm_61` içeren sürüm ikilisi, `compute_61` PTX JIT derlemesi nedeniyle 56+ karede ve `--init-img` koşularında ~%97 `NaN` (siyah video) üretir. CUDA 12.8.1+ ve `CMAKE_CUDA_ARCHITECTURES=120` ile yerel derleme (`engine\bin_sm120`) bu sorunu çözer; 209 kare (356 sn, tepe VRAM 7438 / 8151 MiB) ve `--init-img` ile 192 kare (~6.3–7.0 dk) dahil tüm kalite kapılarından geçer.
+- Yerel `sm_120` derleme tarifi ve `scripts/uret.ps1` içindeki deneysel `VT_*` anahtarları (varsayılan kapalı): [`docs/RTX5060_SM120_DERLEME.md`](docs/RTX5060_SM120_DERLEME.md)
+- Kök neden analizi ve RTX 5060 kabul test raporu: [`docs/RTX5060_TEST_RAPORU.md`](docs/RTX5060_TEST_RAPORU.md)
+- İsteğe bağlı `--init-img` + `ffmpeg` klip zincirleme rehberi: [`docs/KLIP_ZINCIRI.md`](docs/KLIP_ZINCIRI.md)
+
 ## Düzen
 - `patches/` (sabit stable-diffusion.cpp commit'ine yamalar; notlar orada)
 - `scripts/` derleme, çalıştırma, ayrı süreç VAE, kapı/tutarlılık yardımcıları (`doku_norm.py`: ölçek notu için aşağıya bakın)
