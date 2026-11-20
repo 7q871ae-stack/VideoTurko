@@ -1,0 +1,139 @@
+# VideoTurko denetim (KL-09). REPORT-ONLY: ilk iki hafta hicbir adim PR'i kirmaz; sonuc ozet sayfasina yazilir.
+# Report-only: for the first two weeks no step fails the PR; results go to the job summary. Remove the
+# `continue-on-error` lines marked REPORT-ONLY once the checks have run clean on real PRs (scripts/denetim.py header
+# explains each gate).
+#
+# Guvenlik (neden / bedel / gevseme):
+#  - Tetik yalniz `pull_request` ve main'e push; ayricalikli tetikleyiciler (hedef ve calisma-sonrasi turleri) ile yorum/issue tetigi YOK:
+#    fork kodu gizli bilgiyle ya da yazma iznine sahip jetonla calismaz. Bedel: fork PR'i salt-okunur jetonla kosar (istenen budur).
+#  - `permissions: contents: read`; gizli degisken yok, GPU/model/indirme yok, hicbir adim depoya yazmaz.
+#  - Eylemler tam commit SHA'ya sabit (surum yorumda); Dependabot (.github/dependabot.yml) SHA'yi gunceller.
+#  - PR basligi/govdesi `${{ }}` ile KABUGA GIRMEZ (betik enjeksiyonu): olay JSON'unu runner'in verdigi GITHUB_EVENT_PATH
+#    dosyasindan python okur, metni dosyaya yazar, kapi dosyayi VERI olarak tarar.
+#  - PR kapisi (pr_kapi.py) PR'in KENDI kopyasindan degil, TABAN dalin kopyasindan kosar: PR kapiyi degistirip kendini
+#    gecirmesin. Bedel: taban dalda kapi yokken (ilk giris) atlanir ve ozete yazilir. Sinir: PR bu is akisinin kendisini de
+#    degistirebilir; bunu `.github/` korumali yol SARI'si ve depo ayari (CODEOWNERS/ruleset, ana oturum) karsilar.
+#  - Matris yalniz Windows satir sonu ayarini sinar (core.autocrlf true/false): Windows kullanicilarinin gercek durumu.
+#    Windows secildi cunku betik ve testlerin cogu Windows PowerShell 5.1 / cmd.exe ister (Linux'ta atlanir) [okudum: tests/*.py skipUnless].
+name: denetim
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: denetim-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  denetim:
+    name: denetim (windows, autocrlf=${{ matrix.crlf }})
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        crlf: ["true", "false"]
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      # Matris: git'in satir sonu ayari ortam degiskeniyle verilir (git 2.31+), ayar komutuyla degil; checkout dahil her git cagrisi bunu gorur.
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: ${{ matrix.crlf }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Hizli denetim (scripts/denetim.py --hizli)
+        id: hizli
+        continue-on-error: true # REPORT-ONLY
+        run: python -I scripts/denetim.py --hizli 2>&1 | tee "$RUNNER_TEMP/hizli.txt"; test "${PIPESTATUS[0]}" -eq 0
+
+      - name: Testler (tests/)
+        id: testler
+        continue-on-error: true # REPORT-ONLY
+        run: python -B -m unittest discover -s tests 2>&1 | tee "$RUNNER_TEMP/testler.txt"; test "${PIPESTATUS[0]}" -eq 0
+
+      - name: Denetim testleri (tests/denetim/)
+        id: dtestler
+        continue-on-error: true # REPORT-ONLY
+        run: python -B -m unittest discover -s tests/denetim 2>&1 | tee "$RUNNER_TEMP/dtestler.txt"; test "${PIPESTATUS[0]}" -eq 0
+
+      - name: README dil esligi (--kati)
+        id: dil
+        continue-on-error: true # REPORT-ONLY
+        run: python -I scripts/dil_eslik_denetimi.py --kati 2>&1 | tee "$RUNNER_TEMP/dil.txt"; test "${PIPESTATUS[0]}" -eq 0
+
+      - name: PR metnini dosyaya yaz (olay JSON'undan, kabuga girmez)
+        if: github.event_name == 'pull_request'
+        run: |
+          python -I - <<'PY'
+          import json, os
+          ev = json.load(open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8"))["pull_request"]
+          metin = (ev.get("title") or "") + "\n\n" + (ev.get("body") or "")
+          open(os.path.join(os.environ["RUNNER_TEMP"], "pr_metin.txt"), "w", encoding="utf-8", newline="\n").write(metin)
+          PY
+
+      - name: PR kapisi (taban dalin pr_kapi.py'si, PR degisikligi uzerinde)
+        id: pr
+        if: github.event_name == 'pull_request'
+        continue-on-error: true # REPORT-ONLY
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          TABAN_KOK="$RUNNER_TEMP/taban"
+          git worktree add --detach "$TABAN_KOK" "origin/$BASE_REF"
+          if [ -f "$TABAN_KOK/scripts/pr_kapi.py" ]; then
+            ESKI="$(git merge-base "origin/$BASE_REF" HEAD)"
+            python -I "$TABAN_KOK/scripts/pr_kapi.py" --kok "$GITHUB_WORKSPACE" --taban "$ESKI" --bas HEAD --metin "$RUNNER_TEMP/pr_metin.txt" 2>&1 | tee "$RUNNER_TEMP/pr.txt"
+            test "${PIPESTATUS[0]}" -eq 0
+          else
+            echo "SONUC: ATLANDI (taban dalda scripts/pr_kapi.py yok; ilk giris)" | tee "$RUNNER_TEMP/pr.txt"
+          fi
+
+      - name: Ozet (her zaman)
+        if: always()
+        env:
+          S_HIZLI: ${{ steps.hizli.outcome }}
+          S_TESTLER: ${{ steps.testler.outcome }}
+          S_DTESTLER: ${{ steps.dtestler.outcome }}
+          S_DIL: ${{ steps.dil.outcome }}
+          S_PR: ${{ steps.pr.outcome }}
+        run: |
+          {
+            echo "### denetim (report-only, autocrlf=${{ matrix.crlf }})"
+            echo
+            echo "| adim | sonuc |"
+            echo "|---|---|"
+            echo "| denetim.py --hizli | $S_HIZLI |"
+            echo "| tests/ | $S_TESTLER |"
+            echo "| tests/denetim/ | $S_DTESTLER |"
+            echo "| dil esligi --kati | $S_DIL |"
+            echo "| PR kapisi | $S_PR |"
+            if [ -f "$RUNNER_TEMP/pr.txt" ]; then
+              echo
+              echo '```'
+              tail -n 1 "$RUNNER_TEMP/pr.txt"
+              echo '```'
+            fi
+            echo
+            echo "Report-only: bu adimlar ilk iki hafta PR'i kirmaz. success = gecti, failure = bakilmali, skipped = kosmadi."
+          } >> "$GITHUB_STEP_SUMMARY"
+          for ad in HIZLI TESTLER DTESTLER DIL PR; do
+            v="S_$ad"
+            if [ "${!v}" = "failure" ]; then echo "::warning title=denetim::$ad adimi basarisiz (report-only)"; fi
+          done

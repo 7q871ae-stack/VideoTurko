@@ -1,0 +1,28 @@
+# Dependabot (KL-09). Why / cost / when to loosen:
+#  - github-actions: workflow actions are pinned to full commit SHAs (supply-chain rule); Dependabot proposes the new
+#    SHA and keeps the version comment. Cost: at most 3 small PRs a week. `cooldown` skips releases younger than 7 days.
+#  - pip: the repo has NO requirements/pyproject manifest today (scripts are stdlib-only; tests optionally use
+#    numpy/opencv), so a pip entry would only report "no manifest found". It is kept below, commented out; enable it
+#    in the same PR that adds a pinned requirements file.
+# Dependabot PRs go through the same PR gate as everybody's (protected path .github/ = yellow, owner reads them).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "ci"
+
+  # - package-ecosystem: "pip"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #   open-pull-requests-limit: 3
+  #   cooldown:
+  #     default-days: 7
+  #   commit-message:
+  #     prefix: "deps"

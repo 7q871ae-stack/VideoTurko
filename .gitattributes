@@ -3,3 +3,5 @@
 *.py text eol=lf
 README*.md text eol=lf
 *.cmd text eol=crlf
+patches/SHA256SUMS text eol=lf
+patches/SERIES.txt text eol=lf
