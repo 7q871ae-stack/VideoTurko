@@ -37,7 +37,20 @@ TR: Vulkan için aynı satır, `HIP_VISIBLE_DEVICES` olmadan (hazır Vulkan sür
 
 ## Missing `hipblas.dll` / Eksik çıkan `hipblas.dll`
 
-**EN** The ROCm zip does not contain `hipblas.dll`. An import scan of `stable-diffusion.dll` found `hipblas.dll` as the only DLL name that is neither in the zip folder nor in System32 [measured], and after adding the files below the DLL loaded [measured]. (The load error before adding them was not captured for this DLL; for llama.cpp's `ggml-hip.dll` the same missing name gave "could not find the module (or one of its dependencies)" [measured].) What was added next to `sd-cli.exe` (the DLL files are NOT in this repo, only names, sizes and hashes):
+**EN** The sd.cpp ROCm zip does not contain `hipblas.dll`. An import scan of `stable-diffusion.dll` found `hipblas.dll` as the only DLL name that is neither in the zip folder nor in System32 [measured]. This machine has no AMD HIP SDK installed [measured: no `C:\Program Files\AMD\ROCm`, no hipblas DLL in System32 or on `PATH`], so nothing provided it.
+
+**Source with a known version:** AMD's own portable Windows archive for ROCm 10.1.0, listed in the ROCm 10.1.0 install guide [read]: `https://stable.repo.amd.com/rocm/core/tarball/therock-dist-windows-gfx120X-all-10.1.0.tar.gz` (2,244,477,973 bytes; `gfx120X` is the RDNA 4 family that includes the RX 9070 XT). Nothing was installed: only its `bin\` folder was extracted (about 2 GB) and put on `PATH`, while `sd-cli.exe`, `sd-server.exe` and `stable-diffusion.dll` from the sd.cpp zip stayed in their own folder. Files used from it [measured: file properties]:
+
+| File | Version | Size (bytes) | sha256 |
+|---|---|---|---|
+| `hipblas.dll` | 3.7.0 | 820,176 | `93422e5f17589fbb8a1c26d7bc8e0d6fdca04730c465052186352859b5835fa7` |
+| `rocblas.dll` | 5.7.0 | 21,095,888 | `2a6a98b547bf27b109f11f09b2473ffab80a2e2f1e7efd3e83e4ece1bd18ccbc` |
+| folders `rocblas\` and `hipblaslt\` (kernel libraries, with `gfx1201` files) | | | |
+
+- Result with only these official files (no other ROCm DLLs added): H3, 56 frames, finished without errors; `generate_video` 59.2 s (first run) and 54.0 s (second run, sampling 31.1 s), default sample prompt, budget 0.03 [measured]. The same 56 frames with the earlier mix below took 50.6 s (another prompt, so not an exact comparison).
+- The DLL files are NOT in this repo; only names, versions, sizes and hashes.
+
+**Used for the timings in `docs/KART_PROFILLERI.md`:** the 209-frame and other timings in that row were measured with an earlier mix of files, version **unknown**: they have no version resource (file properties are empty) and a simple text search for version strings found nothing [measured]. Origin: the folder of a llama.cpp `b9592` HIP build on the same machine [read]; the exact zip they came from was not recorded (the HIP asset of that release is named `llama-b9592-bin-win-hip-radeon-x64.zip` [read: GitHub release page]). Added next to `sd-cli.exe`:
 
 | File added | Size (bytes) | sha256 |
 |---|---|---|
@@ -46,11 +59,11 @@ TR: Vulkan için aynı satır, `HIP_VISIBLE_DEVICES` olmadan (hazır Vulkan sür
 | `libhipblaslt.dll` | 6,012,312 | `9f97d95c3b7257efcab992914b4e1c1b3b71b0693a6ad5d61a8f3cbf08a96dee` |
 | folders `rocblas/` and `hipblaslt/` | | |
 
-- **Version: unknown.** The files have no version resource (file properties are empty), and a simple text search for version strings in them found nothing [measured]. The version cannot be given.
-- Origin: the folder of a llama.cpp `b9592` HIP build on the same machine [read]. The exact zip the files came from was not recorded; the HIP asset of that release is named `llama-b9592-bin-win-hip-radeon-x64.zip` [read: GitHub release page].
-- With these files the ROCm runs in `docs/KART_PROFILLERI.md` finished without errors [measured]. Nothing else about this mix is claimed.
+**TR** sd.cpp ROCm zip'inde `hipblas.dll` yok. `stable-diffusion.dll`'in içe aktarma taramasında zip klasöründe de System32'de de olmayan tek DLL adı `hipblas.dll` çıktı [measured]. Bu makinede AMD HIP SDK kurulu değil [measured: `C:\Program Files\AMD\ROCm` yok, System32'de ya da `PATH`'te hipblas DLL'i yok], yani onu sağlayan bir şey yoktu.
 
-**TR** ROCm zip'inde `hipblas.dll` yok. `stable-diffusion.dll`'in içe aktarma taramasında zip klasöründe de System32'de de olmayan tek DLL adı `hipblas.dll` çıktı [measured]; aşağıdaki dosyalar eklenince DLL yüklendi [measured]. (Ekleme öncesi yükleme hatası bu DLL için kaydedilmedi; llama.cpp'nin `ggml-hip.dll`'inde aynı eksik ad "modül (ya da bağımlılıklarından biri) bulunamadı" hatasını verdi [measured].) `sd-cli.exe`'nin yanına eklenenler yukarıdaki tabloda (DLL dosyaları bu depoya KONMAZ; yalnız ad, boyut ve özet). **Sürüm bilinmiyor:** dosyaların sürüm kaynağı boş, içlerinde basit bir metin aramasıyla sürüm metni de bulunamadı [measured]; sürüm verilemez. Kaynak: aynı makinedeki bir llama.cpp `b9592` HIP derlemesinin klasörü [read]; dosyaların geldiği zip'in adı kaydedilmemiş, o sürümün HIP dosyası `llama-b9592-bin-win-hip-radeon-x64.zip` adını taşıyor [read]. Bu dosyalarla `docs/KART_PROFILLERI.md`'deki ROCm koşuları hatasız bitti [measured]; bu karışım hakkında başka bir şey iddia edilmiyor.
+**Sürümü bilinen kaynak:** AMD'nin ROCm 10.1.0 için kendi taşınabilir Windows arşivi (ROCm 10.1.0 kurulum kılavuzunda listeli [read]): yukarıdaki adres (2.244.477.973 bayt; `gfx120X`, RX 9070 XT'yi içeren RDNA 4 ailesidir). Hiçbir şey kurulmadı: yalnızca `bin\` klasörü açıldı (yaklaşık 2 GB) ve `PATH`'e eklendi; `sd-cli.exe`, `sd-server.exe` ve `stable-diffusion.dll` sd.cpp zip'indeki kendi klasörlerinde kaldı. Ondan kullanılan dosyalar yukarıdaki tabloda (`hipblas.dll` **3.7.0**, `rocblas.dll` **5.7.0**) [measured: dosya özellikleri]. Yalnız bu resmî dosyalarla (başka ROCm DLL'i eklenmeden) H3 56 kare hatasız bitti; `generate_video` ilk koşuda 59,2 sn, ikinci koşuda 54,0 sn (örnekleme 31,1 sn), varsayılan örnek istem, bütçe 0.03 [measured]. Aşağıdaki karışımla aynı 56 kare 50,6 sn sürdü (başka istem, tam kıyas değil). DLL dosyaları bu depoda YOK, yalnız ad, sürüm, boyut ve özet.
+
+**`docs/KART_PROFILLERI.md`'deki sürelerde kullanılan:** o satırdaki 209 kare ve diğer süreler daha önceki bir dosya karışımıyla ölçüldü, sürümü **bilinmiyor**: sürüm kaynağı boş (dosya özellikleri), basit bir metin aramasıyla sürüm metni de bulunamadı [measured]. Kaynak: aynı makinedeki bir llama.cpp `b9592` HIP derlemesinin klasörü [read]; geldikleri zip'in adı kaydedilmemiş (o sürümün HIP dosyası `llama-b9592-bin-win-hip-radeon-x64.zip` adını taşıyor [read]). `sd-cli.exe`'nin yanına eklenenler yukarıdaki ikinci tabloda.
 
 ## Result / Sonuç
 
