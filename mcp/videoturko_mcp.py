@@ -26,6 +26,18 @@ CF = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # yardimci sureclerde pencere a
 mcp = FastMCP("videoturko")
 
 
+def _load_izin():
+    """init_izin.py'yi dosya yolundan yukle (python -I ya da farkli cwd ile de calisir; yalniz stdlib)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("vt_init_izin", Path(__file__).resolve().with_name("init_izin.py"))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+_IZIN = _load_izin()
+
+
 JID = re.compile(r"^\d{8}-\d{6}-[0-9a-f]{6}$")
 LOCK = JOBS / ".lock"
 # uret.ps1 cikis kodlari (scripts/uret.ps1): 0 gecti, 1 hata (throw), 2 DUR, 5 kapi RED, 6 kapi calismadi
@@ -108,7 +120,8 @@ def status() -> dict:
         gpu = f"okunamadi: {e}"
     running = [m["id"] for m in map(_meta, os.listdir(JOBS)) if m and _state(m) == "running"]
     return {"ready": sd and all(files.values()), "engine": sd, "models": files, "gpu": gpu,
-            "running_jobs": running, "valid_frames": VALID, "fps": 24, "resolution": "640x384"}
+            "running_jobs": running, "valid_frames": VALID, "fps": 24, "resolution": "640x384",
+            "init_image": _IZIN.goster(_IZIN.izinli_klasorler(ROOT, os.environ.get("VT_MCP_INIT_DIR")), ROOT)}
 
 
 @mcp.tool()
@@ -116,7 +129,9 @@ def generate_video(prompt: str, frames: int = 209, seed: int = 42, init_image: s
     """Metinden (veya init_image ile resimden/onceki klipten) video uretimini baslatir.
     frames 17k+5 (5..209; init_image ile en fazla 192). 24 fps, 640x384.
     Hemen job_id doner; ilerlemeyi job_status ile izleyin. Bitti sayilmak icin job_status state == "done" olmali
-    (kapi RED ise "rejected"). Kapi lisans uygunlugunu denetlemez."""
+    (kapi RED ise "rejected"). Kapi lisans uygunlugunu denetlemez.
+    init_image YALNIZ kullanicinin verdigi dosya yolu olabilir (kendin bir yol secme); VT_MCP_INIT_DIR doluysa
+    yalniz <ROOT>/girdi/ ve listedeki klasorler kabul edilir (status() "init_image" alani hangi kipte oldugunu soyler)."""
     if frames not in VALID:
         return {"error": f"frames {VALID} icinden olmali"}
     if not prompt or not prompt.strip() or len(prompt) > 20000:
@@ -130,10 +145,10 @@ def generate_video(prompt: str, frames: int = 209, seed: int = 42, init_image: s
             return {"error": "init_image ile en fazla 192 kare"}
         if any(c in init_image for c in "\r\n\0"):
             return {"error": "init_image yolunda satir sonu/NUL olamaz"}
-        p = Path(init_image).expanduser()
-        p = (p if p.is_absolute() else ROOT / p).resolve()  # uret.ps1 ROOT'ta calisir: goreli yol ROOT'a gore
-        if not p.is_file():
-            return {"error": f"init_image dosya degil ya da yok: {p}"}
+        # VT_MCP_INIT_DIR yoksa eski acik davranis (ayni iletiler); doluysa izinli klasor denetimi (mcp/init_izin.py)
+        p, err = _IZIN.yol_coz(init_image, ROOT, _IZIN.izinli_klasorler(ROOT, os.environ.get("VT_MCP_INIT_DIR")))
+        if err:
+            return {"error": err}
         init_image = str(p)
     try:
         fd = os.open(LOCK, os.O_CREAT | os.O_EXCL | os.O_WRONLY)

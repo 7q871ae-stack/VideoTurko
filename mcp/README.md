@@ -38,11 +38,12 @@ Gereksinim / Requirements: Python 3.10+ ve `mcp` paketi (`pip install "mcp>=1.2,
 | `VT_MCP_MAX_FRAMES` | `209` | İzin verilen en yüksek kare sayısı / max allowed frames |
 | `VT_MCP_CANCEL_WAIT` | `40` | `cancel_job` için `DUR` sonrası nazik bekleme (sn) |
 | `VT_MCP_ALLOW_INIT` | `1` | `0` yapılırsa `init_image` kapatılır / set `0` to disable `init_image` |
+| `VT_MCP_INIT_DIR` | boş / unset (açık / open) | Dolu ise `init_image` yalnız `<ROOT>/girdi/` ve listedeki klasörlerden kabul edilir (`;` ile ayrılır; göreli girdi ROOT'a göre; yalnız `girdi` için `VT_MCP_INIT_DIR=girdi`). `..`, altındaki sembolik bağ/birleşim noktası, `:` akış adı, UNC ve sürücü-göreli yol reddedilir. Boşsa eski davranış: sürecin okuyabildiği her dosya / When set, `init_image` is limited to `<ROOT>/girdi/` plus the listed folders (separated by `;`); `..`, symlinks/junctions below the folder, `:` stream names, UNC and drive-relative paths are refused. Unset keeps the old behaviour: any readable file |
 
 ---
 
 ## Araçlar / Tools
-- `status()`: Motor (`sd-cli.exe`), 4 model dosyası, GPU (`nvidia-smi`), çalışan işler ve geçerli kare listesini döner.
+- `status()`: Motor (`sd-cli.exe`), 4 model dosyası, GPU (`nvidia-smi`), çalışan işler, geçerli kare listesi ve `init_image` kipini (`open` ya da `restricted` + `<ROOT>` maskeli klasörler) döner.
 - `generate_video(prompt, frames=209, seed=42, init_image="")`: Arka planda üretim başlatır, `job_id` ve çıktı yolunu (`runs/mcp_jobs/<job_id>/video.avi`) döner.
 - `job_status(job_id, log_lines=15)`: İş durumunu, `uret.ps1` çıkış kodunu, kalite kapısı sonucunu ve son log satırlarını döner. Yalnız `done` (çıkış kodu 0) kapıdan geçmiş videodur. Kapı lisans uygunluğunu denetlemez (`docs/LISANS_UYARISI.md`).
 
