@@ -70,10 +70,13 @@ function Adim-Kontrol0 {
     if ($os.Major -lt 10) { Hata-Ekle '[VT-E-OS] Windows 10 ya da ustu gerekir' }
     # GPU
     $smi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
-    if ((Sahte-Al 'gpu' '') -eq 'yok') { $smi = $null }
-    if (-not $smi) { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA).' }
+    $sahteGpu = [string](Sahte-Al 'gpu' '')
+    if ($sahteGpu -eq 'yok') { $smi = $null }
+    $sahteVar = ($sahteGpu -ne '' -and $sahteGpu -ne 'yok')   # yalniz -Kuru testi: nvidia-smi'siz makinede (CI) sahte kart
+    if (-not $smi -and -not $sahteVar) { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA).' }
     else {
-        $q = (& nvidia-smi.exe --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits 2>$null | Select-Object -First 1)
+        if ($smi) { $q = (& nvidia-smi.exe --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits 2>$null | Select-Object -First 1) }
+        else { $q = "$sahteGpu, 4096, sahte, 6.1" }
         if (-not $q) { Hata-Ekle '[VT-E-GPU] nvidia-smi cikti vermedi' }
         else {
             $f = $q -split ',' | ForEach-Object { $_.Trim() }

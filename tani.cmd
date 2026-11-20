@@ -13,9 +13,10 @@ call "%VT_POWERSHELL%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\ta
 set "VT_KOD=%ERRORLEVEL%"
 echo.
 echo File / dosya: tani_raporu.txt (this folder / bu klasor). Read it, then drag it into your issue / okuyun, sonra issue'ya surukleyin. Filter is a rough pattern, not a guarantee / suzgec kaba bir desendir, garanti degil.
-chcp %VT_ESKI_CP% >nul
+rem Double-click detection runs BEFORE the code page is restored: on a non-Turkish OEM code page the Turkish letters in the path no longer match.
 set "VT_CIFT="
 echo %cmdcmdline% | "%SystemRoot%\System32\find.exe" /i "%~f0" >nul && set "VT_CIFT=1"
+chcp %VT_ESKI_CP% >nul
 if "%VT_PAUSE%"=="1" set "VT_CIFT=1"
 if "%VT_NO_PAUSE%"=="1" set "VT_CIFT="
 if defined VT_CIFT pause

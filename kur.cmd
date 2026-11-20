@@ -15,9 +15,10 @@ set "VT_KOD=%ERRORLEVEL%"
 echo.
 echo Exit code / cikis kodu: %VT_KOD%  (0 = ok / tamam, 2 = license not accepted / lisans kabul edilmedi, 3 = hardware or disk not enough / donanim ya da disk yetersiz, 4 = stopped / durduruldu)
 echo Codes and fixes / kodlar ve cozumler: docs\SIK_HATALAR.md
-chcp %VT_ESKI_CP% >nul
+rem Double-click detection runs BEFORE the code page is restored: on a non-Turkish OEM code page the Turkish letters in the path no longer match.
 set "VT_CIFT="
 echo %cmdcmdline% | "%SystemRoot%\System32\find.exe" /i "%~f0" >nul && set "VT_CIFT=1"
+chcp %VT_ESKI_CP% >nul
 if "%VT_PAUSE%"=="1" set "VT_CIFT=1"
 if "%VT_NO_PAUSE%"=="1" set "VT_CIFT="
 if defined VT_CIFT pause

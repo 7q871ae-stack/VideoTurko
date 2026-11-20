@@ -15,6 +15,11 @@ from test_denetim import KOK   # noqa: E402
 BETIK = os.path.abspath(os.environ.get('DENETIM_TEST_PRKAPI') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'scripts', 'pr_kapi.py'))
 
 
+def yaz(yol, metin):
+    with open(yol, 'w', encoding='utf-8') as fh:
+        fh.write(metin)
+
+
 def pr(*arg, girdi=None, betik=None):
     p = subprocess.run([sys.executable, '-I', betik or BETIK] + list(arg), capture_output=True, input=girdi,
                        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
@@ -36,7 +41,8 @@ class Kapi(unittest.TestCase):
     def diff(self, metin, *ek, betik=None):
         with tempfile.TemporaryDirectory() as td:
             f = os.path.join(td, 'a.diff')
-            open(f, 'w', encoding='utf-8', newline='\n').write(metin)
+            with open(f, 'w', encoding='utf-8', newline='\n') as fh:
+                fh.write(metin)
             return pr('--diff', f, *ek, betik=betik)
 
     def test_ozdenetim_gecer(self):
@@ -137,9 +143,9 @@ class Kapi(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             def g(*a):
                 return subprocess.run(G + ['-C', td] + list(a), capture_output=True, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-            g('init', '-q'); open(os.path.join(td, 'a.md'), 'w').write('x\n'); g('add', '.'); g('commit', '-q', '-m', 'taban')
+            g('init', '-q'); yaz(os.path.join(td, 'a.md'), 'x\n'); g('add', '.'); g('commit', '-q', '-m', 'taban')
             g('branch', '-M', 'main'); g('checkout', '-q', '-b', 'pr')
-            os.makedirs(os.path.join(td, 'scripts')); open(os.path.join(td, 'scripts', 'k.ps1'), 'w').write('i' + 'ex (irm http://example.invalid)\n')
+            os.makedirs(os.path.join(td, 'scripts')); yaz(os.path.join(td, 'scripts', 'k.ps1'), 'i' + 'ex (irm http://example.invalid)\n')
             g('add', '.'); g('commit', '-q', '-m', 'pr')
             rc, o, _ = pr('--taban', 'main', '--bas', 'pr', '--kok', td)
             self.assertEqual(rc, 1, o); self.assertIn('uzak_kod', o); self.assertIn('scripts/k.ps1:1', o)
