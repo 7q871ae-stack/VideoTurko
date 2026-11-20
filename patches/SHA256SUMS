@@ -1,0 +1,26 @@
+# sha256 tablosu: `sha256sum -c patches/SHA256SUMS` (kokten) ya da scripts/yama_bekcisi.py (denetim.py --kapi yama).
+# Yama baytlari bilerek degisince bu dosya yeniden yazilir (python -I scripts/yama_bekcisi.py --tablo-yaz) ve gerekcesi PR/commit mesajina girer.
+2a6e053e8dff4fca8dbb74a4f002c71f47572c08759ad5e8ceac764155ea2c0f  patches/ggml/01-ggml-taban.patch
+1978f9b711bab55658b666c01f538f4abef4831f717aa370d1fa9783ce8c35d6  patches/ggml/02-p0005-optime-file.patch
+e5f8d84f5cbd42da82b9c61f35b77b6a220c41671631580351cd9da0b4c9ab2e  patches/ggml/03-p0005-optime-fix.patch
+8edf839e7dcd2b1876cfe3d84f7e50c414dc72ff98c3b110b7fdfbda62166ca1  patches/sdcpp/01-taban-hiz-yamalari.patch
+5b8c611f07cf84be0a34edf54da8ecd1575b69e3d89c8882dd44251ebcbe9377  patches/sdcpp/02-p0001-video-latent-save-load.patch
+0e8f8cfcf1290349161d7f5c690d59af65eeeaaf2e0fbd141a33be2a8da77ba1  patches/sdcpp/03-p0002-pr2369-h3-vae-encode.patch
+66a44161911b699622bb8db5f8c5dacb7e02afaafb599e4c9f6df049c729d3e7  patches/sdcpp/04-p0003-model-loader-sleep.patch
+bb35649650436fb343b3c571d3bc038265af40355890c90549180414e44b781c  patches/sdcpp/05-p0004-prefetch-mmap.patch
+06757c94fc0b86ceab20e26d48541ce732dfc568d7442147b8de89c6cfb2849f  patches/sdcpp/06-p0006-mlp-chunk.patch
+30466c4d75516da5a04123500c8a2804f034c09ca205a130642af46be7beb4fe  patches/sdcpp/07-p0006b-qkv-chunk.patch
+03f63b2650503275488ec9703f5a9c83ef8cc83cbed84ef81525e7a222b7bc5e  patches/sdcpp/08-p0006c-equal-chunks.patch
+fc8594990518d9768ae00f12914ef3c38a35911f41a0d4c0f29ccaf4adaf55e4  patches/sdcpp/09-p0007-cut-cache-host.patch
+529186c1b1eb50027815ec70ff3cb97896a6dd253f4eb24b77e56db58aadd5bb  patches/sdcpp/10-p0009-embed-cut.patch
+8859e56de72e4ba5237d3011855cfa20674cf9643ad04040f69de5463430d0df  patches/sdcpp/11-p0010-drop-queued.patch
+ae5b50213af893e6fe4c936ed25e64cc43da203aeaa79430fea84dc84fc62803  patches/sdcpp/12-p0011-evict-past.patch
+489372a593f5d41845ab216c39edc5ed64a5b7c494bbc32e56b4213724afd3c4  patches/sdcpp/13-p0012-peak-dump.patch
+f48c881912be487cf14963f5863f3a2b888e8869ef6e84ca581c2bc0bf379c9e  patches/sdcpp/14-p0013-attn-set-out.patch
+68a9b8ddca0ba68757590e28ca2e36bcf86abcc6a98fcf82e80ecb1cb7793e66  patches/sdcpp/15-p0014-qkv-set-out.patch
+a3ead542fd9b1eb3941c39dbe0cec3d0c3c4750a4b37319f81071d068ca4cf1e  patches/sdcpp/16-p0015-mlp-set-out.patch
+697627507991dda6296f48b29dd883853891e5824963b1ebb34204ba8ebd5507  patches/sdcpp/17-p0016-vae-no-tiling-fallback.patch
+91a98924f39cff3acb7b505bd0af3955db7effce92904c01d2e60e3c7fab5480  patches/sdcpp/18-p0017-cutcache-host-estimate.patch
+ce6766468d2526f22830fbb4c490814006841e334b0ad63dd266a117e6196b0c  patches/sdcpp/19-p0018-vae-embed-cut.patch
+798caf966c3c05e1484a9aa7c0873308f67fe96efe09de307d4ddb52fdd09aa0  patches/sdcpp/20-p0019-block-tail-fuse.patch
+009d6d6fcbae533204c5f3d81ca6a9f12dae09b9b9c467d70002c170f9845f0d  patches/sdcpp/21-p0020-lazy-destination.patch
