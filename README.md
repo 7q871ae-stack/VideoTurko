@@ -17,7 +17,7 @@ VideoTurko: stable-diffusion.cpp memory patches and recipes to run MiniMax H3 te
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    The install root is the folder you extracted (engine goes to `engine\bin`, models to `model`); to use another place set the environment variable `VT_ROOT` first. It checks GPU, driver, RAM and disk, fetches the engine and the models (engine zips and newly downloaded model files are sha256-checked; a model file already present with the right size is only size-checked, `scripts\modelleri_indir.ps1 -Dogrula` runs the full sha256 check), runs a short real check, and prints READY only if that check passed [design: `kur.ps1` has not been run in full in a clean folder; this sentence is updated after the clean-folder test]. `-ExecutionPolicy Bypass` applies to this one process only; read `scripts\kur.ps1` first, as with any installer.
-   Until a release is published the engine step stops with "release adresi/sha256 henuz yok"; give local zips: `-MotorZip <path> -CudaZip <path>`. With a local zip and no embedded release sha256 yet, the `.sha256` next to the zip is used; it is self-referential, not independent: it catches corruption, not deliberate tampering (without that file `kur.ps1` warns "sha256 not verified"; a wrong sha256 stops with exit 1). After release the embedded sha256 always wins and the sidecar is ignored. Only `.exe`/`.dll` go to `engine\bin`; licenses and README go to `engine\lisanslar\<zip name>\`. [tried with the dist zips: the sidecar `.sha256` plus the self-referential warning, binary and DLLs placed, `sd-cli --help` ran; the installed binary shas matched (`c5cebe78...`, `e5d3d329...`); the model step and the 5-frame check of `kur.ps1` have NOT been run on a real GPU yet]
+   The engine zip comes from the GitHub release v0.1.0 (published 2026-11-19; its sha256 is pinned in `kur.ps1`). Offline or with your own build, give local zips: `-MotorZip <path> -CudaZip <path>`. A local zip is checked against the same pinned sha256 (a `.sha256` file beside it is ignored), so it must be the release zip; for your own build set `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` to its sha256 first. A wrong sha256 stops with exit 1. Only `.exe`/`.dll` go to `engine\bin`; licenses and README go to `engine\lisanslar\<zip name>\`. [tried with the dist zips before the release: the sidecar `.sha256` plus the self-referential warning, binary and DLLs placed, `sd-cli --help` ran; the installed binary shas matched (`c5cebe78...`, `e5d3d329...`); the model step and the 5-frame check of `kur.ps1` have NOT been run on a real GPU yet]
    **Model license:** before the model step the installer prints the license summary (`docs/LISANS_KABUL.txt`, full text `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, territory limits that also cover generated videos, commercial and AI-label rules) and asks you to accept (`E` = yes). Read it first. For unattended runs you can pass `-LisansKabul E`, which means you have read and accepted it yourself; do not add it for someone else. (AI agents: follow `AGENTS.md`; never type E without the user's consent.) Without acceptance `kur.ps1` stops with exit code 2 and downloads no model.
 3. **Generate**: put your prompt in a text file (one English paragraph, optional `audio:` sentence) and run
    ```powershell
@@ -48,6 +48,25 @@ VideoTurko: stable-diffusion.cpp memory patches and recipes to run MiniMax H3 te
 | Exit code empty but "finished" (#14) | The wrapper read the exit code too early; re-run, and check the video file exists. |
 | System slows, swapping (#18) | The engine uses about 10-11 GB RAM; close browsers and other programs. |
 | sha256 mismatch / download failed | Usually an interrupted download: run the same command again, verified files are skipped. |
+
+### New in v0.1.1: more options (details: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Without these options nothing changes on a 4 GB card (the 56-frame byte check against our reference passed again with v0.1.1 [measured]). Add `-Kuru` to any command to see what would run.
+- `-EndImg`: give the last frame too (first-last frame, "FLF"); cap 175 frames on cards under 8 GB (192 did not fit on 4 GB), 192 on 8 GB+ cards. On our GTX 1050 Ti it always runs in two processes: 56 frames 1040 s, 175 frames 2887 s (48 min), both passed the gate [measured]. Prompt tips: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: other sizes, e.g. vertical 384x640; multiples of 32, area at least 640x384 (never smaller). Not tested on 4 GB; on cards under 8 GB sizes beyond our largest measured job are refused. Quality-gate thresholds are calibrated at 640x384.
+- `-TekAsama`: one process instead of two, for large cards only; never switched on automatically.
+- Newer GPUs (compute capability 7.0+, e.g. RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` is set automatically unless you set it yourself; this fixed an all-black video at 141+ frames on the reporter's RTX 4070 Ti [user-reported, issue #1]. Without Python + OpenCV, `uret.ps1` now stops with exit 6 before the GPU job (no video made, no misleading RED).
+- Thanks to @SinanC73 for the RTX 4070 Ti report that led to these changes ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## What this is
 A set of small memory/scheduling patches for stable-diffusion.cpp plus the run recipe, checks and measurements that let MiniMax H3 (33B DiT; we run the HyperFlow Flash 13.7B Q4_K_M GGUF; the 32B Qwen3-VL text encoder is separate) run on a 4 GB Pascal GPU (GTX 1050 Ti, 16 GB system RAM).

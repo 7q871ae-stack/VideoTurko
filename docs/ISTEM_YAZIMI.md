@@ -30,6 +30,16 @@ If you do not want speech, say `no narration, no speech` (add `no music` if you 
 - Add a sentence that keeps the first frame: `Same robot design, colors and text as the first frame throughout` (replace "robot" with your subject; name the text or design that must stay).
 - Describe what moves; the init image already gives the look. Use the init image at the video size (the B192 run used a 640x384 image) [measured: file used in that run].
 
+### First and last frame (`-EndImg`, "FLF")
+FLF means first-last frame: you give the frame the clip starts on (`-InitImg`) and the frame it must end on (`-EndImg`); the model fills the motion between them.
+- When it helps: the end state is known and the model gets the mechanics wrong without it. A community report: a telescopic mast rose together with its basket with only a start image; with the end frame the body stayed still and the sections extended upward [user-reported, issue #1, RTX 4070 Ti; 107 and 141 frames passed the gates there].
+- Both images at the video size (640x384 by default, or your `-W`/`-H`), same framing and lighting; change only what should move.
+- The prompt describes the motion from the first to the last frame in the time slices; keep the "Same ... as the first frame throughout" sentence and name what changes in the last slice.
+- Cap: 175 frames on cards under 8 GB (192 did not fit on 4 GB; `-InitImg` alone stays at 192); 192 on 8 GB+ cards (not measured by us). Time slices for 175 frames (7.3 s): `[0 to 1.8 s] [1.8 to 3.6 s] [3.6 to 5.5 s] [5.5 to 7.3 s]`. On our GTX 1050 Ti (4 GB) it always runs in two processes (one process ran out of VRAM even at 56 frames): 56 frames 1040 s (VRAM peak 3597 MiB), 175 frames 2887 s = 48 min (3721 MiB), both passed the gate; 192 frames did not fit [measured, 2026-11-20]. `-EndImg` without `-InitImg` is supported by the engine but [not tried].
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+```
+
 ### Two full examples
 Both clips were generated with `scripts/uret.ps1`. These prompts are the exact text of the run files; you can paste them as `istem.txt`.
 
@@ -79,6 +89,16 @@ Konuşma istemiyorsan `no narration, no speech` yaz (müzik de istemiyorsan `no 
 - Tavan: 192 kare (8,0 sn); dilimler 2'şer sn: `[0 to 2.0 s] [2.0 to 4.0 s] [4.0 to 6.0 s] [6.0 to 8.0 s]`. 209 kare 4 GB'da `-InitImg` ile sığmadı (yaklaşık 17,5 MB VRAM eksik) [ölçtüm: B209 ve B192 koşuları].
 - İlk kareyi koruyan bir cümle ekle: `Same robot design, colors and text as the first frame throughout` ("robot" yerine kendi öznen; kalması gereken yazıyı ya da tasarımı adlandır).
 - Yalnızca neyin hareket ettiğini anlat; görünümü başlangıç görseli zaten verir. Başlangıç görselini video boyutunda kullan (B192 koşusu 640x384 görsel kullandı) [ölçtüm: o koşuda kullanılan dosya].
+
+### İlk ve son kare (`-EndImg`, "FLF")
+FLF, İngilizce "first-last frame" yani ilk-son kare demektir: klibin başladığı kareyi (`-InitImg`) ve bitmesi gereken kareyi (`-EndImg`) verirsin; aradaki hareketi model doldurur.
+- Ne zaman işe yarar: bitiş durumu belli ve model onsuz mekaniği yanlış kuruyor. Topluluk raporu: yalnız başlangıç görseliyle teleskopik direk sepetiyle birlikte kalkıyordu; bitiş karesi verilince gövde sabit kaldı, kesitler yukarı açıldı [kullanıcı bildirdi, issue #1, RTX 4070 Ti; orada 107 ve 141 kare kapıdan geçti].
+- İki görsel de video boyutunda olsun (varsayılan 640x384 ya da senin `-W`/`-H` değerin), aynı kadraj ve ışık; yalnız hareket etmesi gereken şey değişsin.
+- İstem, dilimler içinde ilk kareden son kareye hareketi anlatır; "Same ... as the first frame throughout" cümlesini tut, son dilimde neyin değiştiğini adlandır.
+- Tavan: 8 GB altı kartta 175 kare (192 kare 4 GB'a sığmadı; yalnız `-InitImg` ile tavan 192 kalır); 8 GB ve üstünde 192 (bizce ölçülmedi). 175 kare (7,3 sn) için dilimler: `[0 to 1.8 s] [1.8 to 3.6 s] [3.6 to 5.5 s] [5.5 to 7.3 s]`. Bizim GTX 1050 Ti'de (4 GB) her zaman iki süreçte koşar (tek süreç 56 karede bile VRAM'e sığmadı): 56 kare 1040 sn (VRAM tepe 3597 MiB), 175 kare 2887 sn = 48 dk (3721 MiB), ikisi de kapıdan geçti; 192 kare sığmadı [ölçtüm, 2026-11-20]. `-InitImg` olmadan yalnız `-EndImg` motorda var ama [denenmedi].
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+```
 
 ### İki tam örnek
 İki klip de `scripts/uret.ps1` ile üretildi. Aşağıdaki istemler çalıştırma dosyalarının birebir metnidir; `istem.txt` olarak yapıştırabilirsin (yukarıdaki İngilizce bölümdeki kod bloklarıyla aynıdır: A uçak, B maskot).

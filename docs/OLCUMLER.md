@@ -53,3 +53,45 @@ TavanDk >= tahmini toplam sure x 1,4. F209b icin varsayilan 50 dk yetmedi (sampl
 2. Z3_175 (175 kare, baslangic kareli ikinci parca): ham gurultu 1,86, kapi RED. Doku-normalize N 0,052 / 0,036 (olcu surumune gore); ayni sahne dokusu [olctum; neden: tahmin].
 3. 209 kare icin dayanak F209V2K (ayri surec VAE, gurultu 1,08, kapi gecti).
 Bu RED'lerin bellek/kirpma yolundan gelmedigi hesapla beklenir (yamalar hesap sirasini degistirmez), ama bayt kiyasi yalniz 56 ve 141 karede vardir, 158-209'da yoktur [tahmin].
+
+## 8. Dis rapor: RTX 4070 Ti 12 GB (issue #1) — BIZIM OLCUMUMUZ DEGIL / external report, NOT our measurement
+
+Kaynak: https://github.com/alexturkey/VideoTurko/issues/1 (@SinanC73, 2026-11-20). Asagidaki sayilar o makinede o kisi tarafindan olculdu; biz tekrar etmedik. Etiket: [kullanici bildirdi, #1]. Ayrintili ve elemeli rapor icin @SinanC73'e tesekkurler.
+Source: the issue above. Numbers were measured by the reporter on their machine; we did not repeat them. Thanks to @SinanC73 for a detailed report with elimination tests.
+
+Makine: Windows 11, RTX 4070 Ti 12 GB (12282 MiB), surucu 621.01, compute capability 8.9. Kurulum `kur.ps1` sorunsuz, 5 kare kontrol 41 sn; v0.1.0 sm_61 motor zip'i bu kartta calisti. Denemeler betigin kendi kopyasinda yapildi (`-W/-H`, `-EndImg`, `-TekAsama` o kopyada; v0.1.1'deki parametreler bizim uygulamamizdir).
+
+| Kosu | Boyut | Kare | Asama | DiT | VAE | VRAM tepe (tum kart) | Kapi |
+|---|---|---|---|---|---|---|---|
+| T2V, f32 yok | 384x640 | 141 | 1 ve 2 | 211,8 sn | - | - | video SIYAH (NaN) |
+| T2V, `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` | 384x640 | 141 | 1 | 209,9 sn | - | 11,4 GB | RED gurultu 1,76 (dokulu col sahnesi; orta akis 0,08) |
+| init | 384x640 | 56 | 1 | 65 sn | - | olculmedi | GECTI |
+| init + end (FLF) | 480x832 | 56 | 1 | 165 sn | - | 11,6 GB | GECTI 0,47 |
+| init + end | 576x1024 | 56 | 1 | 275 sn | - | 11,5 GB | GECTI 0,41 |
+| init + end | 720x1280 (motor 736'ya yuvarlar [okudum]) | 56 | 1 | 557 sn | - | 11,6 GB | GECTI 0,32 |
+| init + end | 720x1280 | 107 | 1 | - | - | - | dustu: blok 8 agirlik hazirliginda ~184 MB eksik (1024 MB guvenlik payi) |
+| init + end | 720x1280 | 107 | 2 (`SD_VRAM_MARGIN_MB=1`) | 1470 sn | 42 sn | 11,9 GB | GECTI 0,39 |
+| init + end (FLF), f32 | 384x640 | 141 | - | - | - | - | GECTI 0,62 (orta akis 0,27) |
+
+Okuma notlari (bizim):
+- Siyah videonun eleme tablosu (iki asama/tek asama, init yok, yatay boyut, flash-attention kapali, chunk butcesi 0,2: hepsi siyah; yalniz f32 ile duzeldi) issue'da. Kok neden icin iki aday var: `docs/SIK_HATALAR.md` 19.
+- Buyuk boyutlarda gurultunun dusuk okunmasi beklenir: esikler 640x384'te kalibre (`docs/KAPILAR.md` §2). Bu tablodaki GECTI'ler 640x384 tablolariyla dogrudan karsilastirilamaz.
+- `--offload-to-cpu` buyuk kartta da karti doldurur; 11-12 GB tepe "bellek yetmedi" anlamina gelmez.
+- 22 karelik yatay init kosusunda "workspace capacity check" hatasi bildirildi (tek deneme, log yok); acik.
+- GTX 1050 Ti'de v0.1.1 dogrulamasi (bizim olcumumuz): asagida §9.
+
+## 9. v0.1.1 dogrulamasi: GTX 1050 Ti 4 GB (BIZIM OLCUMUMUZ, 2026-11-20)
+Motor: release v0.1.0 ikilisi (degismedi); betikler v0.1.1; temiz test koku; GPU kilidiyle tek tek. Kanit kayitlari yazarlarda, repoda dagitilmaz.
+
+| Kosu | Ayar | Sonuc | Sure | VRAM tepe (tum kart) |
+|---|---|---|---|---|
+| R0 56 kare (`docs/ornek_istem_R0.txt`, tohum 42) | yeni `uret.ps1` (`--flash-attn off,diffusion=on`), tek asama | BAYT AYNI: avi sha256 `0979f156...` = R0, 56/56 kare md5 ve ses md5 ayni, KAPI GECTI [olctum] | 641 sn | - |
+| FLF 56 kare (`-InitImg` + `-EndImg`) | tek asama (jeton 4080) | DUSTU: segment 5/51 agirlik hazirliginda VRAM yetmedi [olctum] | 294 sn | - |
+| FLF 192 kare | iki asama | DUSTU: segment 5/52 agirlik hazirligi, 459 sn sonra [olctum] | 740 sn | - |
+| FLF 56 kare | iki asama (4 GB'ta zorunlu) | TAMAM, 56 kare + ses, KAPI GECTI (gurultu 0,59, orta akis 1,78), pafta gozle tutarli [olctum] | 1040 sn | 3597 / 4096 MiB |
+| FLF 175 kare | iki asama | TAMAM, 175 kare + ses, KAPI GECTI (gurultu 0,75, orta akis 2,49), pafta gozle tutarli [olctum] | 2887 sn (48 dk) | 3721 / 4096 MiB |
+
+Karar: 8 GB alti kartta (6 GB dahil; ya da VRAM okunamazsa) `-EndImg` verilince her zaman iki asama ve kare tavani 175 (192 sigmadi); `-Kare` verilmezse 175. 8 GB ve ustu kartta `-EndImg` tavani 192 (olculmedi; 6 GB kartin tek asamada sigdigina veri yok). Yalniz `-InitImg` ile tavan 192 degismez.
+Girdi kareleri: U209 videosunun 0., 55. ve 174. kareleri (FLF 56: 0 -> 55, FLF 175: 0 -> 174); istem U209 istemi.
+`GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` bu kartta (6.1) varsayilan KAPALI ve zorla kosulmadi: kod okumasina gore cuBLAS yolu sm61'de f32 hesapliyor, ama bf16 condition_proj yolu degisebilecegi icin kapali tutuldu [okudum; etkisi: denenmedi].
+Olculmeyen: `-EndImg` tek basina (`-InitImg` olmadan); FLF 8 GB ve ustu kartta (12 GB'ta 141 kare FLF gecti: §8, dis rapor).

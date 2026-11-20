@@ -9,6 +9,11 @@ $Root = $(if($env:VT_ROOT){$env:VT_ROOT}else{(Resolve-Path (Join-Path $PSScriptR
 $p = $Root
 $d = $(if($OutDir){$OutDir}else{"$p\runs\$Deney"}); New-Item -ItemType Directory -Force $d | Out-Null; $TE = "$p\model\qwen3vl_32b_minimax_h3-Q4_K_M.gguf"; $Parca = $Cikti; $Sigmas = "hyperflow-h3-flash-6"
 if($env:VT_CUDA_BIN){ $env:PATH = "$($env:VT_CUDA_BIN);" + $env:PATH }
+# cuBLAS f32 (uret.ps1 ile ayni kural): gorulen TUM kartlar compute capability >= 7.0 ise ve GGML_CUDA_CUBLAS_COMPUTE_TYPE ayarli degilse f32 (sm89'da >=141 karede siyah video, issue #1).
+#   6.1 (1050 Ti), okunamayan cc ya da nvidia-smi yok: dokunulmaz. -Env ile verilen deger sonra uygulanir ve bunu ezer. VT_GPU_CC test icin ezer (7,5 = 7.5).
+$ccMin=-1.0; if(Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue){ try{ $ilk=$true; foreach($qc in @(& nvidia-smi.exe --query-gpu=compute_cap --format=csv,noheader,nounits 2>$null)){ $v=0.0; if([double]::TryParse(("$qc").Trim(),[Globalization.NumberStyles]::Float,[Globalization.CultureInfo]::InvariantCulture,[ref]$v)){ if($ilk -or $v -lt $ccMin){ $ccMin=$v }; $ilk=$false } else { $ccMin=-1.0; break } } } catch { $ccMin=-1.0 } }
+if($env:VT_GPU_CC){ $v=0.0; if([double]::TryParse($env:VT_GPU_CC.Trim().Replace(',','.'),[Globalization.NumberStyles]::Float,[Globalization.CultureInfo]::InvariantCulture,[ref]$v)){ $ccMin=$v } else { Write-Host "UYARI: VT_GPU_CC='$($env:VT_GPU_CC)' okunamadi, yok sayildi" } }
+if($ccMin -ge 7.0 -and -not $env:GGML_CUDA_CUBLAS_COMPUTE_TYPE){ $env:GGML_CUDA_CUBLAS_COMPUTE_TYPE='f32'; Write-Host ("bilgi: compute capability {0} >= 7.0: GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32" -f $ccMin.ToString([Globalization.CultureInfo]::InvariantCulture)) }
 $ev0 = @(Get-WinEvent -FilterHashtable @{LogName='System';ProviderName='Display';Id=4101;StartTime=(Get-Date).AddDays(-1)} -ErrorAction SilentlyContinue).Count
 $args2 = @('-M','vid_gen',
  '--diffusion-model',"$p\model\minimax_h3_fl2va_hyperflow_flash_14b-Q4_K_M.gguf",
@@ -18,13 +23,13 @@ $args2 = @('-M','vid_gen',
  '--prompt-file',$(if($IstemDosya){$IstemDosya}else{"$p\docs\ornek_istem_R0.txt"}),'-W','640','-H','384','--video-frames',"$Kare",'--fps','24',
  '--steps','6','--sampling-method','euler','--sigmas',$Sigmas,'--cfg-scale','1.0',
  '--rng','cpu','--seed','42','-t',"$Threads",
- '--diffusion-fa','--model-args',"minimax_h3_attn_chunk_budget=$ChunkBudget",
+ '--flash-attn','off,diffusion=on','--model-args',"minimax_h3_attn_chunk_budget=$ChunkBudget",
  '--offload-to-cpu','--mmap','--backend','te=cpu',
  '--vae-tiling','--temporal-tiling',
  '--log-level','debug','-o',"$d\$Parca.avi") + $Ekstra
 $argStr0 = 1; if($InitImg){ $args2 = @($args2[0..($args2.Count-3)]) + @('--init-img',$InitImg) + @($args2[($args2.Count-2)..($args2.Count-1)]) } if($Karosuz){ $args2 = @($args2 | ? { $_ -notin '--vae-tiling','--temporal-tiling' }) }
 $argStr = ($args2 | ForEach-Object { if ($_ -match '[\s"]') { '"' + ($_ -replace '"','\"') + '"' } else { $_ } }) -join ' '
-if ($Kuru) { $args2 | ForEach-Object -Begin {$i=0} -Process { '{0,2}: [{1}]' -f $i++, $_ } | Set-Content "$d\kuru_$Parca.txt"; ('KOMUT SATIRI: sd-cli.exe ' + $argStr) | Add-Content "$d\kuru_$Parca.txt"; foreach ($a in $args2) { if (($a -like '--*') -and $false) {} }; Add-Content "$d\kuru_$Parca.txt" ("MOTOR: $MotorDizin\sd-cli.exe var=" + (Test-Path "$MotorDizin\sd-cli.exe") + " | ENV: " + ($Env -join ' ') + " | threads=$Threads | DurAdim=$DurAdim | OnisitTE=$OnisitTE"); Write-Output "KURU: $($args2.Count) arguman, $d\kuru_$Parca.txt"; exit 0 }
+if ($Kuru) { $args2 | ForEach-Object -Begin {$i=0} -Process { '{0,2}: [{1}]' -f $i++, $_ } | Set-Content "$d\kuru_$Parca.txt"; ('KOMUT SATIRI: sd-cli.exe ' + $argStr) | Add-Content "$d\kuru_$Parca.txt"; foreach ($a in $args2) { if (($a -like '--*') -and $false) {} }; Add-Content "$d\kuru_$Parca.txt" ("MOTOR: $MotorDizin\sd-cli.exe var=" + (Test-Path "$MotorDizin\sd-cli.exe") + " | ENV: " + ($Env -join ' ') + " | GGML_CUDA_CUBLAS_COMPUTE_TYPE=$($env:GGML_CUDA_CUBLAS_COMPUTE_TYPE) | threads=$Threads | DurAdim=$DurAdim | OnisitTE=$OnisitTE"); Write-Output "KURU: $($args2.Count) arguman, $d\kuru_$Parca.txt"; exit 0 }
 foreach($e in @($Env | % { $_ -split ',' })){ $kv=$e -split '=',2; Set-Item -Path ("Env:" + $kv[0]) -Value $kv[1] }
 $sp = Start-Process -FilePath "$MotorDizin\sd-cli.exe" -ArgumentList $argStr -WindowStyle Hidden -PassThru -RedirectStandardOutput "$d\ham_out_$Parca.txt" -RedirectStandardError "$d\ham_err_$Parca.txt"
 $dm = $null; if($T1){ $dm = Start-Process nvidia-smi -ArgumentList 'dmon -s ut -d 1 -o T' -WindowStyle Hidden -PassThru -RedirectStandardOutput "$d\dmon_$Parca.txt" }

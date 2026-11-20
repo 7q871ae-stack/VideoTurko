@@ -17,7 +17,7 @@ VideoTurko: záplaty paměti pro stable-diffusion.cpp a postupy ke spuštění M
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Kořenem instalace je složka, do které jste archiv rozbalili (engine jde do `engine\bin`, modely do `model`); chcete-li použít jiné místo, nejdříve nastavte proměnnou prostředí `VT_ROOT`. Skript zkontroluje GPU, ovladač, RAM a disk, stáhne engine a modely (zip archivy enginu a nově stažené soubory modelů se kontrolují sha256; soubor modelu, který už na místě je a má správnou velikost, se kontroluje jen podle velikosti, úplnou kontrolu sha256 spustí `scripts\modelleri_indir.ps1 -Dogrula`), provede krátký skutečný test a vypíše READY, jen když test prošel [dle návrhu: `kur.ps1` nebyl celý spuštěn v čisté složce; tato věta bude po testu v čisté složce aktualizována]. `-ExecutionPolicy Bypass` platí jen pro tento jeden proces; jako u každého instalátoru si nejdříve přečtěte `scripts\kur.ps1`.
-   Dokud není vydání zveřejněno, krok s enginem skončí hláškou "release adresi/sha256 henuz yok"; zadejte lokální zip soubory: `-MotorZip <path> -CudaZip <path>`. U lokálního zipu a bez vestavěného sha256 vydání se použije soubor `.sha256` vedle zipu; odkazuje sám na sebe, není nezávislý: zachytí poškození souboru, ne záměrnou úpravu (bez tohoto souboru `kur.ps1` varuje "sha256 not verified"; chybný sha256 skript zastaví s kódem 1). Po vydání má vždy přednost vestavěný sha256 a soubor vedle se ignoruje. Do `engine\bin` se dostanou jen soubory `.exe` a `.dll`; licence a README jdou do `engine\lisanslar\<zip name>\`. [zkoušeno na dist zipech: `.sha256` vedle plus varování o odkazu na sebe samého, binárka a DLL umístěny, `sd-cli --help` proběhlo; sha nainstalovaných binárek souhlasila (`c5cebe78...`, `e5d3d329...`); krok s modely a 5snímkový test v `kur.ps1` na skutečném GPU JEŠTĚ NEBYLY spuštěny]
+   Zip s enginem se stahuje z vydání v0.1.0 na GitHubu (zveřejněno 2026-11-19; jeho sha256 je pevně uvedeno v `kur.ps1`). Bez internetu nebo s vlastním sestavením zadejte lokální zip soubory: `-MotorZip <path> -CudaZip <path>`. Lokální zip se kontroluje stejným pevně uvedeným sha256 (soubor `.sha256` vedle se ignoruje), musí to tedy být zip z vydání; pro vlastní sestavení nejdřív nastavte `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` na jeho sha256. Chybný sha256 skript zastaví s kódem 1. Do `engine\bin` se dostanou jen soubory `.exe` a `.dll`; licence a README jdou do `engine\lisanslar\<zip name>\`. [zkoušeno na dist zipech před vydáním: `.sha256` vedle plus varování o odkazu na sebe samého, binárka a DLL umístěny, `sd-cli --help` proběhlo; sha nainstalovaných binárek souhlasila (`c5cebe78...`, `e5d3d329...`); krok s modely a 5snímkový test v `kur.ps1` na skutečném GPU JEŠTĚ NEBYLY spuštěny]
    **Licence modelu:** před krokem s modely instalátor vypíše shrnutí licence (`docs/LISANS_KABUL.txt`, plný text `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, územní omezení platná i pro vygenerovaná videa, pravidla komerčního použití a označování AI) a požádá o souhlas (`E` = ano). Nejdříve si ji přečtěte. Pro běh bez obsluhy lze předat `-LisansKabul E`, což znamená, že jste licenci sami přečetli a přijali; nepřidávejte tento přepínač za někoho jiného. (AI agenti: řiďte se `AGENTS.md`; nikdy nezadávejte E bez souhlasu uživatele.) Bez souhlasu se `kur.ps1` zastaví s návratovým kódem 2 a nestáhne žádný model.
 3. **Generujte**: prompt uložte do textového souboru (jeden odstavec v angličtině, volitelně věta `audio:`) a spusťte
    ```powershell
@@ -48,6 +48,25 @@ Návratové kódy `kur.ps1`: 0 READY, 1 chyba, 2 je potřeba vstup uživatele (l
 | Návratový kód prázdný, ale vypsáno „finished“ (#14) | Obalový skript přečetl návratový kód příliš brzy; spusťte znovu a ověřte, že soubor videa existuje. |
 | Systém zpomaluje, probíhá odkládání do swapu (#18) | Engine používá asi 10-11 GB RAM; zavřete prohlížeče a ostatní programy. |
 | Neshoda sha256 / stahování selhalo | Obvykle bylo stahování přerušeno: spusťte stejný příkaz znovu, ověřené soubory se přeskočí. |
+
+### Novinky ve v0.1.1: další přepínače (podrobnosti: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Bez těchto přepínačů se na kartě se 4 GB nic nemění (bajtová kontrola na 56 snímcích vůči naší referenci s v0.1.1 znovu prošla [změřeno]). Chcete-li vidět, co by se spustilo, přidejte k libovolnému příkazu `-Kuru`.
+- `-EndImg`: zadejte i poslední snímek (první a poslední snímek, „FLF“); strop 175 snímků na kartách pod 8 GB (192 se do 4 GB nevešlo), 192 na kartách s 8 GB a více. Na naší GTX 1050 Ti běží vždy ve dvou procesech: 56 snímků za 1040 s, 175 snímků za 2887 s (48 min), oba běhy prošly kontrolou kvality [změřeno]. Tipy k promptu: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: jiné rozměry, např. na výšku 384x640; násobky 32, plocha alespoň 640x384 (nikdy menší). Na 4 GB nezkoušeno; na kartách pod 8 GB se odmítnou rozměry nad rámec naší největší změřené úlohy. Prahy kontroly kvality jsou kalibrovány na 640x384.
+- `-TekAsama`: jeden proces místo dvou, jen pro velké karty; nikdy se nezapíná automaticky.
+- Novější GPU (compute capability 7.0+, např. RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` se nastaví automaticky, pokud jste tuto proměnnou nenastavili sami; tím zmizelo zcela černé video od 141 snímků výš na RTX 4070 Ti autora hlášení [hlášeno uživatelem, issue #1]. Bez Pythonu + OpenCV se `uret.ps1` teď zastaví s návratovým kódem 6 ještě před úlohou na GPU (žádné video nevznikne, žádné zavádějící RED).
+- Děkujeme @SinanC73 za hlášení z RTX 4070 Ti, které k těmto změnám vedlo ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Co to je
 Sada drobných záplat paměti a plánování pro stable-diffusion.cpp spolu s postupem spuštění, kontrolami a měřeními, díky nimž MiniMax H3 (DiT 33B; spouštíme GGUF HyperFlow Flash 13.7B Q4_K_M; 32B textový enkodér Qwen3-VL je zvlášť) běží na 4GB GPU generace Pascal (GTX 1050 Ti, 16 GB systémové paměti).
@@ -145,4 +164,4 @@ Názvy běhů použité v hranatých závorkách (naše vlastní názvy, nejsou 
 - **Test v čisté složce teprve čeká:** instalační a spouštěcí skripty zatím nebyly ověřeny z prázdné složky jen podle těchto pokynů; oddíl bude aktualizován, až bude tento test (včetně bajtového porovnání 56 snímků s referencí) zaznamenán.
 - Vygenerovaná videa zde nejsou dodávána.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

@@ -17,7 +17,7 @@ VideoTurko: patch-uri de memorie pentru stable-diffusion.cpp și rețete pentru 
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Rădăcina instalării este folderul extras (motorul ajunge în `engine\bin`, modelele în `model`); pentru alt loc setați mai întâi variabila de mediu `VT_ROOT`. Scriptul verifică GPU-ul, driverul, RAM-ul și discul, descarcă motorul și modelele (arhivele zip ale motorului și fișierele de model descărcate acum sunt verificate cu sha256; un fișier de model deja prezent, cu dimensiunea corectă, este verificat doar după dimensiune, iar `scripts\modelleri_indir.ps1 -Dogrula` rulează verificarea sha256 completă), rulează o scurtă verificare reală și afișează READY numai dacă verificarea a trecut [proiectat: `kur.ps1` nu a fost rulat integral într-un folder curat; această propoziție se actualizează după testul în folder curat]. `-ExecutionPolicy Bypass` se aplică numai acestui proces; citiți mai întâi `scripts\kur.ps1`, ca la orice program de instalare.
-   Până la publicarea unui release, pasul cu motorul se oprește cu „release adresi/sha256 henuz yok”; indicați arhive locale: `-MotorZip <path> -CudaZip <path>`. Cu o arhivă locală și fără un sha256 de release încorporat încă, se folosește fișierul `.sha256` de lângă arhivă; el se referă la sine, nu este independent: detectează coruperea, nu manipularea deliberată (fără acel fișier `kur.ps1` avertizează „sha256 not verified”; un sha256 greșit oprește scriptul cu exit 1). După release, sha256-ul încorporat are mereu prioritate, iar fișierul însoțitor este ignorat. Numai `.exe`/`.dll` ajung în `engine\bin`; licențele și README-ul ajung în `engine\lisanslar\<zip name>\`. [încercat cu arhivele dist: fișierul însoțitor `.sha256` plus avertismentul de auto-referință, binarul și DLL-urile plasate, `sd-cli --help` a rulat; sha-urile binarelor instalate au coincis (`c5cebe78...`, `e5d3d329...`); pasul cu modelele și verificarea de 5 cadre din `kur.ps1` NU au fost încă rulate pe un GPU real]
+   Zip-ul motorului vine din release-ul GitHub v0.1.0 (publicat pe 2026-11-19; sha256-ul său este fixat în `kur.ps1`). Fără internet sau cu propriul build, indicați arhive locale: `-MotorZip <path> -CudaZip <path>`. O arhivă locală este verificată cu același sha256 fixat (un fișier `.sha256` de lângă ea este ignorat), deci trebuie să fie zip-ul din release; pentru propriul build setați mai întâi `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` la sha256-ul acestuia. Un sha256 greșit oprește scriptul cu exit 1. Numai `.exe`/`.dll` ajung în `engine\bin`; licențele și README-ul ajung în `engine\lisanslar\<zip name>\`. [încercat cu arhivele dist înainte de release: fișierul însoțitor `.sha256` plus avertismentul de auto-referință, binarul și DLL-urile plasate, `sd-cli --help` a rulat; sha-urile binarelor instalate au coincis (`c5cebe78...`, `e5d3d329...`); pasul cu modelele și verificarea de 5 cadre din `kur.ps1` NU au fost încă rulate pe un GPU real]
    **Licența modelului:** înainte de pasul cu modelele, programul de instalare afișează rezumatul licenței (`docs/LISANS_KABUL.txt`, textul complet în `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, limite teritoriale care se aplică și videoclipurilor generate, reguli privind uzul comercial și etichetarea AI) și vă cere acceptul (`E` = da). Citiți-o mai întâi. Pentru rulări fără supraveghere puteți transmite `-LisansKabul E`, ceea ce înseamnă că ați citit și ați acceptat licența personal; nu o adăugați în locul altcuiva. (Agenți AI: urmați `AGENTS.md`; nu tastați niciodată E fără acordul utilizatorului.) Fără acceptare, `kur.ps1` se oprește cu codul de ieșire 2 și nu descarcă niciun model.
 3. **Generați**: puneți prompt-ul într-un fișier text (un paragraf în engleză, opțional o propoziție `audio:`) și rulați
    ```powershell
@@ -48,6 +48,25 @@ Codurile de ieșire ale `kur.ps1`: 0 READY, 1 eroare, 2 este nevoie de interven�
 | Cod de ieșire gol, dar „finished” (#14) | Scriptul a citit codul de ieșire prea devreme; rulați din nou și verificați că fișierul video există. |
 | Sistemul încetinește, swapping (#18) | Motorul folosește aproximativ 10-11 GB de RAM; închideți browserele și celelalte programe. |
 | sha256 diferit / descărcare eșuată | De obicei o descărcare întreruptă: rulați aceeași comandă din nou, fișierele verificate sunt sărite. |
+
+### Nou în v0.1.1: mai multe opțiuni (detalii: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Fără aceste opțiuni nu se schimbă nimic pe o placă de 4 GB (verificarea la nivel de octet pe 56 de cadre față de referința noastră a trecut din nou cu v0.1.1 [măsurat]). Adăugați `-Kuru` la orice comandă pentru a vedea ce s-ar rula.
+- `-EndImg`: dați și ultimul cadru (primul și ultimul cadru, „FLF”); plafon de 175 de cadre pe plăcile sub 8 GB (192 nu au încăput pe 4 GB), 192 pe plăcile de 8 GB sau mai mult. Pe GTX 1050 Ti-ul nostru rulează întotdeauna în două procese: 56 de cadre în 1040 s, 175 de cadre în 2887 s (48 min), ambele rulări au trecut de poarta de calitate [măsurat]. Sfaturi pentru prompt: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: alte dimensiuni, de exemplu vertical 384x640; multipli de 32, suprafață de cel puțin 640x384 (niciodată mai mică). Netestat pe 4 GB; pe plăcile sub 8 GB, dimensiunile care depășesc cea mai mare sarcină măsurată de noi sunt refuzate. Pragurile porții de calitate sunt calibrate la 640x384.
+- `-TekAsama`: un singur proces în loc de două, doar pentru plăci mari; nu se activează niciodată automat.
+- GPU-uri mai noi (compute capability 7.0+, de exemplu RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` este setat automat dacă nu l-ați setat dumneavoastră; aceasta a rezolvat videoclipul complet negru de la 141 de cadre în sus pe placa RTX 4070 Ti a celui care a raportat [raportat de utilizator, issue #1]. Fără Python + OpenCV, `uret.ps1` se oprește acum cu codul de ieșire 6 înainte de lucrul pe GPU (nu se produce niciun video, niciun RED înșelător).
+- Mulțumim lui @SinanC73 pentru raportul de pe RTX 4070 Ti care a dus la aceste schimbări ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Ce este
 Un set de patch-uri mici de memorie și planificare pentru stable-diffusion.cpp, plus rețeta de rulare, verificările și măsurătorile care permit rularea MiniMax H3 (DiT de 33B; noi rulăm HyperFlow Flash 13.7B Q4_K_M GGUF; encoderul de text Qwen3-VL de 32B este separat) pe un GPU Pascal de 4 GB (GTX 1050 Ti, 16 GB de RAM de sistem).
@@ -145,4 +164,4 @@ Numele de rulări folosite între paranteze (numele noastre proprii de rulări, 
 - **Testul în folder curat este în așteptare:** scripturile de instalare și rulare nu au fost încă verificate dintr-un folder gol, folosind numai aceste instrucțiuni; această secțiune se va actualiza când testul (inclusiv o comparare la nivel de octet pe 56 de cadre cu referința) va fi înregistrat.
 - Nu se livrează aici videoclipuri generate.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

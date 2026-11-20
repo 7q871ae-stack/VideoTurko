@@ -17,7 +17,7 @@ VideoTurko: geheugenpatches voor stable-diffusion.cpp en recepten om MiniMax H3 
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    De installatiemap is de map die je hebt uitgepakt (de engine komt in `engine\bin`, de modellen in `model`); wil je een andere plek, zet dan eerst de omgevingsvariabele `VT_ROOT`. Het script controleert GPU, driver, RAM en schijf, haalt de engine en de modellen op (engine-zips en nieuw gedownloade modelbestanden worden met sha256 gecontroleerd; een modelbestand dat al aanwezig is met de juiste grootte wordt alleen op grootte gecontroleerd, `scripts\modelleri_indir.ps1 -Dogrula` voert de volledige sha256-controle uit), doet een korte echte controle en toont READY alleen als die controle geslaagd is [ontwerp: `kur.ps1` is nog niet volledig uitgevoerd in een schone map; deze zin wordt bijgewerkt na de test in een schone map]. `-ExecutionPolicy Bypass` geldt alleen voor dit ene proces; lees `scripts\kur.ps1` eerst, zoals bij elk installatieprogramma.
-   Zolang er geen release is gepubliceerd stopt de engine-stap met "release adresi/sha256 henuz yok"; geef dan lokale zips mee: `-MotorZip <path> -CudaZip <path>`. Met een lokale zip en zonder ingebouwde release-sha256 wordt de `.sha256` naast de zip gebruikt; die verwijst naar zichzelf en is niet onafhankelijk: hij vangt beschadiging op, geen opzettelijke manipulatie (zonder dat bestand waarschuwt `kur.ps1` met "sha256 not verified"; een onjuiste sha256 stopt met exit 1). Na de release wint de ingebouwde sha256 altijd en wordt het sidecar-bestand genegeerd. Alleen `.exe`/`.dll` gaan naar `engine\bin`; licenties en README gaan naar `engine\lisanslar\<zip name>\`. [geprobeerd met de dist-zips: het sidecar-bestand `.sha256` plus de waarschuwing dat het naar zichzelf verwijst, binary en DLL's geplaatst, `sd-cli --help` draaide; de sha's van de geïnstalleerde binaries kwamen overeen (`c5cebe78...`, `e5d3d329...`); de modelstap en de 5-frame-controle van `kur.ps1` zijn nog NIET op een echte GPU uitgevoerd]
+   De engine-zip komt uit de GitHub-release v0.1.0 (gepubliceerd op 2026-11-19; de sha256 ervan staat vast in `kur.ps1`). Offline of met een eigen build geef je lokale zips mee: `-MotorZip <path> -CudaZip <path>`. Een lokale zip wordt tegen dezelfde vastgezette sha256 gecontroleerd (een `.sha256`-bestand ernaast wordt genegeerd), dus het moet de release-zip zijn; voor een eigen build zet je eerst `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` op de sha256 ervan. Een onjuiste sha256 stopt met exit 1. Alleen `.exe`/`.dll` gaan naar `engine\bin`; licenties en README gaan naar `engine\lisanslar\<zip name>\`. [vóór de release geprobeerd met de dist-zips: het sidecar-bestand `.sha256` plus de waarschuwing dat het naar zichzelf verwijst, binary en DLL's geplaatst, `sd-cli --help` draaide; de sha's van de geïnstalleerde binaries kwamen overeen (`c5cebe78...`, `e5d3d329...`); de modelstap en de 5-frame-controle van `kur.ps1` zijn nog NIET op een echte GPU uitgevoerd]
    **Modellicentie:** vóór de modelstap toont het installatieprogramma de samenvatting van de licentie (`docs/LISANS_KABUL.txt`, volledige tekst `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, gebiedsbeperkingen die ook voor gegenereerde video's gelden, regels voor commercieel gebruik en AI-labels) en vraagt of je akkoord gaat (`E` = ja). Lees die eerst. Voor onbeheerde runs kun je `-LisansKabul E` meegeven; dat betekent dat je de licentie zelf hebt gelezen en geaccepteerd; voeg het niet toe namens iemand anders. (AI-agents: volg `AGENTS.md`; typ nooit E zonder toestemming van de gebruiker.) Zonder acceptatie stopt `kur.ps1` met exitcode 2 en downloadt geen model.
 3. **Genereer**: zet je prompt in een tekstbestand (één Engelse alinea, optioneel een zin met `audio:`) en voer uit
    ```powershell
@@ -48,6 +48,25 @@ Exitcodes van `kur.ps1`: 0 READY, 1 fout, 2 invoer van de gebruiker nodig (licen
 | Exitcode leeg maar "finished" (#14) | De wrapper las de exitcode te vroeg; draai opnieuw en controleer of het videobestand bestaat. |
 | Systeem wordt traag, swapping (#18) | De engine gebruikt ongeveer 10-11 GB RAM; sluit browsers en andere programma's. |
 | sha256-mismatch / download mislukt | Meestal een onderbroken download: voer dezelfde opdracht opnieuw uit, geverifieerde bestanden worden overgeslagen. |
+
+### Nieuw in v0.1.1: meer opties (details: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Zonder deze opties verandert er niets op een kaart van 4 GB (de bytecontrole van 56 frames tegen onze referentie is met v0.1.1 opnieuw geslaagd [gemeten]). Zet `-Kuru` achter een willekeurige opdracht om te zien wat er zou draaien.
+- `-EndImg`: geef ook het laatste frame mee (eerste en laatste frame, "FLF"); maximaal 175 frames op kaarten onder 8 GB (192 paste niet op 4 GB), 192 op kaarten van 8 GB en meer. Op onze GTX 1050 Ti draait dit altijd in twee processen: 56 frames 1040 s, 175 frames 2887 s (48 min), beide slaagden voor de poort [gemeten]. Tips voor de prompt: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: andere formaten, bijvoorbeeld staand 384x640; veelvouden van 32, oppervlak minstens 640x384 (nooit kleiner). Niet getest op 4 GB; op kaarten onder 8 GB worden formaten geweigerd die groter zijn dan onze grootste gemeten run. De drempels van de kwaliteitspoort zijn gekalibreerd op 640x384.
+- `-TekAsama`: één proces in plaats van twee, alleen voor grote kaarten; wordt nooit automatisch ingeschakeld.
+- Nieuwere GPU's (compute capability 7.0+, bijv. RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` wordt automatisch gezet, tenzij je het zelf instelt; dit verhielp een volledig zwarte video bij 141 frames of meer op de RTX 4070 Ti van de melder [gemeld door gebruiker, issue #1]. Zonder Python + OpenCV stopt `uret.ps1` nu vóór de GPU-taak met exit 6 (geen video gemaakt, geen misleidende RED).
+- Dank aan @SinanC73 voor het rapport over de RTX 4070 Ti dat tot deze wijzigingen leidde ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Wat dit is
 Een set kleine geheugen- en planningspatches voor stable-diffusion.cpp, plus het runrecept, de controles en de metingen waarmee MiniMax H3 (33B DiT; wij draaien de HyperFlow Flash 13.7B Q4_K_M GGUF; de Qwen3-VL-tekstencoder van 32B staat apart) op een Pascal-GPU van 4 GB (GTX 1050 Ti, 16 GB systeem-RAM) kan draaien.
@@ -145,4 +164,4 @@ Gebruikte runnamen tussen haakjes (onze eigen runnamen, geen bestanden in deze r
 - **Clean-root-test staat nog open:** de installatie- en runscripts zijn nog niet vanuit een lege map geverifieerd met alleen deze instructies; deze sectie wordt bijgewerkt wanneer die test (inclusief een bytevergelijking van 56 frames met de referentie) is vastgelegd.
 - Hier worden geen gegenereerde video's meegeleverd.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

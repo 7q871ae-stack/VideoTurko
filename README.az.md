@@ -17,7 +17,7 @@ VideoTurko: 4 GB-lıq GTX 1050 Ti üzərində MiniMax H3 mətndən-videoya model
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Quraşdırma kökü çıxardığınız qovluqdur (mühərrik `engine\bin` qovluğuna, modellər `model` qovluğuna düşür); başqa yer üçün əvvəlcə `VT_ROOT` mühit dəyişənini təyin edin. Skript GPU-nu, sürücünü, RAM-i və diski yoxlayır, mühərriki və modelləri yükləyir (mühərrik zip-ləri və təzə yüklənən model faylları sha256 ilə yoxlanılır; ölçüsü düzgün olan hazır model faylı yalnız ölçüyə görə yoxlanılır, tam sha256 yoxlaması üçün `scripts\modelleri_indir.ps1 -Dogrula` işə salınır), qısa real yoxlama aparır və yalnız bu yoxlama keçərsə READY çıxarır [dizayn: `kur.ps1` təmiz qovluqda tam işə salınmayıb; bu cümlə təmiz-qovluq testindən sonra yenilənəcək]. `-ExecutionPolicy Bypass` yalnız bu bir prosesə aiddir; hər quraşdırıcıda olduğu kimi, əvvəlcə `scripts\kur.ps1` faylını oxuyun.
-   Buraxılış (release) dərc olunana qədər mühərrik addımı "release adresi/sha256 henuz yok" mesajı ilə dayanır; yerli zip-ləri verin: `-MotorZip <path> -CudaZip <path>`. Yerli zip olduqda və hələ daxili buraxılış sha256-sı yoxdursa, zip-in yanındakı `.sha256` faylından istifadə olunur; bu fayl özünə istinad edir, müstəqil deyil: zədələnməni tutur, qəsdən dəyişdirməni tutmur (bu fayl olmasa `kur.ps1` "sha256 not verified" xəbərdarlığı verir; yanlış sha256 isə exit 1 ilə dayandırır). Buraxılışdan sonra daxili sha256 həmişə üstün olur, yanındakı fayl nəzərə alınmır. `engine\bin` qovluğuna yalnız `.exe`/`.dll` faylları düşür; lisenziyalar və README `engine\lisanslar\<zip name>\` qovluğuna qoyulur. [sınanıb dist zip-ləri ilə: yanındakı `.sha256` faylı və özünə istinadlı xəbərdarlıq, binar və DLL-lər yerinə qoyuldu, `sd-cli --help` işlədi; quraşdırılan binarların sha-ları üst-üstə düşdü (`c5cebe78...`, `e5d3d329...`); `kur.ps1`-in model addımı və 5 kadrlıq yoxlaması hələ real GPU-da İŞƏ SALINMAYIB]
+   Mühərrik zip-i GitHub-dakı v0.1.0 buraxılışından yüklənir (19 noyabr 2026-da dərc olunub; sha256-sı `kur.ps1` faylında sabitlənib). İnternetsiz işləyirsinizsə və ya öz build-inizdən istifadə edirsinizsə, yerli zip-ləri verin: `-MotorZip <path> -CudaZip <path>`. Yerli zip də eyni sabit sha256 ilə yoxlanılır (yanındakı `.sha256` faylı nəzərə alınmır), ona görə də o, buraxılış zip-i olmalıdır; öz build-iniz üçün əvvəlcə `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` dəyişənini onun sha256-sına təyin edin. Yanlış sha256 exit 1 ilə dayandırır. `engine\bin` qovluğuna yalnız `.exe`/`.dll` faylları düşür; lisenziyalar və README `engine\lisanslar\<zip name>\` qovluğuna qoyulur. [sınanıb buraxılışdan əvvəl dist zip-ləri ilə: yanındakı `.sha256` faylı və özünə istinadlı xəbərdarlıq, binar və DLL-lər yerinə qoyuldu, `sd-cli --help` işlədi; quraşdırılan binarların sha-ları üst-üstə düşdü (`c5cebe78...`, `e5d3d329...`); `kur.ps1`-in model addımı və 5 kadrlıq yoxlaması hələ real GPU-da İŞƏ SALINMAYIB]
    **Model lisenziyası:** model addımından əvvəl quraşdırıcı lisenziya xülasəsini çap edir (`docs/LISANS_KABUL.txt`, tam mətn `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, yaradılan videoları da əhatə edən ərazi məhdudiyyətləri, kommersiya və AI-etiket qaydaları) və qəbul etməyinizi istəyir (`E` = bəli). Əvvəlcə oxuyun. Nəzarətsiz işə salmalar üçün `-LisansKabul E` verə bilərsiniz; bu, lisenziyanı özünüzün oxuyub qəbul etdiyiniz mənasına gəlir; başqası üçün əlavə etməyin. (AI agentləri: `AGENTS.md` faylına əməl edin; istifadəçinin razılığı olmadan heç vaxt E yazmayın.) Qəbul olunmasa `kur.ps1` exit kodu 2 ilə dayanır və heç bir model yükləmir.
 3. **Yaradın**: istəyinizi (prompt) mətn faylına yazın (bir ingilis abzası, istəyə görə `audio:` cümləsi) və işə salın:
    ```powershell
@@ -48,6 +48,25 @@ VideoTurko: 4 GB-lıq GTX 1050 Ti üzərində MiniMax H3 mətndən-videoya model
 | Exit kodu boşdur, amma "finished" yazılıb (#14) | Sarğı (wrapper) exit kodunu çox tez oxuyub; yenidən işə salın və video faylının mövcudluğunu yoxlayın. |
 | Sistem yavaşlayır, swap işləyir (#18) | Mühərrik təxminən 10-11 GB RAM istifadə edir; brauzerləri və digər proqramları bağlayın. |
 | sha256 uyğunsuzluğu / yükləmə uğursuz oldu | Adətən yükləmə yarımçıq qalıb: eyni əmri yenidən işə salın, yoxlanılmış fayllar keçilir. |
+
+### v0.1.1-də yeni: əlavə seçimlər (təfərrüatlar: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Bu seçimlərdən istifadə etməsəniz, 4 GB-lıq kartda heç nə dəyişmir (istinadımızla müqayisədə 56 kadrlıq bayt yoxlaması v0.1.1 ilə yenidən keçdi [ölçülüb]). Nəyin işə düşəcəyini görmək üçün istənilən əmrə `-Kuru` əlavə edin.
+- `-EndImg`: son kadrı da verin (ilk və son kadr, "FLF"); 8 GB-dan az yaddaşlı kartlarda hədd 175 kadrdır (192 kadr 4 GB-da yerləşmədi), 8 GB və daha böyük kartlarda 192. Bizim GTX 1050 Ti kartımızda həmişə iki prosesdə işləyir: 56 kadr 1040 san, 175 kadr 2887 san (48 dəq), hər ikisi keçiddən keçdi [ölçülüb]. İstəm məsləhətləri: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: başqa ölçülər, məsələn, şaquli 384x640; 32-nin misli olmalı, sahəsi ən azı 640x384 (heç vaxt daha kiçik deyil). 4 GB-da sınanmayıb; 8 GB-dan az yaddaşlı kartlarda ölçdüyümüz ən böyük işi aşan ölçülər rədd edilir. Keyfiyyət keçidinin hədləri 640x384 üçün kalibrlənib.
+- `-TekAsama`: iki proses əvəzinə bir proses, yalnız böyük kartlar üçün; heç vaxt avtomatik açılmır.
+- Daha yeni GPU-lar (compute capability 7,0+, məs. RTX 20/30/40): özünüz təyin etməmisinizsə, `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` avtomatik təyin olunur; bu, bildirişi göndərənin RTX 4070 Ti kartında 141 və daha çox kadrda tamamilə qara video problemini aradan qaldırdı [istifadəçi bildirib, issue #1]. Python + OpenCV yoxdursa, `uret.ps1` indi GPU işindən əvvəl exit 6 ilə dayanır (video yaradılmır, çaşdırıcı RED də yoxdur).
+- Bu dəyişikliklərə səbəb olan RTX 4070 Ti hesabatı üçün @SinanC73-ə təşəkkür edirik ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Bu nədir
 MiniMax H3-ün (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF işlədirik; 32B Qwen3-VL mətn kodlayıcısı ayrıdır) 4 GB-lıq Pascal GPU-da (GTX 1050 Ti, 16 GB sistem RAM-i) işləməsinə imkan verən stable-diffusion.cpp üçün kiçik yaddaş/planlaşdırma yamaqları toplusu, həmçinin işə salma resepti, yoxlamalar və ölçmələr.
@@ -145,4 +164,4 @@ Mötərizələrdə istifadə olunan işə salınma adları (öz adlarımızdır,
 - **Təmiz-kök testi gözlənilir:** quraşdırma və işə salma skriptləri yalnız bu təlimatlarla boş qovluqdan hələ yoxlanılmayıb; bu test (istinada qarşı 56 kadrlıq bayt müqayisəsi daxil) qeyd olunduqda bu bölmə yenilənəcək.
 - Burada heç bir yaradılmış video verilmir.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

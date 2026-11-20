@@ -17,7 +17,7 @@ VideoTurko: minnespatchar för stable-diffusion.cpp och recept för att köra Mi
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Installationsroten är mappen du packade upp (motorn hamnar i `engine\bin`, modellerna i `model`); vill du använda en annan plats, sätt miljövariabeln `VT_ROOT` först. Skriptet kontrollerar GPU, drivrutin, RAM och disk, hämtar motorn och modellerna (motor-zippar och nyligen nedladdade modellfiler sha256-kontrolleras; en modellfil som redan finns med rätt storlek storlekskontrolleras bara, `scripts\modelleri_indir.ps1 -Dogrula` kör den fullständiga sha256-kontrollen), kör en kort riktig kontroll och skriver ut READY bara om kontrollen gick igenom [upplägg: `kur.ps1` har inte körts i sin helhet i en ren mapp; den här meningen uppdateras efter testet i ren mapp]. `-ExecutionPolicy Bypass` gäller bara den här ena processen; läs `scripts\kur.ps1` först, som med vilket installationsprogram som helst.
-   Tills en release är publicerad stannar motorsteget med "release adresi/sha256 henuz yok"; ange lokala zippar: `-MotorZip <path> -CudaZip <path>`. Med en lokal zip och ännu ingen inbyggd release-sha256 används `.sha256` bredvid zippen; den är självrefererande, inte oberoende: den fångar upp korruption, inte avsiktlig manipulering (utan den filen varnar `kur.ps1` med "sha256 not verified"; en felaktig sha256 stoppar med exit 1). Efter release gäller alltid den inbyggda sha256 och sidofilen ignoreras. Bara `.exe`/`.dll` hamnar i `engine\bin`; licenser och README hamnar i `engine\lisanslar\<zip name>\`. [provat med dist-zippar: sidofilen `.sha256` plus varningen om självreferens, binär och DLL-filer lades på plats, `sd-cli --help` kördes; de installerade binärernas sha stämde (`c5cebe78...`, `e5d3d329...`); modellsteget och 5-bildrutorskontrollen i `kur.ps1` har ännu INTE körts på ett riktigt GPU]
+   Motor-zippen kommer från GitHub-releasen v0.1.0 (publicerad 2026-11-19; dess sha256 är fastlåst i `kur.ps1`). Offline eller med ett eget bygge anger du lokala zippar: `-MotorZip <path> -CudaZip <path>`. En lokal zip kontrolleras mot samma fastlåsta sha256 (en `.sha256`-fil bredvid ignoreras), så den måste vara release-zippen; för ett eget bygge sätter du först `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` till dess sha256. En felaktig sha256 stoppar med exit 1. Bara `.exe`/`.dll` hamnar i `engine\bin`; licenser och README hamnar i `engine\lisanslar\<zip name>\`. [provat med dist-zippar före releasen: sidofilen `.sha256` plus varningen om självreferens, binär och DLL-filer lades på plats, `sd-cli --help` kördes; de installerade binärernas sha stämde (`c5cebe78...`, `e5d3d329...`); modellsteget och 5-bildrutorskontrollen i `kur.ps1` har ännu INTE körts på ett riktigt GPU]
    **Modelllicens:** före modellsteget skriver installationsprogrammet ut en sammanfattning av licensen (`docs/LISANS_KABUL.txt`, hela texten `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, territoriella begränsningar som även omfattar genererade videor, regler för kommersiell användning och AI-märkning) och ber dig godkänna (`E` = ja). Läs den först. För obevakade körningar kan du ange `-LisansKabul E`, vilket betyder att du själv har läst och godkänt den; lägg inte till det åt någon annan. (AI-agenter: följ `AGENTS.md`; skriv aldrig E utan användarens samtycke.) Utan godkännande stoppar `kur.ps1` med exit-kod 2 och laddar inte ner någon modell.
 3. **Generera**: lägg din prompt i en textfil (ett engelskt stycke, valfri `audio:`-mening) och kör
    ```powershell
@@ -48,6 +48,25 @@ Exit-koder för `kur.ps1`: 0 READY, 1 fel, 2 användarinmatning behövs (licens,
 | Exit-koden är tom men "finished" (#14) | Wrappern läste exit-koden för tidigt; kör igen och kontrollera att videofilen finns. |
 | Systemet blir segt, swappar (#18) | Motorn använder cirka 10-11 GB RAM; stäng webbläsare och andra program. |
 | sha256-avvikelse / nedladdningen misslyckades | Oftast en avbruten nedladdning: kör samma kommando igen, verifierade filer hoppas över. |
+
+### Nytt i v0.1.1: fler alternativ (detaljer: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Utan de här alternativen ändras ingenting på ett 4 GB-kort (bytekontrollen med 56 bildrutor mot vår referens gick igenom igen med v0.1.1 [uppmätt]). Lägg till `-Kuru` på valfritt kommando för att se vad som skulle köras.
+- `-EndImg`: ange även den sista bildrutan (första och sista bildruta, "FLF"); tak på 175 bildrutor på kort under 8 GB (192 fick inte plats på 4 GB), 192 på kort med 8 GB eller mer. På vårt GTX 1050 Ti körs det alltid i två processer: 56 bildrutor 1040 s, 175 bildrutor 2887 s (48 min), båda passerade grinden [uppmätt]. Tips för prompten: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: andra storlekar, t.ex. stående 384x640; multiplar av 32, yta minst 640x384 (aldrig mindre). Inte testat på 4 GB; på kort under 8 GB avvisas storlekar som går utöver vår största uppmätta körning. Kvalitetsgrindens tröskelvärden är kalibrerade för 640x384.
+- `-TekAsama`: en process i stället för två, bara för stora kort; slås aldrig på automatiskt.
+- Nyare GPU:er (compute capability 7.0+, t.ex. RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` sätts automatiskt om du inte har satt den själv; det åtgärdade en helt svart video vid 141 bildrutor och fler på rapportörens RTX 4070 Ti [användarrapporterat, issue #1]. Utan Python + OpenCV stoppar `uret.ps1` nu med exit 6 före GPU-jobbet (ingen video skapas, ingen missvisande RED).
+- Tack till @SinanC73 för rapporten om RTX 4070 Ti som ledde till de här ändringarna ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Vad det här är
 En uppsättning små minnes- och schemaläggningspatchar för stable-diffusion.cpp samt körrecept, kontroller och mätningar som gör att MiniMax H3 (33B DiT; vi kör HyperFlow Flash 13.7B Q4_K_M GGUF; textencodern Qwen3-VL på 32B är separat) kan köras på ett Pascal-GPU med 4 GB (GTX 1050 Ti, 16 GB systemminne).
@@ -145,4 +164,4 @@ Körningsnamn som används inom hakparentes (våra egna körningsnamn, inte file
 - **Test i tom rotmapp återstår:** installations- och körskripten har ännu inte verifierats från en tom mapp med enbart de här instruktionerna; det här avsnittet uppdateras när det testet (inklusive en byte-jämförelse med 56 bildrutor mot referensen) är dokumenterat.
 - Inga genererade videor levereras här.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

@@ -17,7 +17,7 @@ VideoTurko: stable-diffusion.cpp memóriapatchek és receptek a MiniMax H3 (szö
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    A telepítés gyökere a mappa, ahová kicsomagoltad az archívumot (a motor az `engine\bin` mappába kerül, a modellek a `model` mappába); más hely használatához előbb állítsd be a `VT_ROOT` környezeti változót. A szkript ellenőrzi a GPU-t, az illesztőprogramot, a RAM-ot és a lemezt, letölti a motort és a modelleket (a motor zip-jeit és az újonnan letöltött modellfájlokat sha256-tal ellenőrzi; az a modellfájl, amely már ott van és a mérete helyes, csak méretre van ellenőrizve, a teljes sha256-ellenőrzést a `scripts\modelleri_indir.ps1 -Dogrula` végzi), lefuttat egy rövid valódi próbát, és csak akkor írja ki a READY-t, ha az átment [tervezett: a `kur.ps1` még nem futott végig tiszta mappában; ezt a mondatot a tiszta mappás teszt után frissítjük]. Az `-ExecutionPolicy Bypass` csak erre az egy folyamatra érvényes; mint minden telepítőt, előbb olvasd el a `scripts\kur.ps1`-et.
-   Amíg a kiadás nincs közzétéve, a motorlépés "release adresi/sha256 henuz yok" üzenettel leáll; adj meg helyi zip-fájlokat: `-MotorZip <path> -CudaZip <path>`. Helyi zip esetén, ha még nincs beágyazott kiadási sha256, a zip melletti `.sha256` fájlt használja; ez önhivatkozó, nem független: a sérülést észleli, a szándékos módosítást nem (e fájl nélkül a `kur.ps1` ezt figyelmezteti: "sha256 not verified"; rossz sha256 esetén a szkript 1-es kóddal leáll). A kiadás után mindig a beágyazott sha256 az irányadó, a mellette lévő fájlt figyelmen kívül hagyja. Az `engine\bin` mappába csak `.exe` és `.dll` kerül; a licencek és a README az `engine\lisanslar\<zip name>\` mappába. [kipróbálva a dist zip-ekkel: a melletti `.sha256` és az önhivatkozásra figyelmeztetés, a bináris és a DLL-ek a helyükre kerültek, az `sd-cli --help` lefutott; a telepített binárisok sha-ja egyezett (`c5cebe78...`, `e5d3d329...`); a modelllépést és a `kur.ps1` 5 képkockás próbáját valódi GPU-n MÉG NEM futtattuk]
+   A motor zip-fájlja a GitHubon közzétett v0.1.0 kiadásból töltődik le (közzétéve: 2026-11-19; a sha256-ja rögzítve van a `kur.ps1`-ben). Internet nélkül vagy saját builddel adj meg helyi zip-fájlokat: `-MotorZip <path> -CudaZip <path>`. A helyi zip-fájlt ugyanazzal a rögzített sha256-tal ellenőrzi (a mellette lévő `.sha256` fájlt figyelmen kívül hagyja), ezért a kiadási zipnek kell lennie; saját buildhez előbb állítsd be a `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` változót annak sha256-jára. Rossz sha256 esetén a szkript 1-es kóddal leáll. Az `engine\bin` mappába csak `.exe` és `.dll` kerül; a licencek és a README az `engine\lisanslar\<zip name>\` mappába. [a kiadás előtt kipróbálva a dist zip-ekkel: a melletti `.sha256` és az önhivatkozásra figyelmeztetés, a bináris és a DLL-ek a helyükre kerültek, az `sd-cli --help` lefutott; a telepített binárisok sha-ja egyezett (`c5cebe78...`, `e5d3d329...`); a modelllépést és a `kur.ps1` 5 képkockás próbáját valódi GPU-n MÉG NEM futtattuk]
    **A modell licence:** a modelllépés előtt a telepítő kiírja a licenc összefoglalóját (`docs/LISANS_KABUL.txt`, teljes szöveg: `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, a generált videókra is kiterjedő területi korlátok, kereskedelmi és MI-jelölési szabályok), és elfogadást kér (`E` = igen). Előbb olvasd el. Felügyelet nélküli futtatáshoz megadhatod a `-LisansKabul E` kapcsolót, ami azt jelenti, hogy te magad elolvastad és elfogadtad a licencet; ne add meg más helyett. (MI-ügynököknek: kövessétek az `AGENTS.md`-t; soha ne írjatok E-t a felhasználó beleegyezése nélkül.) Elfogadás nélkül a `kur.ps1` 2-es kilépési kóddal leáll, és nem tölt le modellt.
 3. **Generálj**: tedd a promptot egy szövegfájlba (egy angol bekezdés, opcionálisan egy `audio:` mondat), és futtasd:
    ```powershell
@@ -48,6 +48,25 @@ A `kur.ps1` kilépési kódjai: 0 READY, 1 hiba, 2 felhasználói beavatkozás k
 | A kilépési kód üres, de „finished” áll (#14) | A burkoló szkript túl korán olvasta a kilépési kódot; futtasd újra, és ellenőrizd, hogy a videófájl létezik. |
 | A rendszer lelassul, lapozás van (#18) | A motor kb. 10-11 GB RAM-ot használ; zárd be a böngészőket és a többi programot. |
 | sha256-eltérés / a letöltés sikertelen | Általában megszakadt a letöltés: futtasd újra ugyanazt a parancsot, az ellenőrzött fájlokat kihagyja. |
+
+### Újdonságok a v0.1.1-ben: további kapcsolók (részletek: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Ezek nélkül a kapcsolók nélkül 4 GB-os kártyán semmi sem változik (a referenciánkhoz mért 56 képkockás bájtellenőrzés a v0.1.1-gyel is újra átment [mért]). Ha látni szeretnéd, mi futna le, add hozzá a `-Kuru` kapcsolót bármelyik parancshoz.
+- `-EndImg`: az utolsó képkockát is megadhatod (első és utolsó képkocka, „FLF”); a felső határ 8 GB alatti kártyán 175 képkocka (192 nem fért bele 4 GB-ba), 8 GB-os vagy nagyobb kártyán 192. A mi GTX 1050 Ti kártyánkon mindig két folyamatban fut: 56 képkocka 1040 s, 175 képkocka 2887 s (48 perc), mindkét futás átment a minőségi ellenőrzésen [mért]. Prompttippek: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: más méretek, például álló 384x640; 32 többszörösei, a terület legalább 640x384 (ennél kisebb soha). 4 GB-on nem teszteltük; 8 GB alatti kártyákon a program elutasítja azokat a méreteket, amelyek túllépik a legnagyobb mért feladatunkat. A minőségi ellenőrzés küszöbei 640x384-re vannak kalibrálva.
+- `-TekAsama`: kettő helyett egy folyamat, csak nagy kártyákhoz; magától soha nem kapcsol be.
+- Újabb GPU-k (compute capability 7.0+, pl. RTX 20/30/40): a `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` automatikusan beállítódik, hacsak nem állítottad be magad; ez a bejelentő RTX 4070 Ti kártyáján megszüntette a 141 vagy több képkockánál jelentkező teljesen fekete videót [felhasználó jelentette, issue #1]. Python + OpenCV nélkül az `uret.ps1` most már a GPU-feladat előtt leáll 6-os kilépési kóddal (nem készül videó, nincs félrevezető RED).
+- Köszönet @SinanC73 felhasználónak az RTX 4070 Ti-n készült jelentésért, amely ezekhez a változtatásokhoz vezetett ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Mi ez
 Kisméretű memória- és ütemezési patchek a stable-diffusion.cpp-hez, valamint a futtatási recept, ellenőrzések és mérések, amelyek lehetővé teszik, hogy a MiniMax H3 (33B DiT; mi a HyperFlow Flash 13.7B Q4_K_M GGUF-et futtatjuk; a 32B Qwen3-VL szövegkódoló külön van) egy 4 GB-os, Pascal generációs GPU-n fusson (GTX 1050 Ti, 16 GB rendszermemória).
@@ -145,4 +164,4 @@ A szögletes zárójelben használt futásnevek (saját elnevezéseink, nem a t�
 - **A tiszta mappás teszt hátravan:** a telepítő és futtató szkripteket még nem ellenőriztük üres mappából kizárólag ezen útmutató alapján; ezt a szakaszt frissítjük, amikor a teszt (köztük az 56 képkockás bájtösszehasonlítás a referenciával) rögzítésre kerül.
 - Generált videókat itt nem mellékelünk.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

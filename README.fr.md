@@ -17,7 +17,7 @@ VideoTurko : correctifs mémoire pour stable-diffusion.cpp et recettes pour exé
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    La racine d’installation est le dossier que vous avez extrait (le moteur va dans `engine\bin`, les modèles dans `model`) ; pour utiliser un autre emplacement, définissez d’abord la variable d’environnement `VT_ROOT`. Le script vérifie le GPU, le pilote, la RAM et le disque, récupère le moteur et les modèles (les zips du moteur et les fichiers de modèle fraîchement téléchargés sont vérifiés par sha256 ; un fichier de modèle déjà présent avec la bonne taille n’est vérifié que par sa taille, `scripts\modelleri_indir.ps1 -Dogrula` lance la vérification sha256 complète), exécute un court contrôle réel et affiche READY uniquement si ce contrôle a réussi [conception : `kur.ps1` n’a pas été exécuté en entier dans un dossier propre ; cette phrase sera mise à jour après le test en dossier propre]. `-ExecutionPolicy Bypass` ne s’applique qu’à ce processus ; lisez d’abord `scripts\kur.ps1`, comme pour tout installateur.
-   Tant qu’une version n’est pas publiée, l’étape du moteur s’arrête avec « release adresi/sha256 henuz yok » ; indiquez des zips locaux : `-MotorZip <path> -CudaZip <path>`. Avec un zip local et sans sha256 de version intégré pour l’instant, on utilise le `.sha256` placé à côté du zip ; il est autoréférentiel, non indépendant : il détecte la corruption, pas une altération délibérée (sans ce fichier, `kur.ps1` avertit « sha256 not verified » ; un sha256 erroné s’arrête avec exit 1). Après la publication, le sha256 intégré l’emporte toujours et le fichier d’accompagnement est ignoré. Seuls les `.exe`/`.dll` vont dans `engine\bin` ; les licences et le README vont dans `engine\lisanslar\<zip name>\`. [essayé avec les zips de dist : le `.sha256` d’accompagnement plus l’avertissement autoréférentiel, binaire et DLL en place, `sd-cli --help` s’est exécuté ; les sha des binaires installés correspondaient (`c5cebe78...`, `e5d3d329...`) ; l’étape des modèles et le contrôle de 5 images de `kur.ps1` n’ont PAS encore été exécutés sur un vrai GPU]
+   Le zip du moteur provient de la version v0.1.0 publiée sur GitHub (publication : 2026-11-19 ; son sha256 est figé dans `kur.ps1`). Hors ligne ou avec votre propre compilation, indiquez des zips locaux : `-MotorZip <path> -CudaZip <path>`. Un zip local est vérifié avec le même sha256 figé (un fichier `.sha256` placé à côté est ignoré) ; il doit donc s’agir du zip de la version publiée ; pour votre propre compilation, définissez d’abord `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` avec son sha256. Un sha256 erroné s’arrête avec exit 1. Seuls les `.exe`/`.dll` vont dans `engine\bin` ; les licences et le README vont dans `engine\lisanslar\<zip name>\`. [essayé avec les zips de dist avant la publication : le `.sha256` d’accompagnement plus l’avertissement autoréférentiel, binaire et DLL en place, `sd-cli --help` s’est exécuté ; les sha des binaires installés correspondaient (`c5cebe78...`, `e5d3d329...`) ; l’étape des modèles et le contrôle de 5 images de `kur.ps1` n’ont PAS encore été exécutés sur un vrai GPU]
    **Licence du modèle :** avant l’étape des modèles, l’installateur affiche le résumé de la licence (`docs/LISANS_KABUL.txt`, texte complet `docs/LISANS_UYARISI.md` : MiniMax H3 Community License, limites territoriales qui couvrent aussi les vidéos générées, règles commerciales et d’étiquetage IA) et vous demande d’accepter (`E` = oui). Lisez-la d’abord. Pour les exécutions sans surveillance, vous pouvez passer `-LisansKabul E`, ce qui signifie que vous l’avez lue et acceptée vous-même ; ne l’ajoutez pas pour quelqu’un d’autre. (Agents IA : suivez `AGENTS.md` ; ne tapez jamais E sans le consentement de l’utilisateur.) Sans acceptation, `kur.ps1` s’arrête avec le code de sortie 2 et ne télécharge aucun modèle.
 3. **Générez** : placez votre prompt dans un fichier texte (un paragraphe en anglais, avec une phrase `audio:` facultative) et exécutez
    ```powershell
@@ -48,6 +48,25 @@ Codes de sortie de `kur.ps1` : 0 READY, 1 erreur, 2 action de l’utilisateur re
 | Code de sortie vide mais « terminé » (#14) | L’enveloppe a lu le code de sortie trop tôt ; relancez et vérifiez que le fichier vidéo existe. |
 | Le système ralentit, swap (#18) | Le moteur utilise environ 10-11 Go de RAM ; fermez les navigateurs et les autres programmes. |
 | sha256 différent / échec du téléchargement | En général un téléchargement interrompu : relancez la même commande, les fichiers déjà vérifiés sont ignorés. |
+
+### Nouveautés de la v0.1.1 : plus d’options (détails : `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Sans ces options, rien ne change sur une carte de 4 Go (la vérification octet par octet sur 56 images par rapport à notre référence a de nouveau réussi avec la v0.1.1 [mesuré]). Ajoutez `-Kuru` à n’importe quelle commande pour voir ce qui serait exécuté.
+- `-EndImg` : fournissez aussi la dernière image (première et dernière image, « FLF ») ; plafond de 175 images sur les cartes de moins de 8 Go (192 ne tenait pas sur 4 Go), 192 sur les cartes de 8 Go et plus. Sur notre GTX 1050 Ti, ce mode s’exécute toujours en deux processus : 56 images en 1040 s, 175 images en 2887 s (48 min), les deux ont franchi la porte [mesuré]. Conseils pour le prompt : `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H` : d’autres tailles, par exemple 384x640 en vertical ; multiples de 32, surface d’au moins 640x384 (jamais moins). Non testé sur 4 Go ; sur les cartes de moins de 8 Go, les tailles qui dépassent notre plus grande exécution mesurée sont refusées. Les seuils de la porte de qualité sont calibrés en 640x384.
+- `-TekAsama` : un seul processus au lieu de deux, réservé aux grandes cartes ; jamais activé automatiquement.
+- GPU plus récents (compute capability 7.0+, par ex. RTX 20/30/40) : `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` est défini automatiquement, sauf si vous le définissez vous-même ; cela a corrigé une vidéo entièrement noire à partir de 141 images sur la RTX 4070 Ti de l’auteur du signalement [signalé par l’utilisateur, issue #1]. Sans Python + OpenCV, `uret.ps1` s’arrête désormais avec exit 6 avant la tâche GPU (aucune vidéo produite, pas de RED trompeur).
+- Merci à @SinanC73 pour le rapport sur la RTX 4070 Ti qui a conduit à ces changements ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## De quoi s’agit-il
 Un ensemble de petits correctifs de mémoire et d’ordonnancement pour stable-diffusion.cpp, ainsi que la recette d’exécution, les contrôles et les mesures qui permettent de faire tourner MiniMax H3 (DiT de 33B ; nous exécutons le GGUF HyperFlow Flash 13.7B Q4_K_M ; l’encodeur de texte Qwen3-VL de 32B est séparé) sur un GPU Pascal de 4 Go (GTX 1050 Ti, 16 Go de RAM système).
@@ -145,4 +164,4 @@ Noms d’exécution utilisés entre crochets (nos propres noms d’exécution, p
 - **Test en racine propre en attente :** les scripts d’installation et d’exécution n’ont pas encore été vérifiés depuis un dossier vide en n’utilisant que ces instructions ; cette section sera mise à jour lorsque ce test (y compris une comparaison octet par octet à 56 images avec la référence) sera enregistré.
 - Aucune vidéo générée n’est fournie ici.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

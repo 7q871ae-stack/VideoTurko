@@ -17,7 +17,7 @@ VideoTurko: แพตช์ด้านหน่วยความจำสำ�
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    โฟลเดอร์ราก (root) ของการติดตั้งคือโฟลเดอร์ที่แตกไฟล์ไว้ (engine อยู่ใน `engine\bin`, โมเดลอยู่ใน `model`); หากต้องการใช้ที่อื่น ให้ตั้งตัวแปรสภาพแวดล้อม `VT_ROOT` ก่อน สคริปต์จะตรวจสอบ GPU, driver, RAM และดิสก์ ดึง engine และโมเดล (ไฟล์ zip ของ engine และไฟล์โมเดลที่เพิ่งดาวน์โหลดจะถูกตรวจ sha256; ไฟล์โมเดลที่มีอยู่แล้วและขนาดถูกต้องจะตรวจเฉพาะขนาด ส่วน `scripts\modelleri_indir.ps1 -Dogrula` จะรันการตรวจ sha256 แบบเต็ม) รันการตรวจจริงสั้น ๆ หนึ่งครั้ง และพิมพ์ READY ก็ต่อเมื่อการตรวจนั้นผ่านเท่านั้น [ออกแบบ: `kur.ps1` ยังไม่เคยรันครบทั้งหมดในโฟลเดอร์สะอาด; ประโยคนี้จะอัปเดตหลังการทดสอบโฟลเดอร์สะอาด] `-ExecutionPolicy Bypass` มีผลกับ process เดียวนี้เท่านั้น; เช่นเดียวกับตัวติดตั้งทั่วไป ควรอ่าน `scripts\kur.ps1` ก่อน
-   จนกว่าจะมีการเผยแพร่ release ขั้นตอน engine จะหยุดพร้อมข้อความ "release adresi/sha256 henuz yok"; ให้ระบุ zip ในเครื่องแทน: `-MotorZip <path> -CudaZip <path>` เมื่อใช้ zip ในเครื่องและยังไม่มี sha256 ของ release ฝังอยู่ จะใช้ไฟล์ `.sha256` ที่อยู่ข้าง zip; ไฟล์นี้อ้างอิงตัวเอง ไม่ใช่การตรวจสอบอิสระ: ตรวจพบไฟล์เสียหายได้ แต่ตรวจพบการแก้ไขโดยเจตนาไม่ได้ (หากไม่มีไฟล์นั้น `kur.ps1` จะเตือน "sha256 not verified"; หาก sha256 ผิด จะหยุดด้วย exit 1) หลังมี release แล้ว sha256 ที่ฝังไว้จะมีผลเสมอ และไฟล์ sidecar จะถูกเพิกเฉย มีเฉพาะ `.exe`/`.dll` เท่านั้นที่ไปอยู่ใน `engine\bin`; ใบอนุญาตและ README ไปอยู่ใน `engine\lisanslar\<zip name>\` [ลองแล้ว: ด้วย dist zip ยืนยัน sidecar `.sha256` พร้อมคำเตือนการอ้างอิงตัวเอง, วาง binary และ DLL แล้ว, `sd-cli --help` รันได้; sha ของ binary ที่ติดตั้งตรงกัน (`c5cebe78...`, `e5d3d329...`); ขั้นตอนโมเดลและการตรวจ 5 frame ของ `kur.ps1` ยังไม่เคยรันบน GPU จริง]
+   zip ของ engine ดาวน์โหลดจาก GitHub release v0.1.0 (เผยแพร่เมื่อ 19 พฤศจิกายน 2026; sha256 ของไฟล์ถูกกำหนดตายตัวไว้ใน `kur.ps1`) หากออฟไลน์หรือใช้ build ของคุณเอง ให้ระบุ zip ในเครื่อง: `-MotorZip <path> -CudaZip <path>` zip ในเครื่องก็ถูกตรวจด้วย sha256 ที่กำหนดตายตัวค่าเดียวกัน (ไฟล์ `.sha256` ที่อยู่ข้าง zip จะถูกเพิกเฉย) ดังนั้นต้องเป็น zip ของ release; สำหรับ build ของคุณเอง ให้ตั้ง `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` เป็น sha256 ของ build นั้นก่อน หาก sha256 ผิด จะหยุดด้วย exit 1 มีเฉพาะ `.exe`/`.dll` เท่านั้นที่ไปอยู่ใน `engine\bin`; ใบอนุญาตและ README ไปอยู่ใน `engine\lisanslar\<zip name>\` [ลองแล้ว: ด้วย dist zip ก่อนเผยแพร่ release ยืนยัน sidecar `.sha256` พร้อมคำเตือนการอ้างอิงตัวเอง, วาง binary และ DLL แล้ว, `sd-cli --help` รันได้; sha ของ binary ที่ติดตั้งตรงกัน (`c5cebe78...`, `e5d3d329...`); ขั้นตอนโมเดลและการตรวจ 5 frame ของ `kur.ps1` ยังไม่เคยรันบน GPU จริง]
    **ใบอนุญาตของโมเดล:** ก่อนขั้นตอนโมเดล ตัวติดตั้งจะพิมพ์สรุปใบอนุญาต (`docs/LISANS_KABUL.txt`, ฉบับเต็มคือ `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, ข้อจำกัดด้านอาณาเขตที่ครอบคลุมถึงวิดีโอที่สร้างขึ้นด้วย, กฎด้านการใช้เชิงพาณิชย์และการระบุว่าเป็น AI) และขอให้ยอมรับ (`E` = ยอมรับ) ควรอ่านก่อน สำหรับการรันโดยไม่มีคนเฝ้า สามารถส่ง `-LisansKabul E` ซึ่งหมายความว่าคุณอ่านและยอมรับด้วยตัวเองแล้ว; อย่าใส่แทนผู้อื่น (สำหรับ AI agent: ปฏิบัติตาม `AGENTS.md`; ห้ามพิมพ์ E โดยไม่ได้รับความยินยอมจากผู้ใช้) หากไม่ยอมรับ `kur.ps1` จะหยุดด้วย exit code 2 และไม่ดาวน์โหลดโมเดลใด ๆ
 3. **สร้างวิดีโอ**: ใส่ prompt ไว้ในไฟล์ข้อความ (ภาษาอังกฤษหนึ่งย่อหน้า และอาจมีประโยค `audio:` หนึ่งประโยค) แล้วรัน
    ```powershell
@@ -48,6 +48,25 @@ exit code ของ `kur.ps1`: 0 READY, 1 ข้อผิดพลาด, 2 ต�
 | exit code ว่าง แต่แสดง "finished" (#14) | wrapper อ่าน exit code เร็วเกินไป; รันใหม่ และตรวจว่ามีไฟล์วิดีโออยู่จริง |
 | ระบบช้าลง มีการ swap (#18) | engine ใช้ RAM ประมาณ 10-11 GB; ปิดเบราว์เซอร์และโปรแกรมอื่น |
 | sha256 ไม่ตรง / ดาวน์โหลดล้มเหลว | มักเกิดจากการดาวน์โหลดถูกขัดจังหวะ: รันคำสั่งเดิมอีกครั้ง ไฟล์ที่ตรวจแล้วจะถูกข้าม |
+
+### ใหม่ใน v0.1.1: ตัวเลือกเพิ่มเติม (รายละเอียด: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+หากไม่ใช้ตัวเลือกเหล่านี้ จะไม่มีอะไรเปลี่ยนบนการ์ด 4 GB (การตรวจระดับไบต์ที่ 56 frame เทียบกับค่าอ้างอิงของเรา ผ่านอีกครั้งกับ v0.1.1 [วัดจริง]) เติม `-Kuru` ต่อท้ายคำสั่งใดก็ได้เพื่อดูว่าจะรันอะไร
+- `-EndImg`: ระบุ frame สุดท้ายด้วย (frame แรกและ frame สุดท้าย, "FLF"); เพดานคือ 175 frame บนการ์ดที่ต่ำกว่า 8 GB (192 ไม่พอดีบน 4 GB) และ 192 บนการ์ด 8 GB ขึ้นไป บน GTX 1050 Ti ของเรารันเป็น 2 process เสมอ: 56 frame ใช้ 1040 วินาที, 175 frame ใช้ 2887 วินาที (48 นาที) ทั้งสองผ่านด่านตรวจ [วัดจริง] เคล็ดลับการเขียนพรอมต์: `docs/ISTEM_YAZIMI.md`
+- `-W` / `-H`: ขนาดอื่น เช่น แนวตั้ง 384x640; ต้องเป็นผลคูณของ 32 และพื้นที่อย่างน้อย 640x384 (เล็กกว่านี้ไม่ได้) ยังไม่ได้ทดสอบบน 4 GB; บนการ์ดที่ต่ำกว่า 8 GB ขนาดที่เกินงานใหญ่ที่สุดที่เราวัดไว้จะถูกปฏิเสธ เกณฑ์ของด่านตรวจคุณภาพปรับเทียบไว้ที่ 640x384
+- `-TekAsama`: ใช้ process เดียวแทน 2 process สำหรับการ์ดขนาดใหญ่เท่านั้น และจะไม่ถูกเปิดใช้โดยอัตโนมัติ
+- GPU รุ่นใหม่กว่า (compute capability 7.0+ เช่น RTX 20/30/40): หากคุณไม่ได้ตั้งค่าเอง ระบบจะตั้ง `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` ให้โดยอัตโนมัติ ซึ่งแก้ปัญหาวิดีโอดำทั้งคลิปที่ 141 frame ขึ้นไปบน RTX 4070 Ti ของผู้รายงานได้ [ผู้ใช้รายงาน, issue #1] ตอนนี้หากไม่มี Python + OpenCV `uret.ps1` จะหยุดด้วย exit 6 ก่อนงาน GPU (ไม่มีการสร้างวิดีโอ และไม่มี RED ที่ทำให้เข้าใจผิด)
+- ขอบคุณ @SinanC73 สำหรับรายงานจาก RTX 4070 Ti ที่นำไปสู่การเปลี่ยนแปลงเหล่านี้ ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1))
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## นี่คืออะไร
 ชุดแพตช์ขนาดเล็กด้านหน่วยความจำ/การจัดตารางสำหรับ stable-diffusion.cpp พร้อมสูตรการรัน การตรวจสอบ และผลการวัด ที่ทำให้ MiniMax H3 (DiT 33B; เรารัน HyperFlow Flash 13.7B Q4_K_M GGUF; text encoder Qwen3-VL 32B แยกต่างหาก) รันบน GPU ตระกูล Pascal 4 GB (GTX 1050 Ti, RAM ระบบ 16 GB) ได้
@@ -145,4 +164,4 @@ repo นี้ไม่มีไฟล์น้ำหนักของโมเ
 - **การทดสอบ clean-root ยังค้างอยู่:** สคริปต์ติดตั้งและรันยังไม่ได้ตรวจสอบจากโฟลเดอร์ว่างโดยใช้เพียงคำแนะนำเหล่านี้; ส่วนนี้จะอัปเดตเมื่อบันทึกการทดสอบนั้น (รวมถึงการเปรียบเทียบระดับไบต์ที่ 56 frame กับค่าอ้างอิง) แล้ว
 - ไม่มีวิดีโอที่สร้างขึ้นรวมมาในที่นี้
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

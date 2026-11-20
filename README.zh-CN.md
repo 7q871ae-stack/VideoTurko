@@ -17,7 +17,7 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    安装根目录就是你解压出来的文件夹（引擎放在 `engine\bin`，模型放在 `model`）；如需使用其他位置，请先设置环境变量 `VT_ROOT`。脚本会检查 GPU、驱动、内存和磁盘，获取引擎和模型（引擎 zip 和新下载的模型文件会做 sha256 校验；已存在且大小正确的模型文件只校验大小，运行 `scripts\modelleri_indir.ps1 -Dogrula` 可执行完整的 sha256 校验），运行一次简短的真实检查，只有检查通过才会输出 READY [设计: `kur.ps1` 尚未在干净文件夹中完整运行过；这句话会在干净文件夹测试后更新]。`-ExecutionPolicy Bypass` 只对这一个进程生效；和任何安装程序一样，请先阅读 `scripts\kur.ps1`。
-   在发布 release 之前，引擎这一步会停在 "release adresi/sha256 henuz yok"；此时请提供本地 zip：`-MotorZip <path> -CudaZip <path>`。使用本地 zip 且尚未内置 release 的 sha256 时，会使用 zip 旁边的 `.sha256`；它是自引用的，不是独立校验：只能发现文件损坏，不能防范蓄意篡改（没有这个文件时，`kur.ps1` 会警告 "sha256 not verified"；sha256 不匹配则以 exit 1 停止）。发布 release 之后，始终以内置的 sha256 为准，忽略旁边的 sidecar 文件。只有 `.exe`/`.dll` 会放入 `engine\bin`；许可证和 README 放入 `engine\lisanslar\<zip name>\`。[已试：使用 dist zip，确认了 sidecar `.sha256` 加自引用警告、二进制和 DLL 已放置、`sd-cli --help` 可运行；已安装的二进制 sha 一致（`c5cebe78...`、`e5d3d329...`）；`kur.ps1` 的模型步骤和 5 帧检查尚未在真实 GPU 上运行]
+   引擎 zip 来自 GitHub release v0.1.0（发布于 2026 年 11 月 19 日；其 sha256 已固定在 `kur.ps1` 中）。离线或使用自己的构建时，请提供本地 zip：`-MotorZip <path> -CudaZip <path>`。本地 zip 同样按这个固定的 sha256 校验（旁边的 `.sha256` 文件会被忽略），所以必须是 release 的 zip；使用自己的构建时，请先把 `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` 设为它的 sha256。sha256 不匹配则以 exit 1 停止。只有 `.exe`/`.dll` 会放入 `engine\bin`；许可证和 README 放入 `engine\lisanslar\<zip name>\`。[已试：在 release 发布前使用 dist zip，确认了 sidecar `.sha256` 加自引用警告、二进制和 DLL 已放置、`sd-cli --help` 可运行；已安装的二进制 sha 一致（`c5cebe78...`、`e5d3d329...`）；`kur.ps1` 的模型步骤和 5 帧检查尚未在真实 GPU 上运行]
    **模型许可证（必读）：** 在模型步骤之前，安装程序会输出许可证摘要（`docs/LISANS_KABUL.txt`，全文见 `docs/LISANS_UYARISI.md`：MiniMax H3 Community License、同样涵盖所生成视频的地域限制、商用与 AI 标识规则），并请你确认接受（`E` = 同意）。请先阅读。无人值守运行时可传入 `-LisansKabul E`，这表示你本人已阅读并接受；请勿替他人添加。（AI 代理：请遵循 `AGENTS.md`；未经用户同意，绝不输入 E。）未接受时，`kur.ps1` 以退出码 2 停止，且不会下载任何模型。
 3. **生成**：把提示词写入一个文本文件（一段英文，可选一句 `audio:`），然后运行
    ```powershell
@@ -48,6 +48,25 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
 | 退出码为空但显示“finished”（#14） | 包装脚本读取退出码过早；请重新运行，并确认视频文件存在。 |
 | 系统变慢、出现交换（#18） | 引擎约占用 10-11 GB 内存；请关闭浏览器和其他程序。 |
 | sha256 不匹配 / 下载失败 | 通常是下载被中断：重新运行同一条命令，已校验的文件会被跳过。 |
+
+### v0.1.1 新增：更多选项（详情：`AGENTS.md`、`docs/SIK_HATALAR.md` 19-23）
+不使用这些选项时，4 GB 显卡上的行为没有任何变化（与我们的基准对比的 56 帧字节检查在 v0.1.1 下再次通过 [实测]）。在任意命令后加上 `-Kuru`，即可查看将要运行的内容。
+- `-EndImg`：同时提供最后一帧（首尾帧，"FLF"）；显存低于 8 GB 的显卡上限为 175 帧（在 4 GB 上 192 帧放不下），8 GB 及以上的显卡为 192 帧。在我们的 GTX 1050 Ti 上始终分两个进程运行：56 帧 1040 秒，175 帧 2887 秒（48 分钟），两者均通过门禁 [实测]。提示词技巧：`docs/ISTEM_YAZIMI.md`。
+- `-W` / `-H`：其他尺寸，例如竖屏 384x640；须为 32 的倍数，面积不小于 640x384（不能更小）。未在 4 GB 上测试；在显存低于 8 GB 的显卡上，超过我们实测最大任务的尺寸会被拒绝。质量门禁的阈值是按 640x384 标定的。
+- `-TekAsama`：用一个进程代替两个进程，仅适用于大显存显卡；不会自动开启。
+- 较新的 GPU（compute capability 7.0+，例如 RTX 20/30/40）：如果你没有自行设置，会自动设置 `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32`；这修复了报告者的 RTX 4070 Ti 上 141 帧及以上时视频全黑的问题 [用户反馈, issue #1]。没有 Python + OpenCV 时，`uret.ps1` 现在会在 GPU 任务开始前以 exit 6 停止（不生成视频，也不会给出误导性的 RED）。
+- 感谢 @SinanC73 提供 RTX 4070 Ti 的报告，促成了这些改动（[issue #1](https://github.com/alexturkey/VideoTurko/issues/1)）。
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## 这是什么
 一组面向 stable-diffusion.cpp 的小型内存/调度补丁，加上运行方案、检查和实测数据，使 MiniMax H3（33B 的 DiT；我们运行的是 HyperFlow Flash 13.7B Q4_K_M GGUF；32B 的 Qwen3-VL 文本编码器是独立的）能在 4 GB 的 Pascal GPU（GTX 1050 Ti，16 GB 系统内存）上运行。
@@ -145,4 +164,4 @@ VideoTurko：一套 stable-diffusion.cpp 内存补丁与运行方案，让 4 GB 
 - **clean-root 测试待完成：** 安装和运行脚本尚未仅按这些说明从空文件夹验证过；当该测试（包括与基准的 56 帧字节比较）记录完成后，本节会随之更新。
 - 这里不附带任何生成的视频。
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

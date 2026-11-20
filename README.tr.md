@@ -17,7 +17,7 @@ VideoTurko: 4 GB GTX 1050 Ti'de MiniMax H3 ile metinden videoyu tek seferde 209 
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Kurulum kökü açtığınız klasördür (motor `engine\bin`, modeller `model` altına gider); başka yer için önce `VT_ROOT` ortam değişkenini ayarlayın. GPU, sürücü, RAM ve disk kontrol edilir; motor ve modeller indirilir (motor zipleri ve yeni indirilen model dosyaları sha256 ile doğrulanır; boyutu doğru olan mevcut model dosyası yalnız boyutla denetlenir, tam sha256 için `scripts\modelleri_indir.ps1 -Dogrula`); kısa gerçek bir kontrol koşulur ve yalnız o geçerse HAZIR yazar [tasarım: `kur.ps1` temiz klasörde baştan sona koşulmadı; temiz kök testinden sonra bu cümle güncellenir]. `-ExecutionPolicy Bypass` yalnız bu sürece uygulanır; her kurulum betiğinde olduğu gibi önce `scripts\kur.ps1`'i okuyun.
-   Release yayınlanana kadar motor adımı "release adresi/sha256 henuz yok" diyerek durur; yerel zip verin: `-MotorZip <path> -CudaZip <path>`. Yerel zip ve henüz gömülü release sha256'sı yokken zipin yanındaki `.sha256` kullanılır; bu kendine dayalıdır, bağımsız değildir: bozulmayı yakalar, kasıtlı değiştirmeyi yakalamaz (dosya yoksa `kur.ps1` "sha256 doğrulanmadı" uyarısı verir; yanlış sha256 çıkış 1 ile durur). Release sonrası gömülü sha256 her zaman önceliklidir, yan dosya yok sayılır. `engine\bin`'e yalnız `.exe`/`.dll` gider; lisanslar ve README `engine\lisanslar\<zip name>\` altına yazılır. [dist zipleriyle denendi: yan `.sha256` ve kendine dayalı olduğu uyarısı, ikili ve DLL'ler yerleşti, `sd-cli --help` çalıştı; kurulu ikili sha'ları eşleşti (`c5cebe78...`, `e5d3d329...`); `kur.ps1`'in model adımı ve 5 karelik kontrolü gerçek GPU'da HENÜZ denenmedi]
+   Motor zip'i GitHub release v0.1.0'dan iner (2026-11-19'da yayınlandı; sha256'sı `kur.ps1` içinde sabit). İnternetsiz ya da kendi derlemenizle yerel zip verin: `-MotorZip <path> -CudaZip <path>`. Yerel zip de aynı sabit sha256 ile denetlenir (yanındaki `.sha256` dosyası yok sayılır), yani release zip'i olmalıdır; kendi derlemeniz için önce `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` değişkenine onun sha256'sını verin. Yanlış sha256 çıkış 1 ile durur. `engine\bin`'e yalnız `.exe`/`.dll` gider; lisanslar ve README `engine\lisanslar\<zip name>\` altına yazılır. [release öncesi dist zipleriyle denendi: yan `.sha256` ve kendine dayalı olduğu uyarısı, ikili ve DLL'ler yerleşti, `sd-cli --help` çalıştı; kurulu ikili sha'ları eşleşti (`c5cebe78...`, `e5d3d329...`); `kur.ps1`'in model adımı ve 5 karelik kontrolü gerçek GPU'da HENÜZ denenmedi]
    **Model lisansı:** model adımından önce kurulum lisans özetini (`docs/LISANS_KABUL.txt`, tam metin `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, üretilen videoları da kapsayan bölge sınırları, ticari kullanım ve yapay zekâ etiketi kuralları) yazar ve kabul etmenizi ister (`E` = evet). Önce okuyun. Gözetimsiz çalıştırmada `-LisansKabul E` verebilirsiniz; bu, lisansı kendinizin okuyup kabul ettiğiniz anlamına gelir, başkası adına eklemeyin. (Yapay zekâ ajanları: `AGENTS.md`; kullanıcı onayı olmadan E vermeyin.) Kabul yoksa `kur.ps1` çıkış kodu 2 ile durur ve model indirmez.
 3. **Üret**: istemi bir metin dosyasına yazın (tek paragraf İngilizce, isteğe bağlı `audio:` cümlesi) ve çalıştırın:
    ```powershell
@@ -48,6 +48,25 @@ VideoTurko: 4 GB GTX 1050 Ti'de MiniMax H3 ile metinden videoyu tek seferde 209 
 | Çıkış kodu boş ama "bitti" yazdı (#14) | Sarmalayıcı çıkış kodunu erken okudu; yeniden çalıştırın ve video dosyasının varlığına bakın. |
 | Sistem yavaşladı, takas (#18) | Motor yaklaşık 10-11 GB RAM kullanır; tarayıcı ve diğer programları kapatın. |
 | sha256 tutmadı / indirme başarısız | Genelde yarım kalan indirme: aynı komutu tekrar çalıştırın, doğrulanmış dosyalar atlanır. |
+
+### v0.1.1 ile gelenler: yeni seçenekler (ayrıntı: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Bu seçenekleri kullanmazsanız 4 GB kartta hiçbir şey değişmez (referansımıza karşı 56 karelik bayt kontrolü v0.1.1 ile yeniden geçti [ölçtüm]). Ne çalışacağını görmek için her komuta `-Kuru` ekleyin.
+- `-EndImg`: son kareyi de verin (ilk-son kare, "FLF"); tavan 8 GB altı kartta 175 kare (192 kare 4 GB'a sığmadı), 8 GB ve üstünde 192. Bizim GTX 1050 Ti'de her zaman iki süreçte koşar: 56 kare 1040 sn, 175 kare 2887 sn (48 dk), ikisi de kapıdan geçti [ölçtüm]. İstem ipuçları: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: başka boyutlar, örneğin dikey 384x640; 32'nin katı, alan en az 640x384 (küçültme yok). 4 GB'ta denenmedi; 8 GB altı kartlarda ölçtüğümüz en büyük işi aşan boyut reddedilir. Kalite kapısı eşikleri 640x384'e göre ayarlı.
+- `-TekAsama`: iki süreç yerine tek süreç; yalnız büyük kartlar için, kendiliğinden açılmaz.
+- Yeni kartlar (compute capability 7.0+, örn. RTX 20/30/40): siz ayarlamadıysanız `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` otomatik yapılır; bu, rapor sahibinin RTX 4070 Ti kartında 141 kare ve üstündeki tamamen siyah videoyu düzeltti [kullanıcı bildirdi, issue #1]. Python + OpenCV yoksa `uret.ps1` artık GPU işinden önce çıkış 6 ile durur (video üretilmez, yanıltıcı RED yok).
+- Bu değişikliklere yol açan RTX 4070 Ti raporu için @SinanC73'e teşekkürler ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Bu nedir
 MiniMax H3'ü (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF'u çalıştırıyoruz; 32B Qwen3-VL metin kodlayıcı ayrıdır) 4 GB'lık Pascal ekran kartında (GTX 1050 Ti, 16 GB RAM) çalıştırmak için küçük bellek/zamanlama yamaları, çalıştırma tarifi, kontroller ve ölçümler.
@@ -145,4 +164,4 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 - **Temiz kök testi bekliyor:** kurulum ve çalıştırma betikleri boş klasörde yalnız bu talimatla henüz doğrulanmadı; test (56 karede referansa bayt kıyası dahil) kaydedilince bu bölüm güncellenir.
 - Çıktı videolar depoda yok.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

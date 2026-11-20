@@ -19,7 +19,7 @@ VideoTurko: טלאי זיכרון ל-stable-diffusion.cpp ומתכוני הרצ�
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    שורש ההתקנה הוא התיקייה שחילצתם (המנוע נכנס ל-`engine\bin` והמודלים ל-`model`); כדי להשתמש במקום אחר הגדירו קודם את משתנה הסביבה `VT_ROOT`. הסקריפט בודק GPU, דרייבר, RAM ודיסק, מוריד את המנוע ואת המודלים (קבצי ה-zip של המנוע וקבצי מודל שהורדו זה עתה נבדקים ב-sha256; קובץ מודל שכבר קיים בגודל הנכון נבדק רק לפי גודל, ובדיקת sha256 מלאה מתבצעת עם `scripts\modelleri_indir.ps1 -Dogrula`), מריץ בדיקה אמיתית קצרה ומדפיס READY רק אם הבדיקה עברה [תכנון: `kur.ps1` טרם הורץ במלואו בתיקייה נקייה; המשפט הזה יעודכן אחרי בדיקת התיקייה הנקייה]. הדגל ‎`-ExecutionPolicy Bypass`‎ חל על התהליך הזה בלבד; כמו בכל מתקין, קראו קודם את `scripts\kur.ps1`.
-   עד שתפורסם גרסת הפצה (release), שלב המנוע נעצר עם ההודעה "release adresi/sha256 henuz yok"; אפשר לספק קובצי zip מקומיים: ‎`-MotorZip <path> -CudaZip <path>`‎. עם zip מקומי וכשעדיין אין sha256 משובץ של ההפצה, נעשה שימוש בקובץ `.sha256` שליד ה-zip; הוא מפנה לעצמו ואינו בלתי תלוי: הוא מזהה פגיעה בקובץ, לא שינוי זדוני (בלי הקובץ הזה `kur.ps1` מזהיר "sha256 not verified"; sha256 שגוי עוצר עם exit 1). אחרי ההפצה ה-sha256 המשובץ תמיד גובר והקובץ הצמוד אינו נלקח בחשבון. רק `.exe`/`.dll` נכנסים ל-`engine\bin`; הרישיונות וה-README נכנסים ל-`engine\lisanslar\<zip name>\`‎. [נוסה עם קובצי dist zip: קובץ `.sha256` צמוד יחד עם אזהרת ההפניה העצמית, הקובץ הבינארי וקובצי ה-DLL הונחו במקומם, `sd-cli --help` רץ; ערכי ה-sha של הבינאריים שהותקנו תאמו (`c5cebe78...`‎, `e5d3d329...`‎); שלב המודלים ובדיקת 5 הפריימים של `kur.ps1` עדיין לא הורצו על GPU אמיתי]
+   קובץ ה-zip של המנוע מגיע מגרסת ההפצה (release) v0.1.0 ב-GitHub (פורסמה ב-2026-11-19; ה-sha256 שלו קבוע בתוך `kur.ps1`). בלי חיבור לאינטרנט או עם בנייה משלכם, ספקו קובצי zip מקומיים: ‎`-MotorZip <path> -CudaZip <path>`‎. גם zip מקומי נבדק מול אותו sha256 קבוע (קובץ `.sha256` שלידו אינו נלקח בחשבון), ולכן הוא חייב להיות ה-zip של ההפצה; לבנייה משלכם הגדירו קודם את ‎`VT_MOTOR_SHA256`‎ / ‎`VT_CUDA_SHA256`‎ ל-sha256 שלה. sha256 שגוי עוצר עם exit 1. רק `.exe`/`.dll` נכנסים ל-`engine\bin`; הרישיונות וה-README נכנסים ל-`engine\lisanslar\<zip name>\`‎. [נוסה עם קובצי dist zip לפני ההפצה: קובץ `.sha256` צמוד יחד עם אזהרת ההפניה העצמית, הקובץ הבינארי וקובצי ה-DLL הונחו במקומם, `sd-cli --help` רץ; ערכי ה-sha של הבינאריים שהותקנו תאמו (`c5cebe78...`‎, `e5d3d329...`‎); שלב המודלים ובדיקת 5 הפריימים של `kur.ps1` עדיין לא הורצו על GPU אמיתי]
    **רישיון המודל:** לפני שלב המודלים המתקין מדפיס את תקציר הרישיון (`docs/LISANS_KABUL.txt`, הנוסח המלא `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, מגבלות טריטוריה שחלות גם על סרטונים שנוצרו, וכללי שימוש מסחרי ותיוג בינה מלאכותית) ומבקש שתאשרו (`E` = כן). קראו אותו קודם. להרצה ללא השגחה אפשר להעביר ‎`-LisansKabul E`‎, שמשמעו שקראתם את הרישיון וקיבלתם אותו בעצמכם; אל תוסיפו אותו בשביל מישהו אחר. (סוכני בינה מלאכותית: פעלו לפי `AGENTS.md`; לעולם אל תקלידו E בלי הסכמת המשתמש.) בלי אישור `kur.ps1` נעצר עם קוד יציאה 2 ואינו מוריד שום מודל.
 3. **הפיקו**: שימו את הפרומפט (prompt) בקובץ טקסט (פסקה אחת באנגלית, ומשפט `audio:` אופציונלי) והריצו:
    ```powershell
@@ -50,6 +50,25 @@ VideoTurko: טלאי זיכרון ל-stable-diffusion.cpp ומתכוני הרצ�
 | קוד היציאה ריק אבל כתוב "finished" (#14) | העטיפה (wrapper) קראה את קוד היציאה מוקדם מדי; הריצו שוב ובדקו שקובץ הסרטון קיים. |
 | המערכת מאטה, מתבצע swapping (#18) | המנוע משתמש בכ-10-11 GB של RAM; סגרו דפדפנים ותוכניות אחרות. |
 | אי-התאמת sha256 / ההורדה נכשלה | בדרך כלל ההורדה נקטעה: הריצו שוב את אותה פקודה, קבצים שאומתו מדולגים. |
+
+### חדש ב-v0.1.1: אפשרויות נוספות (פרטים: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+בלי האפשרויות האלה שום דבר לא משתנה בכרטיס עם 4 GB (בדיקת הבייטים של 56 פריימים מול הייחוס שלנו עברה שוב עם v0.1.1 [נמדד]). הוסיפו ‎`-Kuru`‎ לכל פקודה כדי לראות מה ירוץ.
+- הדגל ‎`-EndImg`‎: ספקו גם את הפריים האחרון (פריים ראשון ואחרון, "FLF"); התקרה היא 175 פריימים בכרטיסים עם פחות מ-8 GB (192 פריימים לא נכנסו ב-4 GB), ו-192 בכרטיסים עם 8 GB ומעלה. ב-GTX 1050 Ti שלנו הוא רץ תמיד בשני תהליכים: 56 פריימים ב-1040 שניות, 175 פריימים ב-2887 שניות (48 דקות), ושניהם עברו את השער [נמדד]. טיפים לכתיבת הפרומפט (prompt): `docs/ISTEM_YAZIMI.md`.
+- הדגלים ‎`-W`‎ / ‎`-H`‎: גדלים אחרים, למשל אנכי 384x640; כפולות של 32, ושטח של 640x384 לפחות (אף פעם לא קטן יותר). לא נוסה על 4 GB; בכרטיסים עם פחות מ-8 GB נדחים גדלים שחורגים מהעבודה הגדולה ביותר שמדדנו. ספי שער האיכות מכוילים לפי 640x384.
+- הדגל ‎`-TekAsama`‎: תהליך אחד במקום שניים, לכרטיסים גדולים בלבד; לעולם אינו מופעל אוטומטית.
+- כרטיסי GPU חדשים יותר (compute capability 7.0 ומעלה, למשל RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` מוגדר אוטומטית אלא אם הגדרתם אותו בעצמכם; זה תיקן סרטון שחור לגמרי ב-141 פריימים ומעלה ב-RTX 4070 Ti של המדווח [דווח על ידי המשתמש, issue #1]. בלי Python + OpenCV, `uret.ps1` עוצר עכשיו עם exit 6 לפני משימת ה-GPU (לא נוצר סרטון, ואין RED מטעה).
+- תודה ל-@SinanC73 על הדיווח מ-RTX 4070 Ti שהוביל לשינויים האלה ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## מה זה
 סדרת טלאים קטנים לזיכרון ולתזמון עבור stable-diffusion.cpp, יחד עם מתכון ההרצה, הבדיקות והמדידות, שמאפשרים להריץ את MiniMax H3 (DiT בגודל 33B; אנו מריצים את HyperFlow Flash 13.7B בקובץ GGUF מסוג Q4_K_M; מקודד הטקסט Qwen3-VL בגודל 32B נפרד) על GPU מדור Pascal עם 4 GB (GTX 1050 Ti, עם 16 GB של RAM במערכת).
@@ -149,4 +168,4 @@ VideoTurko: טלאי זיכרון ל-stable-diffusion.cpp ומתכוני הרצ�
 
 </div>
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

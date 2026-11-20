@@ -22,7 +22,7 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 7. **Sure tavani (`-TavanDk`) kare sayisina gore ayarlanmadi**: 209 karede 6 DiT adimi bittikten sonra VAE sirasinda 50 dk tavanda olduruldu [olctum]. Kural: tavan = tahmini sure x 1,4; 209 icin en az 80 dk.
 8. **Kopyalanan satirda latent/cikti yolu eski adda kaldi** (yeni kosu eski `*_latent.bin` uzerine yazdi) [olctum]: kopyada `-Deney`, `-Cikti`, `-OutDir`, `SD_VIDEO_LATENT_SAVE` ve `-TavanDk` ayri ayri dogrulanir.
 9. **Zincirleme (`--init-img`) icin onceki videonun GERCEK son karesi kullanilmadi** (205. kare verildi, son kare 208'di): dikis SSIM 0,659 [olctum]. Cozum: kare sayisini `ffprobe` ile al, son kareyi cikar, orijinal videoyla 0,00 fark dogrula; birlestirirken onceki videoyu kirp, tekrar eden ilk kareyi at.
-10. **Karolu VAE yedegi, adim/cfg/cozunurluk dusurmek kalite yolu degildir**: bu proje sabit ayar kullanir (6 adim, cfg 1, 640x384), bellek yamalari yalniz hesabin NEREDE yapildigini degistirir ve 56/141 kare kapilarinda bayt-aynidir.
+10. **Karolu VAE yedegi, adim/cfg/cozunurluk dusurmek kalite yolu degildir**: bu proje sabit ayar kullanir (6 adim, cfg 1, varsayilan 640x384; `-W/-H` alani yalniz buyutebilir, kucultemez), bellek yamalari yalniz hesabin NEREDE yapildigini degistirir ve 56/141 kare kapilarinda bayt-aynidir.
 
 ## C. Kalite kapisi
 
@@ -37,3 +37,29 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 16. **Durdurma isareti (`DUR` dosyasi) kosan satiri da oldurur**: "kosan satir dogal bitsin" isteniyorsa isaret satir bitince konur; satirin ozet dosyasi (`ozet=`) olmadan koşucu cikis=0'i BITTI sayar, kanit yoktur: uretim ve kapi satirlarinda ozet zorunlu [olctum].
 17. **Gozlemci sessizce sondu** (izleyicinin 30 dk tavani): alarm yazilir ama okuyan kalmaz; bitis saatini kaydet, sona erince yeniden kur, uzun islerde kalp atisi ve yedek is satiri kullan [olctum].
 18. **Bellek baskisi**: sd-cli ~10-11 GB RAM kullanir (16 GB sistemde); uretim sirasinda diski tarayan agir islerden kacin, bellek kritik dusunce yardimci surecler durdurulur [olctum].
+
+## E. Diger kartlar ve kapi araclari (v0.1.1, issue #1)
+
+19. **Yeni kartta (compute capability 7.0+) 141 kare ve ustunde video tamamen siyah** (kare ortalamasi 0; latent NaN). 56 ve 107 kare sorunsuz [kullanici bildirdi: RTX 4070 Ti 12 GB, issue #1].
+   - Neden (iki aday, ayrilmadi): cuBLAS'in fp16 hesap modu uzun dizide tasiyor OLABILIR; ya da `GGML_CUDA_CUBLAS_COMPUTE_TYPE` ayarlaninca kapanan bf16 birlesik cekirdek (yalniz 8.x ve ustu kartlarda devrede) [okudum: motor `src/core/cuda/bf16.cu`; neden: tahmin]. GTX 1050 Ti'de (6.1) iki yol da zaten devre disi, bu yuzden orada gorulmedi [okudum: `ggml-cuda/common.cuh` fast_fp16_hardware_available].
+   - Cozum: v0.1.1 `uret.ps1`, kart 7.0+ ise ve sen ayarlamadiysan `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` yapar; `-Kuru` ciktisinda gorunur. Hiz farki olculemedi (141 kare DiT 211,8 sn ile 209,9 sn) [kullanici bildirdi, issue #1]. Eski surumde elle, ayni PowerShell penceresinde `uret.ps1`'den once:
+     `$env:GGML_CUDA_CUBLAS_COMPUTE_TYPE = 'f32'`
+   - EN: all-black (NaN) video at 141+ frames on compute capability 7.0+ cards; v0.1.1 sets `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` there unless you set it yourself.
+20. **"KAPI RED" ama video duzgun gorunuyor; olaylar.txt'de `dikis_denetim cikti ayristirilamadi`** [olctum: ekip testi 2026-11-20, `No module named 'cv2'` veren sahte python ile; kayit yazarlarda, repoda yok]
+   - Neden: python var ama `opencv-python`/`numpy` yok; v0.1.0 bunu yanlislikla RED (cikis 5) sayiyordu.
+   - Ozel durum: Windows'ta python kurulu degilken bile `python` komutu bulunur (Microsoft Store kisayolu `WindowsApps\python.exe`); calistirilinca yalniz 9009 ile cikar. `Get-Command` bunu ayirmaz.
+   - Cozum: v0.1.1 `uret.ps1` GPU isinden ONCE `python -I -c "import cv2, numpy"` dener; olmazsa **cikis 6** verir ve video uretmez (uzun kosu bosa gitmez). Kapi tek basina kosulursa da bu durumlarda **cikis 6 `KAPI CALISMADI`** (RED degil). Python 3'u python.org'dan kur, paketleri kur, `uret.ps1`'i yeniden calistir; elinde v0.1.0'dan kalan video varsa yalniz kapiyi kos:
+     `py -3 -m pip install opencv-python numpy`
+     `powershell -NoProfile -File scripts\uretim_kapi.ps1 -Dizin <cikti klasoru> -Ad video -Kare <kare>`
+   - Python baska yerdeyse: `$env:VT_PYTHON = '<python.exe tam yolu>'`.
+   - EN: no Python, the Windows Store alias (exit 9009) or a Python without OpenCV now gives exit 6, checked before the GPU job (no video made), never 5 (RED). Install Python 3 and `opencv-python numpy`, then run again.
+21. **Kirmizi "ffmpeg is not recognized" satiri, pafta (12 karelik onizleme) yok** [olctum: ekip testi 2026-11-20, uc senaryo (yanlis VT_FFMPEG, PATH'te ffmpeg yok, EAP=Stop sarmali): KAPI GECTI, cikis 0; kayit yazarlarda, repoda yok]
+   - Neden: ffmpeg yalniz paftayi cizer; kapi olcutu (kare, gurultu, akis) OpenCV'den gelir. v0.1.0 yalniz `VT_FFMPEG` ve PATH'e bakiyordu.
+   - Cozum: v0.1.1 ffmpeg'i `VT_FFMPEG`, PATH ve `engine\bin`'de arar (release ffmpeg icermez; `engine\bin` yalniz siz koyarsaniz ise yarar); bulamazsa acik BILGI satiri yazar, paftayi atlar. Kurmak icin `winget install Gyan.FFmpeg` (sonra yeni pencere ac) ya da `$env:VT_FFMPEG = '<ffmpeg.exe tam yolu>'`.
+   - EN: ffmpeg only draws the contact sheet; when it is missing v0.1.1 warns and skips the sheet, the gate decision is unchanged.
+22. **`-W 720` reddedildi** [okudum: motor `request.cpp` hizalama]
+   - Neden: motor genislik/yuksekligi 32'nin katina yukari yuvarlar (720 -> 736); betik bu sessiz degisikligi kabul etmez. Dikey ornekler: 384x640, 480x832, 576x1024, 736x1280 (hepsi 32'nin kati).
+   - Not: 640x384 disindaki boyutlar 4 GB'ta denenmedi; kapi esikleri 640x384'te kalibre, buyuk boyutta gurultu dusuk okunur [olctum: ekip testi 2026-11-20, F209V2 klibi 1280x768'e buyutulunce gurultu 1,08 -> 0,32, N 0,048 -> 0,020; kayit yazarlarda, repoda yok].
+23. **12 GB+ kartta her kosuda "VRAM ince marj" uyarisi** [kullanici bildirdi, issue #1]
+   - Neden: v0.1.0 esigi sabit 3800 MiB idi; `--offload-to-cpu` buyuk kartta da karti doldurur.
+   - Cozum: v0.1.1 esigi "tepede bos VRAM <= 296 MiB" yapti (4096 MiB kartta eskisiyle ayni).

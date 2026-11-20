@@ -1,6 +1,24 @@
 # Changelog
 
-## v0.1.0 (draft, not released)
+## v0.1.1 (Unreleased)
+Scripts and docs only: the engine zip, its sha256 and the `kur.ps1` download address stay at v0.1.0. Without the new options the GTX 1050 Ti command is unchanged except the flash-attention flag spelling. Thanks to @SinanC73 for the RTX 4070 Ti report and the elimination tests (#1).
+
+- Fixed: all-black (NaN) video at 141+ frames on compute capability 7.0+ GPUs. `uret.ps1` sets `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` there unless you set it yourself; nothing changes on 6.1 (GTX 1050 Ti). Reported by @SinanC73 (#1).
+- Fixed: a Python without OpenCV/numpy gave a misleading `KAPI RED` (exit 5). `uret.ps1` now runs `python -I -c "import cv2, numpy"` BEFORE the GPU job and stops with exit 6 (no video made) if it fails, including the Windows Store `python.exe` alias that only exits 9009; the gate run on its own also exits 6 `KAPI CALISMADI` in these cases.
+- Changed: with several GPUs `uret.ps1` uses the smallest VRAM and the smallest compute capability among the cards (`f32` only if all are 7.0+) and prints an info line; only single-GPU runs were measured. Test overrides `VT_GPU_CC` / `VT_GPU_VRAM` accept a decimal comma and warn when unreadable; when VRAM cannot be read, messages say it was treated as under 8 GB and point to `VT_GPU_VRAM`.
+- Fixed: the gate's frame-count check never worked in v0.1.0: in `uretim_kapi.ps1` the measured count `$kare` overwrote the parameter `$Kare` (PowerShell names are case-insensitive), so `kare = Kare` was always true; a 56-frame clip checked with `-Kare 73` passed [measured: team test 2026-11-20]. Renamed to `$olc`. (`uret.ps1` checked the frame count itself, so runs through `uret.ps1` were not affected.) The contact sheet also used the overwritten value.
+- Changed: without ffmpeg the gate now prints a clear info line and skips the contact sheet instead of a red "not recognized" error (the verdict never depended on ffmpeg). It looks in `VT_FFMPEG`, `PATH` and `engine\bin`; the release does not ship ffmpeg, so `engine\bin` only helps if you put it there yourself. An old contact sheet of the same name is deleted first, so a failed ffmpeg run is no longer reported with a stale sheet.
+- Changed: `hiz_kos3.ps1` (research runner) sets `f32` with the same rule as `uret.ps1`.
+- Added: `-EndImg` (first-last frame, FLF), on cards under 8 GB (6 GB included): cap 175 frames (192 did not fit) and always two processes (one process ran out of VRAM even at 56 frames); on 8 GB+ cards cap 192 like `-InitImg` (not measured by us).
+- Added: `-W`/`-H` (default 640x384; multiples of 32; area at least 640x384). Two-process decision by token count (`(W/32)*(H/32)*latent frames > 7680`, same decision as before at 640x384); on cards under 8 GB a non-default size above the largest measured job (14880 tokens; 13680 with `-InitImg`, 12480 with `-EndImg`) is refused unless `VT_MAX_JETON` is set; a non-default size prints a warning that the gate thresholds are calibrated at 640x384.
+- Added: `-TekAsama` (force one process; for large cards; never automatic).
+- Changed: `--diffusion-fa` replaced by `--flash-attn off,diffusion=on` (same mode in the engine; the old flag printed a deprecation warning).
+- Changed: VRAM warning when free VRAM at peak is 296 MiB or less (same as the old 3800 MiB rule on a 4 GB card, sensible on large cards).
+- Changed: the gate prints the texture-normalised N as an information line (`-DokuNorm` is passed by default) and, when only the noise threshold fails, a hint that the scene may be texture-rich; thresholds unchanged. Gate messages are also printed to the console, not only to `runs\olaylar.txt`.
+- Docs: `AGENTS.md` (new options with copy-paste commands, exit 6, fixed stale line references), `docs/SIK_HATALAR.md` 19-23, `docs/OLCUMLER.md` §8 (external report, not our measurement), `docs/ISTEM_YAZIMI.md` (FLF), `docs/KAPILAR.md`, `docs/KURULUM.md`, `ROADMAP.md`.
+- Verified on the GTX 1050 Ti (2026-11-20, release v0.1.0 engine, v0.1.1 scripts) [measured]: R0 56 frames byte-identical with the new `--flash-attn off,diffusion=on` flag (avi sha256 `0979f156...`, 56/56 frame md5 and audio md5 identical, gate passed, 641 s); FLF 56 frames passed (1040 s, VRAM peak 3597 MiB); FLF 175 frames passed (2887 s, 3721 MiB); FLF 192 frames and FLF in one process (56 frames) did not fit. `f32` stays off on this card (compute capability 6.1) and was not forced. Not measured: `-EndImg` without `-InitImg`; FLF on 8 GB+ cards (12 GB: user-reported, #1).
+
+## v0.1.0 (2026-11-19)
 - Memory patches for stable-diffusion.cpp so MiniMax H3 (HyperFlow Flash Q4_K_M) runs on a 4 GB Pascal GPU: single pass up to 209 frames (8.7 s; default; verified by a byte chain) at 640x384, 24 fps. Patches are listed in `docs/YAMALAR.md`.
 - Scripts: `kur.ps1` (install), `uret.ps1` (generate), `hiz_kos3.ps1`, quality gates, seam check, byte comparison, separate-process VAE recipe.
 - `uret.ps1`: exit-code bug fixed (empty exit code after the engine process ended); a real 5-frame run will be seen in a clean folder [guess, not yet verified].

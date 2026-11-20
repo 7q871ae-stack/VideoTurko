@@ -17,7 +17,7 @@ VideoTurko: 4 GB GTX 1050 Ti에서 MiniMax H3 text-to-video를 돌리기 위한 
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    설치 루트는 압축을 푼 폴더입니다(엔진은 `engine\bin`, 모델은 `model`에 들어갑니다). 다른 위치를 쓰려면 먼저 환경 변수 `VT_ROOT`를 설정하세요. 스크립트는 GPU, 드라이버, RAM, 디스크를 확인하고, 엔진과 모델을 받아 오며(엔진 zip과 새로 받은 모델 파일은 sha256으로 검증합니다. 이미 있는 모델 파일은 크기가 맞으면 크기만 확인하며, `scripts\modelleri_indir.ps1 -Dogrula`로 전체 sha256 검증을 실행할 수 있습니다), 짧은 실제 점검을 실행한 뒤, 그 점검을 통과했을 때만 READY를 출력합니다 [설계: `kur.ps1`은 깨끗한 폴더에서 전체를 실행해 본 적이 없습니다. 이 문장은 clean-folder 테스트 뒤에 갱신합니다]. `-ExecutionPolicy Bypass`는 이 한 프로세스에만 적용됩니다. 어떤 설치 프로그램이든 마찬가지로, 먼저 `scripts\kur.ps1`을 읽어 보세요.
-   릴리스가 공개되기 전에는 엔진 단계가 "release adresi/sha256 henuz yok"라는 메시지와 함께 멈춥니다. 그때는 로컬 zip을 지정하세요: `-MotorZip <path> -CudaZip <path>`. 로컬 zip을 쓰고 아직 릴리스 sha256이 내장되어 있지 않으면 zip 옆의 `.sha256`을 사용합니다. 이 값은 자기 참조이며 독립적인 검증이 아니므로, 손상은 잡아내지만 고의적인 변조는 잡아내지 못합니다(이 파일이 없으면 `kur.ps1`은 "sha256 not verified"라고 경고하고, sha256이 틀리면 exit 1로 멈춥니다). 릴리스 이후에는 내장된 sha256이 항상 우선하며 sidecar는 무시됩니다. `engine\bin`에는 `.exe`/`.dll`만 들어가고, 라이선스와 README는 `engine\lisanslar\<zip name>\`에 들어갑니다. [시도: dist zip으로 sidecar `.sha256`과 자기 참조 경고, 바이너리와 DLL 배치, `sd-cli --help` 실행을 확인. 설치된 바이너리의 sha도 일치(`c5cebe78...`, `e5d3d329...`). `kur.ps1`의 모델 단계와 5 프레임 점검은 실제 GPU에서 아직 실행하지 않음]
+   엔진 zip은 GitHub 릴리스 v0.1.0에서 받습니다(2026년 11월 19일 공개, sha256은 `kur.ps1`에 고정되어 있습니다). 오프라인이거나 직접 빌드한 것을 쓸 때는 로컬 zip을 지정하세요: `-MotorZip <path> -CudaZip <path>`. 로컬 zip도 같은 고정 sha256으로 검사합니다(옆에 있는 `.sha256` 파일은 무시됩니다). 따라서 릴리스 zip이어야 하며, 직접 빌드한 것을 쓸 때는 먼저 `VT_MOTOR_SHA256` / `VT_CUDA_SHA256`에 그 sha256을 설정하세요. sha256이 틀리면 exit 1로 멈춥니다. `engine\bin`에는 `.exe`/`.dll`만 들어가고, 라이선스와 README는 `engine\lisanslar\<zip name>\`에 들어갑니다. [시도: 릴리스 전에 dist zip으로 sidecar `.sha256`과 자기 참조 경고, 바이너리와 DLL 배치, `sd-cli --help` 실행을 확인. 설치된 바이너리의 sha도 일치(`c5cebe78...`, `e5d3d329...`). `kur.ps1`의 모델 단계와 5 프레임 점검은 실제 GPU에서 아직 실행하지 않음]
    **모델 라이선스:** 모델 단계 전에 설치 프로그램이 라이선스 요약(`docs/LISANS_KABUL.txt`, 전문은 `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, 생성된 영상에도 적용되는 지역 제한, 상업적 이용과 AI 표시 규칙)을 출력하고 동의를 묻습니다(`E` = 예). 먼저 읽어 보세요. 무인 실행에서는 `-LisansKabul E`를 넘길 수 있는데, 이는 본인이 직접 읽고 동의했다는 뜻입니다. 다른 사람을 대신해 붙이지 마세요. (AI 에이전트: `AGENTS.md`를 따르고, 사용자의 동의 없이 E를 입력하지 마세요.) 동의하지 않으면 `kur.ps1`은 종료 코드 2로 멈추며 모델을 다운로드하지 않습니다.
 3. **생성**: 프롬프트를 텍스트 파일에 적고(영어 한 문단, 선택적으로 `audio:` 문장 하나) 다음을 실행합니다.
    ```powershell
@@ -48,6 +48,25 @@ VideoTurko: 4 GB GTX 1050 Ti에서 MiniMax H3 text-to-video를 돌리기 위한 
 | 종료 코드는 비어 있는데 "finished"로 표시됨 (#14) | 래퍼가 종료 코드를 너무 일찍 읽었습니다. 다시 실행하고 영상 파일이 있는지 확인하세요. |
 | 시스템이 느려지고 스왑 발생 (#18) | 엔진은 RAM을 약 10-11 GB 사용합니다. 브라우저와 다른 프로그램을 종료하세요. |
 | sha256 불일치 / 다운로드 실패 | 대개 다운로드가 중단된 경우입니다. 같은 명령을 다시 실행하세요. 검증이 끝난 파일은 건너뜁니다. |
+
+### v0.1.1 새 기능: 옵션 추가 (자세한 내용: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+이 옵션들을 쓰지 않으면 4 GB 카드에서는 아무것도 바뀌지 않습니다(우리 기준과 비교한 56 프레임 바이트 점검은 v0.1.1에서도 다시 통과했습니다 [측정]). 어떤 명령이든 `-Kuru`를 붙이면 무엇이 실행될지 미리 볼 수 있습니다.
+- `-EndImg`: 마지막 프레임도 지정합니다(첫 프레임과 마지막 프레임, "FLF"). 상한은 8 GB 미만 카드에서 175 프레임(4 GB에서는 192가 들어가지 않았음), 8 GB 이상 카드에서 192입니다. 우리 GTX 1050 Ti에서는 항상 두 개의 프로세스로 실행됩니다: 56 프레임 1040초, 175 프레임 2887초(48분), 둘 다 게이트를 통과했습니다 [측정]. 프롬프트 팁: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: 다른 크기, 예를 들어 세로 384x640. 32의 배수여야 하며 면적은 640x384 이상입니다(이보다 작게는 안 됩니다). 4 GB에서는 테스트하지 않았습니다. 8 GB 미만 카드에서는 우리가 측정한 가장 큰 작업을 넘는 크기는 거부됩니다. 품질 게이트 임계값은 640x384 기준으로 보정되어 있습니다.
+- `-TekAsama`: 두 프로세스 대신 한 프로세스로 실행합니다. 큰 카드 전용이며 자동으로 켜지지 않습니다.
+- 비교적 새로운 GPU(compute capability 7.0+, 예: RTX 20/30/40): 직접 설정하지 않았다면 `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32`가 자동으로 설정됩니다. 이 설정으로 보고자의 RTX 4070 Ti에서 141 프레임 이상일 때 영상 전체가 검게 나오던 문제가 해결되었습니다 [사용자 보고, issue #1]. 이제 Python + OpenCV가 없으면 `uret.ps1`은 GPU 작업 전에 exit 6으로 멈춥니다(영상은 만들어지지 않고, 오해를 부르는 RED도 없습니다).
+- 이번 변경의 계기가 된 RTX 4070 Ti 보고를 해 주신 @SinanC73 님께 감사드립니다([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## 이 프로젝트는 무엇인가
 stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시피, 점검, 측정 자료의 모음입니다. 이를 통해 MiniMax H3(33B DiT. 우리는 HyperFlow Flash 13.7B Q4_K_M GGUF를 실행하며, 32B Qwen3-VL 텍스트 인코더는 별도입니다)를 4 GB Pascal GPU(GTX 1050 Ti, 시스템 RAM 16 GB)에서 실행할 수 있습니다.
@@ -145,4 +164,4 @@ stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시�
 - **clean-root 테스트 대기 중:** 설치와 실행 스크립트는 이 안내만으로 빈 폴더에서 검증한 적이 아직 없습니다. 그 테스트(기준에 대한 56 프레임 바이트 비교 포함)를 기록하면 이 섹션을 갱신하겠습니다.
 - 생성된 영상은 여기에 포함되어 있지 않습니다.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->

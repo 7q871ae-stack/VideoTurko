@@ -17,7 +17,7 @@ VideoTurko: tampalan memori stable-diffusion.cpp beserta resipi untuk menjalanka
    powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1
    ```
    Akar pemasangan ialah folder yang anda ekstrak (enjin masuk ke `engine\bin`, model ke `model`); untuk menggunakan tempat lain, tetapkan pemboleh ubah persekitaran `VT_ROOT` terlebih dahulu. Skrip menyemak GPU, pemacu, RAM dan cakera, mengambil enjin dan model (zip enjin dan fail model yang baru dimuat turun disemak sha256; fail model yang sudah ada dengan saiz yang betul hanya disemak saiznya, `scripts\modelleri_indir.ps1 -Dogrula` menjalankan semakan sha256 penuh), menjalankan semakan sebenar yang ringkas, dan mencetak READY hanya jika semakan itu lulus [reka bentuk: `kur.ps1` belum pernah dijalankan sepenuhnya dalam folder bersih; ayat ini dikemas kini selepas ujian folder bersih]. `-ExecutionPolicy Bypass` hanya terpakai pada proses ini; baca `scripts\kur.ps1` dahulu, seperti pada mana-mana pemasang.
-   Sehingga keluaran diterbitkan, langkah enjin berhenti dengan mesej "release adresi/sha256 henuz yok"; berikan zip tempatan: `-MotorZip <path> -CudaZip <path>`. Dengan zip tempatan dan tanpa sha256 keluaran yang tertanam, `.sha256` di sebelah zip digunakan; ia merujuk dirinya sendiri, bukan bebas: ia mengesan kerosakan, bukan pengubahan yang disengajakan (tanpa fail itu `kur.ps1` memberi amaran "sha256 not verified"; sha256 yang salah menghentikan proses dengan exit 1). Selepas keluaran, sha256 yang tertanam sentiasa diutamakan dan fail sisian diabaikan. Hanya `.exe`/`.dll` masuk ke `engine\bin`; lesen dan README masuk ke `engine\lisanslar\<zip name>\`. [dicuba dengan zip dist: `.sha256` sisian beserta amaran rujukan-sendiri, binari dan DLL diletakkan, `sd-cli --help` berjalan; sha binari yang dipasang sepadan (`c5cebe78...`, `e5d3d329...`); langkah model dan semakan 5 bingkai `kur.ps1` BELUM dijalankan pada GPU sebenar]
+   Zip enjin diambil daripada keluaran GitHub v0.1.0 (diterbitkan pada 2026-11-19; sha256 baginya ditetapkan dalam `kur.ps1`). Jika di luar talian atau menggunakan binaan anda sendiri, berikan zip tempatan: `-MotorZip <path> -CudaZip <path>`. Zip tempatan juga disemak dengan sha256 tetap yang sama (fail `.sha256` di sebelahnya diabaikan), jadi ia mesti zip keluaran; untuk binaan anda sendiri, tetapkan dahulu `VT_MOTOR_SHA256` / `VT_CUDA_SHA256` kepada sha256 binaan itu. sha256 yang salah menghentikan proses dengan exit 1. Hanya `.exe`/`.dll` masuk ke `engine\bin`; lesen dan README masuk ke `engine\lisanslar\<zip name>\`. [dicuba dengan zip dist sebelum keluaran: `.sha256` sisian beserta amaran rujukan-sendiri, binari dan DLL diletakkan, `sd-cli --help` berjalan; sha binari yang dipasang sepadan (`c5cebe78...`, `e5d3d329...`); langkah model dan semakan 5 bingkai `kur.ps1` BELUM dijalankan pada GPU sebenar]
    **Lesen model:** sebelum langkah model, pemasang mencetak ringkasan lesen (`docs/LISANS_KABUL.txt`, teks penuh `docs/LISANS_UYARISI.md`: MiniMax H3 Community License, had wilayah yang turut meliputi video yang dijana, peraturan komersial dan label AI) dan meminta anda menerimanya (`E` = ya). Bacalah dahulu. Untuk larian tanpa pengawasan anda boleh memberikan `-LisansKabul E`, yang bermaksud anda sendiri telah membaca dan menerimanya; jangan tambahkannya bagi pihak orang lain. (Ejen AI: ikut `AGENTS.md`; jangan sekali-kali menaip E tanpa persetujuan pengguna.) Tanpa persetujuan, `kur.ps1` berhenti dengan kod keluar 2 dan tidak memuat turun sebarang model.
 3. **Jana**: letakkan prompt anda dalam fail teks (satu perenggan bahasa Inggeris, ayat `audio:` pilihan) dan jalankan
    ```powershell
@@ -48,6 +48,25 @@ Kod keluar `kur.ps1`: 0 READY, 1 ralat, 2 input pengguna diperlukan (lesen, atau
 | Kod keluar kosong tetapi "finished" (#14) | Pembungkus (wrapper) membaca kod keluar terlalu awal; jalankan semula, dan semak bahawa fail video wujud. |
 | Sistem menjadi perlahan, swapping (#18) | Enjin menggunakan kira-kira 10-11 GB RAM; tutup pelayar dan program lain. |
 | sha256 tidak sepadan / muat turun gagal | Biasanya muat turun terganggu: jalankan arahan yang sama sekali lagi, fail yang telah disahkan dilangkau. |
+
+### Baharu dalam v0.1.1: lebih banyak pilihan (butiran: `AGENTS.md`, `docs/SIK_HATALAR.md` 19-23)
+Tanpa pilihan ini, tiada apa-apa yang berubah pada kad 4 GB (semakan bait 56 bingkai terhadap rujukan kami lulus semula dengan v0.1.1 [diukur]). Tambahkan `-Kuru` pada mana-mana arahan untuk melihat apa yang akan dijalankan.
+- `-EndImg`: berikan juga bingkai terakhir (bingkai pertama dan terakhir, "FLF"); had 175 bingkai pada kad di bawah 8 GB (192 tidak muat pada 4 GB), 192 pada kad 8 GB ke atas. Pada GTX 1050 Ti kami ia sentiasa berjalan dalam dua proses: 56 bingkai 1040 saat, 175 bingkai 2887 saat (48 minit), kedua-duanya lulus pintu [diukur]. Petua menulis prompt: `docs/ISTEM_YAZIMI.md`.
+- `-W` / `-H`: saiz lain, contohnya menegak 384x640; gandaan 32, keluasan sekurang-kurangnya 640x384 (tidak pernah lebih kecil). Belum diuji pada 4 GB; pada kad di bawah 8 GB, saiz yang melebihi kerja terbesar yang telah kami ukur ditolak. Ambang pintu kualiti ditentukur pada 640x384.
+- `-TekAsama`: satu proses dan bukannya dua, untuk kad besar sahaja; tidak pernah dihidupkan secara automatik.
+- GPU yang lebih baharu (compute capability 7.0+, contohnya RTX 20/30/40): `GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32` ditetapkan secara automatik melainkan anda menetapkannya sendiri; ini membetulkan video hitam sepenuhnya pada 141+ bingkai pada RTX 4070 Ti milik pelapor [dilaporkan pengguna, issue #1]. Tanpa Python + OpenCV, `uret.ps1` kini berhenti dengan exit 6 sebelum kerja GPU (tiada video dihasilkan, tiada RED yang mengelirukan).
+- Terima kasih kepada @SinanC73 atas laporan RTX 4070 Ti yang membawa kepada perubahan ini ([issue #1](https://github.com/alexturkey/VideoTurko/issues/1)).
+
+```powershell
+# First and last frame (FLF): the clip starts on ilk_kare.png and ends on son_kare.png (up to 175 frames on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -InitImg ilk_kare.png -EndImg son_kare.png
+# Vertical 9:16 (multiples of 32, area at least 640x384; not tested on 4 GB)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 56 -W 384 -H 640
+# One process instead of two (large cards only)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -TekAsama
+# Print the exact engine command and settings without using the GPU
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
+```
 
 ## Apakah ini
 Satu set tampalan kecil memori/penjadualan untuk stable-diffusion.cpp beserta resipi larian, semakan dan pengukuran yang membolehkan MiniMax H3 (DiT 33B; kami menjalankan GGUF HyperFlow Flash 13.7B Q4_K_M; pengekod teks Qwen3-VL 32B adalah berasingan) berjalan pada GPU Pascal 4 GB (GTX 1050 Ti, RAM sistem 16 GB).
@@ -145,4 +164,4 @@ Nama larian yang digunakan dalam kurungan (nama larian dalaman kami, bukan fail 
 - **Ujian clean-root belum dibuat:** skrip pemasangan dan larian belum disahkan daripada folder kosong hanya dengan arahan ini; bahagian ini akan dikemas kini apabila ujian itu (termasuk perbandingan bait 56 bingkai dengan rujukan) direkodkan.
 - Tiada video yang dijana disertakan di sini.
 
-<!-- i18n-source: README.md sha256:a72e4a0b2471 -->
+<!-- i18n-source: README.md sha256:0070eed33ffd -->
