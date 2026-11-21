@@ -4,6 +4,10 @@
 >
 > **EN:** This document describes how to build the VideoTurko engine (`sd-cli`) from source with native CUDA `sm_120` kernels for NVIDIA Blackwell GPUs (e.g., RTX 5060 Laptop 8 GB), and documents the experimental `VT_*` switches in `scripts/uret.ps1`.
 
+> **TR (not):** Bu derleme tarifi son yoldur (sıra: bizim sürüm motoru 56 karede, sonra hazır sürüm, sonra bu tarif; `docs/KURULUM.md`). Hazır stable-diffusion.cpp sürümünü denemek mümkün: `master-1106-532d2c1` Windows CUDA 12 derlemesinin derleme dosyasında `CMAKE_CUDA_ARCHITECTURES='61;70;75;80;86;89;90;100;120'` yazar [okudum: o etikette build.yml]. RTX 50 kartta denenmedi [denenmedi]; bizim bellek yamalarımız yok, kalite kapılarımız onda koşturulmadı; MiniMax H3 lisans kabulü (`docs/LISANS_KABUL.txt`) yine geçerli.
+>
+> **EN (note):** This build recipe is the last way (order: our release engine at 56 frames, then the stock release, then this recipe; `docs/KURULUM.md`). You can try the stock stable-diffusion.cpp release: the build file of the `master-1106-532d2c1` Windows CUDA 12 build lists `CMAKE_CUDA_ARCHITECTURES='61;70;75;80;86;89;90;100;120'` [read: build.yml at that tag]. Not tried on an RTX 50 card [not tried]; it has none of our memory patches, our quality gates were not run on it; the MiniMax H3 license acceptance (`docs/LISANS_KABUL.txt`) still applies.
+
 Yer tutucular / Placeholders: `<ROOT>` = kısa, nötr çalışma klasörü (örn. `C:\vt`), `<BUILD>` = nötr derleme klasörü (örn. `C:\vt\build_work`). Betiklere veya derleme yollarına kişisel kullanıcı klasörü koymayın (`__FILE__` makroları kaynak yolunu ikiliye gömebilir).
 
 ---

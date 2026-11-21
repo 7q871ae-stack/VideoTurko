@@ -48,6 +48,19 @@
 
 ---
 
+## 4b. Yardımcı: `scripts/zincir.py` / Helper: `scripts/zincir.py`
+
+- **TR:** Elle yaptığınız adımları üç alt komutla kolaylaştırır; yalnız CPU, GPU ve ağ yok, motoru hiç başlatmaz. `plan` hedef süreyi klip planına çevirir (süre tahmini vermez: zincir ölçümü yapılmadı [denenmedi]); `son-kare` klibin GERÇEK son karesini sayarak çıkarır (okuyamazsa hata verir, tahmin etmez; yanlış kare dikişi bozar, bkz. `docs/SIK_HATALAR.md` 9); `bagla` birleştirme komutunu yazdırır, `--calistir` ile çalıştırır. Tek klibin kalite kapısı dikişi ölçmez: birleştirdikten sonra dikişi gözle ve `scripts/dikis_denetim.py` ile kontrol edin.
+- **EN:** Three subcommands replace the manual steps; CPU only, no GPU, no network, it never starts the engine. `plan` turns a target length into a clip plan (no time estimate: chain runs were not measured [not tried]); `son-kare` extracts the REAL last frame by counting (it errors out instead of guessing; a wrong frame breaks the seam, see `docs/SIK_HATALAR.md` item 9); `bagla` prints the join command, or runs it with `--calistir`. The single-clip quality gate does not measure the seam: after joining, check it by eye and with `scripts/dikis_denetim.py`.
+
+```powershell
+python -I -X utf8 scripts\zincir.py plan --sure 30
+python -I -X utf8 scripts\zincir.py son-kare klip1.avi devir_kare.png
+python -I -X utf8 scripts\zincir.py bagla klip1.avi klip2.avi klip3.avi klip4.avi -o film.mp4 --calistir
+```
+
+---
+
 ## 5. `ffmpeg` ile Birleştirme / Stitching with `ffmpeg`
 - **İlk kareyi at / Drop duplicate first frame:** Devam klibi önceki klibin son karesiyle başlar; video için `trim=start_frame=1`, ses için `atrim=start=0.0417` (1/24 sn) uygulayın.
 - **Bağlama / Concat & audio crossfade:** Videoyu `concat`, sesi `acrossfade=d=0.25` (veya `0.3`) ile bağlayın. Tüm akışlarda `setpts=PTS-STARTPTS`, gerekirse `fps=24,settb=1/24` ve `aresample=48000` kullanın.
