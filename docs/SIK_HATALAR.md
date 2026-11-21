@@ -66,7 +66,7 @@ This list comes from real runs. Each item: symptom, cause, lasting fix.
 
 24. <a id="vt-w-blackwell"></a>**RTX 50 serisinde (compute capability 12.x) 56 kare ve ustunde video tamamen siyah** (`-InitImg` ile 22/39 karede de) [kullanici bildirdi: RTX 5060 Laptop 8 GB, PR #3; v0.1.0 betigiyle].
    - Neden (ayrilmadi): hazir motor yalniz `sm_61` icin derli; katkicinin hipotezi surucunun bu kodu calisirken cevirmesi [tahmin]. v0.1.1'in otomatik `f32` ayari bu kartta denenmedi.
-   - Cozum sirasi: (1) v0.1.1 betigi ve hazir motorla 56 kare dene; (2) yine siyahsa motoru `-DCMAKE_CUDA_ARCHITECTURES=120` ve CUDA 12.8.1+ ile derle, `VT_ENGINE_BIN`'i o klasore ver. Tarif ve test raporu: `docs/RTX5060_SM120_DERLEME.md`, `docs/RTX5060_TEST_RAPORU.md`. Bizde RTX 50 kart yok, olcmedik; (1)'in sonucunu issue olarak bildirirseniz kok neden netlesir.
+   - Cozum sirasi: (1) v0.1.1 betigi ve hazir motorla 56 kare dene; (2) yine siyahsa iki yol: (a) stable-diffusion.cpp (leejet) hazir CUDA surumu `master-1106-532d2c1`: o surumun derleme dosyasinda `CMAKE_CUDA_ARCHITECTURES='61;70;75;80;86;89;90;100;120'` yazar [okudum: build.yml, o etikette], yani sm_120 dahil; RTX 50'de denenmedi, bizim bellek yamalarimiz yok, kalite kapisi kosmadi; RTX 3070 8 GB'de calistigi dis rapor: `docs/KART_PROFILLERI.md` [kullanici bildirdi]; (b) motoru `-DCMAKE_CUDA_ARCHITECTURES=120` ve CUDA 12.8.1+ ile derle, `VT_ENGINE_BIN`'i o klasore ver. Tarif ve test raporu: `docs/RTX5060_SM120_DERLEME.md`, `docs/RTX5060_TEST_RAPORU.md`. Bizde RTX 50 kart yok, olcmedik; (1)'in sonucunu issue olarak bildirirseniz kok neden netlesir.
    - EN: all-black video on RTX 50 reported with the v0.1.0 script; first try the release engine with the v0.1.1 script (f32 on), then build natively for sm_120 (`docs/RTX5060_SM120_DERLEME.md`).
 
 ## F. Kurulum, ortam ve girdi hatalari: kararli kodlar (v0.1.2)
@@ -76,7 +76,7 @@ Codes: scripts print `[VT-E-...]` / `[VT-W-...]` after the `HATA:` / `UYARI:` he
 
 25. <a id="vt-e-gpu"></a><a id="vt-e-gpu-vram"></a><a id="vt-e-gpu-cc"></a><a id="vt-w-gpu-denenmedi"></a>**Kullanilabilir NVIDIA kart yok / VRAM az / kart eski** (`VT-E-GPU`, `VT-E-GPU-VRAM`, `VT-E-GPU-CC`, `VT-W-GPU-DENENMEDI`) [okudum: kur.ps1 kontrol0]
    - Neden: `nvidia-smi` yok ya da cikti vermiyor (surucu yok); kart 3800 MiB altinda VRAM ya da compute capability 6.1 altinda. Motor yalniz NVIDIA CUDA.
-   - Cozum: NVIDIA surucusunu kurun/guncelleyin, yeni terminalde `nvidia-smi` calistirin. `-Zorla` yalniz VRAM/capability kontrolunu atlar, sonuc garanti degil. Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB; baska kartlar issue'larda kullanici bildirimidir.
+   - Cozum: NVIDIA surucusunu kurun/guncelleyin, yeni terminalde `nvidia-smi` calistirin. `-Zorla` yalniz VRAM/capability kontrolunu atlar, sonuc garanti degil. Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB; baska kartlar issue'larda kullanici bildirimidir. AMD ya da baska NVIDIA disi kart: surum motoru calismaz; topluluk notu `docs/AMD_ROCM.md` (resmi destek yok, bizce olculmedi).
    - EN: no usable NVIDIA GPU (driver missing, under 3800 MiB VRAM or compute capability under 6.1); install the driver and run `nvidia-smi`; `-Zorla` only skips the check.
 26. <a id="vt-e-os"></a>**Windows surumu eski** (`VT-E-OS`) [okudum]: betikler Windows 10 ya da ustu ve Windows PowerShell 5.1 icindir.
 27. <a id="vt-e-ram"></a><a id="vt-w-ram"></a><a id="vt-w-ram-bos"></a>**RAM az** (`VT-E-RAM`, `VT-W-RAM`, `VT-W-RAM-BOS`) [olctum: motor RAM tepesi ~11,5 GB, `OLCUMLER.md`]

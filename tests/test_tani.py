@@ -244,5 +244,24 @@ class TaniCmd(unittest.TestCase):
             self.assertNotIn(("T" + chr(252) + "rk" + chr(231) + "e").encode("utf-8"), rapor)
 
 
+@unittest.skipUnless(PS, "Windows PowerShell gerekir")
+class NvidiaYok(unittest.TestCase):
+    """No nvidia-smi (AMD or other non-NVIDIA card): the report keeps 'none (...)' and adds the display adapter NAME only."""
+
+    def test_nvidia_smi_yokken_kart_adi_eklenir(self):
+        bos = tempfile.mkdtemp(prefix="vt_tani_bos_")
+        self.addCleanup(shutil.rmtree, bos, True)
+        env = dict(os.environ)
+        env.pop("VT_KURU_SAHTE", None)
+        env["PATH"] = bos                                     # nvidia-smi cannot be found; PowerShell is started by absolute path
+        p = subprocess.run([PS, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(TANI), "-Json", "-KuruAtla"],
+                           capture_output=True, env=env, creationflags=CF, timeout=180)
+        self.assertEqual(p.returncode, 0, p.stderr.decode("utf-8", "replace"))
+        gpu = json.loads(p.stdout.decode("ascii"))["sistem"]["gpu"]
+        self.assertTrue(gpu.startswith("none (nvidia-smi missing"), gpu)
+        self.assertIn("display adapter: ", gpu)               # name only; every Windows with a screen has an adapter
+        self.assertNotIn("<", gpu.split("display adapter: ")[1][:1])
+
+
 if __name__ == "__main__":
     unittest.main()

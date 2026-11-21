@@ -37,10 +37,10 @@
     "'nvidia-smi' is not recognized"
    ],
    "ornek_log": [
-    "HATA: [VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA)."
+    "HATA: [VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported)."
    ],
-   "ilk_adim_en": "Install or update the NVIDIA driver, open a new terminal, run nvidia-smi. The engine is NVIDIA CUDA only (no AMD, no Intel, no CPU mode).",
-   "ilk_adim_tr": "NVIDIA surucusunu kurun ya da guncelleyin, yeni terminal acin, nvidia-smi calistirin. Motor yalniz NVIDIA CUDA (AMD, Intel, islemci modu yok).",
+   "ilk_adim_en": "Install or update the NVIDIA driver, open a new terminal, run nvidia-smi. The release engine is NVIDIA CUDA only (no CPU mode). On an AMD or other non-NVIDIA card there is a community note, not officially supported: docs/AMD_ROCM.md.",
+   "ilk_adim_tr": "NVIDIA surucusunu kurun ya da guncelleyin, yeni terminal acin, nvidia-smi calistirin. Surum motoru yalniz NVIDIA CUDA (islemci modu yok). AMD ya da baska NVIDIA disi kartta topluluk notu var, resmi destek yok: docs/AMD_ROCM.md.",
    "capa": "docs/SIK_HATALAR.md#vt-e-gpu"
   },
   {
@@ -99,8 +99,8 @@
    "ornek_log": [
     "UYARI: [VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61)."
    ],
-   "ilk_adim_en": "You can continue; other cards were reported by users (see issues) but are not verified by the authors.",
-   "ilk_adim_tr": "Devam edebilirsiniz; baska kartlar kullanicilarca bildirildi (issue listesi) ama yazarlarca dogrulanmadi.",
+   "ilk_adim_en": "You can continue; other cards were reported by users (see docs/KART_PROFILLERI.md and the issues) but are not verified by the authors.",
+   "ilk_adim_tr": "Devam edebilirsiniz; baska kartlar kullanicilarca bildirildi (docs/KART_PROFILLERI.md ve issue listesi) ama yazarlarca dogrulanmadi.",
    "capa": "docs/SIK_HATALAR.md#vt-w-gpu-denenmedi"
   },
   {
@@ -917,8 +917,8 @@
    "ornek_log": [
     "UYARI: [VT-W-BLACKWELL] compute capability 12 (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli"
    ],
-   "ilk_adim_en": "Try 56 frames first; if black, build the engine for sm_120 (docs/RTX5060_SM120_DERLEME.md). The authors have no RTX 50 card.",
-   "ilk_adim_tr": "Once 56 kare deneyin; siyahsa motoru sm_120 icin derleyin (docs/RTX5060_SM120_DERLEME.md). Yazarlarda RTX 50 kart yok.",
+   "ilk_adim_en": "Try 56 frames first; if black, two ways: (a) the stock stable-diffusion.cpp (leejet) CUDA release master-1106-532d2c1, whose build file lists sm_120 [read; not tried on this card; it has none of our memory patches; outside report: docs/KART_PROFILLERI.md], or (b) build the engine for sm_120 (docs/RTX5060_SM120_DERLEME.md). The authors have no RTX 50 card.",
+   "ilk_adim_tr": "Once 56 kare deneyin; siyahsa iki yol: (a) stable-diffusion.cpp (leejet) hazir CUDA surumu master-1106-532d2c1, derleme dosyasinda sm_120 var [okudum; bu kartta denenmedi; bizim bellek yamalarimiz yok; dis rapor: docs/KART_PROFILLERI.md], ya da (b) motoru sm_120 icin derleyin (docs/RTX5060_SM120_DERLEME.md). Yazarlarda RTX 50 kart yok.",
    "capa": "docs/SIK_HATALAR.md#vt-w-blackwell"
   },
   {

@@ -73,7 +73,7 @@ function Adim-Kontrol0 {
     $sahteGpu = [string](Sahte-Al 'gpu' '')
     if ($sahteGpu -eq 'yok') { $smi = $null }
     $sahteVar = ($sahteGpu -ne '' -and $sahteGpu -ne 'yok')   # yalniz -Kuru testi: nvidia-smi'siz makinede (CI) sahte kart
-    if (-not $smi -and -not $sahteVar) { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA).' }
+    if (-not $smi -and -not $sahteVar) { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported).' }
     else {
         if ($smi) { $q = (& nvidia-smi.exe --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits 2>$null | Select-Object -First 1) }
         else { $q = "$sahteGpu, 4096, sahte, 6.1" }
@@ -87,7 +87,7 @@ function Adim-Kontrol0 {
             $ccOk = $false; $ccV = 0.0
             if ([double]::TryParse(($cc -replace ',', '.'), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$ccV)) { $ccOk = $true }
             if ($ccOk -and $ccV -lt 6.1) { Hata-Ekle '[VT-E-GPU-CC] compute capability 6.1 (Pascal) ya da ustu gerekir' $true }
-            if ($gpuAd -notmatch '1050 Ti') { [void]$uyari.Add("[VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61). $gpuAd denenmedi; devam edebilirsiniz ama sonuc garanti degil.") }
+            if ($gpuAd -notmatch '1050 Ti') { [void]$uyari.Add("[VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61). $gpuAd denenmedi; devam edebilirsiniz ama sonuc garanti degil. Dis kullanici raporlari (etiketli): docs/KART_PROFILLERI.md.") }
         }
     }
     # RAM (toplam: kurulum icin; bos: video kosusu icin, motor tepe ~11 GB [olctum: docs/OLCUMLER.md])

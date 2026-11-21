@@ -210,5 +210,18 @@ class KuruCalistirma(unittest.TestCase):
         self.assertIn("KURU: kare=56 ", cikti)
 
 
+class AmdYonlendirme(unittest.TestCase):
+    """VT-E-GPU must point a non-NVIDIA user to docs/AMD_ROCM.md, and that file must exist (no dead link)."""
+
+    def test_vt_e_gpu_amd_notuna_baglanir(self):
+        kayit = [k for k in yukle()["kodlar"] if k["kod"] == "VT-E-GPU"][0]
+        self.assertTrue((KOK / "docs" / "AMD_ROCM.md").is_file())
+        for alan in ("ilk_adim_en", "ilk_adim_tr"):
+            self.assertIn("docs/AMD_ROCM.md", kayit[alan])
+        self.assertIn("docs/AMD_ROCM.md", kayit["ornek_log"][0])
+        self.assertIn("docs/AMD_ROCM.md", (KOK / "scripts" / "kur.ps1").read_text(encoding="utf-8"))
+        self.assertNotIn("Intel", kayit["ilk_adim_en"] + kayit["ilk_adim_tr"])  # no Intel claim: no document, not measured
+
+
 if __name__ == "__main__":
     unittest.main()

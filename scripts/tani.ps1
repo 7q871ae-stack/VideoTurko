@@ -132,6 +132,13 @@ if ($smi) {
         } catch { }
     }
 }
+if ($sistem.gpu -like 'none*') {
+    # No nvidia-smi: add the display adapter NAME only (helps AMD / non-NVIDIA reports; see docs/AMD_ROCM.md). Name only, no ids.
+    try {
+        $adlar = @(Get-CimInstance Win32_VideoController | ForEach-Object { "$($_.Name)".Trim() } | Where-Object { $_ })
+        if ($adlar.Count -gt 0) { $sistem.gpu = $sistem.gpu + '; display adapter: ' + ($adlar -join ' + ') }
+    } catch { }
+}
 $cl = Join-Path $kok 'CHANGELOG.md'
 $sistem.surum = 'unknown'
 if (Test-Path -LiteralPath $cl) {
