@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Milyen kártyám van? (csak hivatkozások)
+
+Ennek a tárolónak az az értéke, hogy a javítások 4 GB-ba préselik a modellt, és vannak minőségi kapui. Más kártyákhoz a kész stable-diffusion.cpp CUDA kiadás egy LEHETŐSÉG: nem mértük, és a minőségi kapuink nem futottak rajta. Saját méréseink egy kártyára terjednek ki (GTX 1050 Ti 4 GB). Minden más közösségi beszámoló: hivatkozunk rá, de nem vállalunk érte felelősséget.
+
+| Az Ön gépe | Hol nézze | Bizonyíték |
+|---|---|---|
+| GTX 1050 Ti 4 GB (a mi kiadási zipünk) | ez a README, `docs/OLCUMLER.md` | [mért] |
+| Más NVIDIA-kártyák (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (a `uret.ps1` automatikusan bekapcsolja az `f32`-t; kész stable-diffusion.cpp CUDA kiadás: lehetőség, általunk nem mért [nem próbált]) | [felhasználó jelentette] |
+| RTX 50 sorozat | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [felhasználó jelentette, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (közösségi jegyzet, nincs hivatalos támogatás; a kiadás motorja CUDA) | [felhasználó jelentette, PR #4] |
+| Hosszabb film több klipből | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [felhasználó jelentette]; az összefűzött filmek minőségét nem mértük [nem próbált] |
+
+Licenc: a MiniMax H3 licenc elfogadása (`docs/LISANS_KABUL.txt`) minden úton érvényes; a `kur.ps1` elfogadási lépése a kész kiadással nem fut le.
+
 ## Mi ez
 Kisméretű memória- és ütemezési patchek a stable-diffusion.cpp-hez, valamint a futtatási recept, ellenőrzések és mérések, amelyek lehetővé teszik, hogy a MiniMax H3 (33B DiT; mi a HyperFlow Flash 13.7B Q4_K_M GGUF-et futtatjuk; a 32B Qwen3-VL szövegkódoló külön van) egy 4 GB-os, Pascal generációs GPU-n fusson (GTX 1050 Ti, 16 GB rendszermemória).
 - Egy menetben ténylegesen előállított, és a minőségi ellenőrzéseinken átment hosszak: 56, 141, 158, 175, 192, 209 képkocka 640x384-ben, 24 fps mellett (209 képkocka = 8.7 s), a H3 saját generált hangjával [mért: 209 képkocka a kiadási binárissal a `uret.ps1`-en keresztül, U209 futás; a latent bájtra azonos a fejlesztői build futásával; a képkockák és a hang a videóban azonosak, a fájl sha-ja a konténer miatt eltér; a bizonyítékokat a szerzők őrzik, ebben a tárolóban nincsenek]. A 209 a leghosszabb hossz, amelyet végignéztünk és simának találtunk [felhasználó jelentette, 2026-11-19, a videót végignézte; fájl: F209V2 kimenet, 8.708 s].
@@ -101,7 +115,7 @@ Ez az ellenőrzés nem vizsgálja a mozgás konzisztenciáját (a tárgyak mére
 2. Nyers zajellenőrzés: a mediánszűrő maradéka <= 1.5 (0-255 skála).
 3. Textúrára normált zaj, `scripts/doku_norm.py` (a tároló saját verziója): N = medián maradék / Sobel-textúra, minden 6. képkockán. **Skálamegjegyzés:** ebben a verzióban a 10 mért klip N = 0.034-0.052 értéket ad (táblázat a `docs/KAPILAR.md`-ben; az F192/F209V2 utolsó negyedében eléri a 0.062-t), a kiegészítő ellenőrzés küszöbe N <= 0.065. Egy másik implementáció ugyanezeken a klipeken 0.028-0.036-ot mért, ezért a küszöbök verziók között NEM cserélhetők. Nagyon finom textúráknál (fűsorok) a tiszta N 0.075 volt, így a küszöb jelenetcsaládonként értendő. Az ajánlott kiegészítő ellenőrzés egy robusztus nagyfrekvenciás becslő (sigma-HH <= 1.5; tiszta klipek 0.74-1.19, hozzáadott s=2 zajnál 2.2-3.0).
 
-Hatókör: a VideoTurko EGYETLEN menetről szól (legfeljebb 209 képkocka, kb. 8.7 s). Több rész összefűzését hosszabb klippé kipróbáltuk; a varratok látszottak (a jelenet nem folytatódik tisztán), ezért ez nem része a projektnek. Ha hosszabb klipekre van szükséged, találd ki a saját megoldásodat.
+Hatókör: a VideoTurko EGYETLEN menetről szól (legfeljebb 209 képkocka, kb. 8,7 mp). Saját összefűzési tesztünk látható varratokat mutatott (a jelenet nem folytatódik tisztán), ezért a hosszabb filmek nem tartoznak az általunk ellenőrzött dolgok közé. Az összefűzéshez ott a közösségi útmutató, a `docs/KLIP_ZINCIRI.md`, és a csak CPU-t használó segédeszközünk, a `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; sosem indítja a motort); az összefűzött filmek minőségét nem mértük [nem próbált], ezért minden varratot nézzen meg szemmel és a `scripts/dikis_denetim.py` segítségével.
 A beállítások a tieid: a 209 képkocka a mi tesztelt alapértelmezésünk egy 4 GB-os kártyán, nem korlát, amelyet használnod kellene. Válassz tetszőleges képkockaszámot a 17k+5 rácsból (56, 73, ... 192, 209; lásd `docs/KURULUM.md`), változtasd a promptot, a seedet, a felbontást vagy bármely kapcsolót kedved szerint. A rövidebb klipek kevesebb memóriát és időt igényelnek; a nagyobb GPU-k többet is elbírhatnak.
 
 ## Figyelmeztetés a modell licencéről
@@ -162,7 +176,7 @@ A szögletes zárójelben használt futásnevek (saját elnevezéseink, nem a t�
 ## Ismert korlátok
 - **Bájtbizonyíték** (hogyan reprodukálhatod magad: `docs/KANITLAR.md`, „R0 ve latent referansi nasil uretilir”; a mi sm_61 kártyánkon ellenőrizve, más GPU-kon előfordulhat, hogy nem bájtazonos [feltételezés]): a patchsorozatunkkal (memóriakapcsolók bekapcsolva) egy 56 képkockás futás sha256-ja `0979f156d548169b...` volt, azonos a referenciával [mért]; 141 képkockánál a latent sha256-ja `E5D028F8632BE4FE...` azonos volt (a 0013/0014 kapcsolókkal). A 158-tól 209 képkockáig nincs közvetlen bájtreferencia; a bizonyíték az ellenőrzési lánc. A számszerű ellenőrzések teljesítése nem garantál jó klipet: a mozgás időbeli konzisztenciáját szemmel ellenőrizzük (lásd `docs/KAPILAR.md`).
 - **209 képkocka, melyik kapcsolókészlet:** a 209 képkockás bájtlánc bizonyítékát az F209V2 kapcsolókészlettel vettük fel a fejlesztői buildön (blokkvég-kapcsolók nélkül, a 0019/0020 patchek nélkül fordítva); a `uret.ps1` ezt a receptet használja 209 képkockához [elolvasva: a szkript; a valódi motorfutás a `uret.ps1`-en keresztül átment az U209 futásban].
-- Egy kártyán (GTX 1050 Ti 4 GB) ellenőrizve; más kártyákat nem próbáltunk.
+- Általunk egy kártyán ellenőrizve (GTX 1050 Ti 4 GB); a más kártyákról szóló külső beszámolók címkéikkel a `docs/KART_PROFILLERI.md` fájlban szerepelnek [felhasználó jelentette].
 - **Melyik binárist mértük:** a 141 képkockás latentet és a bájtláncot a saját fejlesztői buildjeinken mértük. A letöltött kiadási bináris új fordítás: az 56 képkockás bájtellenőrzése átment (következő pont), a 209 képkockás futás a `uret.ps1`-en keresztül átment az ellenőrzésen (U209 futás, 3414 s, VRAM-csúcs 3777 MiB) [mért]; a fejlesztői build 209 képkockás futásához képest a latent bájtra azonos; a videóban a képkockák (md5) és a hang azonosak, az AVI fájl sha256-ja a konténer miatt eltér [mért] (lásd `docs/OLCUMLER.md`, 0. szakasz).
 - **Kiadási bináris, 56 képkocka:** a kiadási bináris (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) az R0-val bájtra azonos 56 képkockás eredményt adott (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; képkockánkénti md5 és a hang azonos), közvetlenül, alapértelmezett kapcsolókkal futtatva (`SD_*` változók nélkül), kilépési kód 0, 601 s [mért: B56VT2 futás, 2026-11-19; a bizonyítékokat a szerzők őrzik, ebben a tárolóban nincsenek]. Hatókör: csak a mi sm_61 kártyánk és 56 képkocka; nem tiszta mappás telepítési teszt; a 141 képkockás latentet és a 209-es láncot a régebbi binárissal mértük, és ezzel NEM ismételtük meg [nem próbált]. Az első kísérlet (B56VT, segédszkripten keresztül) 58 s után némán véget ért, az ok ismeretlen [feltételezés: memóriaszűkület]; a második kísérlet közvetlenül az `sd-cli`-t futtatta.
 - A telepítő és futtató szkripteket még nem ellenőriztük üres mappából (a tiszta mappás teszt hátravan).
@@ -176,4 +190,4 @@ A szögletes zárójelben használt futásnevek (saját elnevezéseink, nem a t�
 - **A tiszta mappás teszt hátravan:** a telepítő és futtató szkripteket még nem ellenőriztük üres mappából kizárólag ezen útmutató alapján; ezt a szakaszt frissítjük, amikor a teszt (köztük az 56 képkockás bájtösszehasonlítás a referenciával) rögzítésre kerül.
 - Generált videókat itt nem mellékelünk.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

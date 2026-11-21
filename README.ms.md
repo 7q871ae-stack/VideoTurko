@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Kad apa yang saya ada? (pautan sahaja)
+
+Nilai repo ini ialah tampalan yang memuatkan model dalam 4 GB serta pintu kualiti. Untuk kad lain, keluaran CUDA stable-diffusion.cpp yang sedia ada ialah satu PILIHAN: kami tidak mengukurnya dan pintu kualiti kami tidak dijalankan padanya. Pengukuran kami sendiri meliputi satu kad (GTX 1050 Ti 4 GB). Selebihnya ialah laporan komuniti: kami beri pautan tetapi tidak menjaminnya.
+
+| Persediaan anda | Di mana hendak dilihat | Bukti |
+|---|---|---|
+| GTX 1050 Ti 4 GB (zip keluaran kami) | README ini, `docs/OLCUMLER.md` | [diukur] |
+| Kad NVIDIA lain (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` menetapkan `f32` secara automatik; keluaran CUDA stable-diffusion.cpp yang sedia ada: satu pilihan, tidak kami ukur [belum dicuba]) | [dilaporkan pengguna] |
+| siri RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [dilaporkan pengguna, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (nota komuniti, tiada sokongan rasmi; enjin keluaran ialah CUDA) | [dilaporkan pengguna, PR #4] |
+| Filem yang lebih panjang daripada beberapa klip | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [dilaporkan pengguna]; kualiti filem yang dirantai tidak kami ukur [belum dicuba] |
+
+Lesen: penerimaan lesen MiniMax H3 (`docs/LISANS_KABUL.txt`) terpakai pada setiap laluan; langkah penerimaan dalam `kur.ps1` tidak berjalan dengan keluaran yang sedia ada.
+
 ## Apakah ini
 Satu set tampalan kecil memori/penjadualan untuk stable-diffusion.cpp beserta resipi larian, semakan dan pengukuran yang membolehkan MiniMax H3 (DiT 33B; kami menjalankan GGUF HyperFlow Flash 13.7B Q4_K_M; pengekod teks Qwen3-VL 32B adalah berasingan) berjalan pada GPU Pascal 4 GB (GTX 1050 Ti, RAM sistem 16 GB).
 - Panjang satu-laluan yang benar-benar kami hasilkan dan lulus pintu kualiti kami: 56, 141, 158, 175, 192, 209 bingkai pada 640x384, 24 fps (209 bingkai = 8.7 saat), dengan audio yang dijana oleh H3 sendiri [diukur: 209 bingkai dengan binari keluaran melalui `uret.ps1`, larian U209; latent sama bait demi bait dengan larian binaan pembangunan; bingkai dan audio dalam video sama, sha fail berbeza kerana bekas (container); bukti disimpan oleh penulis, tiada dalam repositori ini]. 209 ialah panjang terpanjang yang kami tonton dan dapati lancar [dilaporkan pengguna, 2026-11-19, video ditonton sepenuhnya; fail: output F209V2, 8.708 saat].
@@ -101,7 +115,7 @@ Pintu ini tidak menyemak konsistensi gerakan (lonjakan skala atau kedudukan obje
 2. Pintu hingar mentah: baki median-filter <= 1.5 (skala 0-255).
 3. Hingar ternormal tekstur, `scripts/doku_norm.py` (versi repositori ini): N = baki median / tekstur Sobel, setiap bingkai ke-6. **Nota skala:** dalam versi ini 10 klip yang diukur memberikan N = 0.034-0.052 (jadual dalam `docs/KAPILAR.md`; suku terakhir F192/F209V2 mencapai 0.062) dan ambang pintu tambahan ialah N <= 0.065. Pelaksanaan lain mengukur 0.028-0.036 pada klip yang sama, jadi ambang TIDAK boleh ditukar ganti antara versi. Pada tekstur yang sangat halus (barisan rumput) N bersih ialah 0.075, jadi ambang adalah mengikut keluarga babak. Penganggar frekuensi tinggi yang teguh (sigma-HH <= 1.5; bersih 0.74-1.19, hingar tambahan s=2 memberikan 2.2-3.0) ialah pintu tambahan yang disyorkan.
 
-Skop: VideoTurko adalah mengenai SATU laluan (sehingga 209 bingkai, kira-kira 8.7 saat). Menyambung beberapa bahagian menjadi klip yang lebih panjang pernah dicuba; sambungannya kelihatan (babak tidak bersambung dengan bersih), jadi ia bukan sebahagian daripada projek ini. Jika anda mahukan klip yang lebih panjang, reka pendekatan anda sendiri.
+Skop: VideoTurko adalah tentang SATU laluan sahaja (sehingga 209 bingkai, kira-kira 8,7 saat). Ujian perantaian kami sendiri menunjukkan cantuman yang kelihatan (adegan tidak bersambung dengan bersih), jadi filem yang lebih panjang bukan sebahagian daripada apa yang kami sahkan. Untuk merantai ada panduan komuniti `docs/KLIP_ZINCIRI.md` dan alat bantu kami yang hanya guna CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; ia tidak pernah memulakan enjin); kualiti filem yang dirantai tidak kami ukur [belum dicuba], jadi periksa setiap cantuman dengan mata dan dengan `scripts/dikis_denetim.py`.
 Tetapan anda ialah milik anda: 209 bingkai ialah lalai yang kami uji pada kad 4 GB, bukan had yang mesti anda gunakan. Pilih mana-mana bilangan bingkai pada grid 17k+5 (56, 73, ... 192, 209; lihat `docs/KURULUM.md`), tukar prompt, seed, resolusi atau mana-mana bendera mengikut kehendak anda. Klip yang lebih pendek memerlukan lebih sedikit memori dan masa; GPU yang lebih besar mungkin memuatkan lebih banyak.
 
 ## Amaran lesen model
@@ -162,7 +176,7 @@ Nama larian yang digunakan dalam kurungan (nama larian dalaman kami, bukan fail 
 ## Had yang diketahui
 - **Bukti bait** (cara menghasilkannya sendiri: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; disahkan pada kad sm_61 kami, GPU lain mungkin tidak sama bait [anggaran]): dengan siri tampalan kami (bendera memori dihidupkan) satu larian 56 bingkai memberikan sha256 `0979f156d548169b...`, sama dengan rujukan [diukur]; pada 141 bingkai sha256 latent `E5D028F8632BE4FE...` sama (dengan bendera 0013/0014). Bingkai 158 hingga 209 tiada rujukan bait langsung; rantai pintu ialah buktinya. Lulus pintu berangka tidak menjamin klip yang baik: konsistensi gerakan dari semasa ke semasa disemak dengan mata (lihat `docs/KAPILAR.md`).
 - **209 bingkai, set bendera yang mana:** bukti rantai bait 209 bingkai diambil dengan set bendera F209V2 pada binaan pembangunan (tiada bendera block-tail, dibina tanpa tampalan 0019/0020); `uret.ps1` menggunakan resipi ini untuk 209 bingkai [dibaca: skripnya; larian enjin sebenar melalui `uret.ps1` lulus dalam larian U209].
-- Disahkan pada satu kad (GTX 1050 Ti 4 GB); kad lain tidak dicuba.
+- Disahkan oleh kami pada satu kad (GTX 1050 Ti 4 GB); laporan luar untuk kad lain disenaraikan bersama labelnya dalam `docs/KART_PROFILLERI.md` [dilaporkan pengguna].
 - **Binari mana yang diukur:** latent 141 bingkai dan rantai bait diukur dengan binaan pembangunan kami. Binari keluaran yang anda muat turun ialah binaan baharu: pintu bait 56 bingkainya lulus (butiran seterusnya) dan larian 209 bingkai melalui `uret.ps1` lulus pintu (larian U209, 3414 saat, puncak VRAM 3777 MiB) [diukur]; berbanding larian 209 binaan pembangunan, latent sama bait demi bait; dalam video bingkai (md5) dan audio sama, sha256 fail AVI berbeza kerana bekas (container) [diukur] (lihat `docs/OLCUMLER.md`, bahagian 0).
 - **Binari keluaran, 56 bingkai:** binari keluaran (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) memberikan hasil 56 bingkai yang sama bait dengan R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 setiap bingkai dan audio sama), dijalankan terus dengan bendera lalai (tanpa pemboleh ubah `SD_*`), kod keluar 0, 601 saat [diukur: larian B56VT2, 2026-11-19; bukti disimpan oleh penulis, tiada dalam repositori ini]. Skop: hanya kad sm_61 kami dan 56 bingkai; bukan ujian pemasangan clean-root; latent 141 bingkai dan rantai 209 diukur dengan binari yang lebih lama dan TIDAK diulang dengan binari ini [belum dicuba]. Percubaan pertama (B56VT, melalui skrip pembantu) berakhir secara senyap selepas 58 saat, punca tidak diketahui [anggaran: tekanan memori]; percubaan kedua menjalankan `sd-cli` terus.
 - Skrip pemasangan dan larian belum disahkan daripada folder kosong (ujian clean-root belum dibuat).
@@ -176,4 +190,4 @@ Nama larian yang digunakan dalam kurungan (nama larian dalaman kami, bukan fail 
 - **Ujian clean-root belum dibuat:** skrip pemasangan dan larian belum disahkan daripada folder kosong hanya dengan arahan ini; bahagian ini akan dikemas kini apabila ujian itu (termasuk perbandingan bait 56 bingkai dengan rujukan) direkodkan.
 - Tiada video yang dijana disertakan di sini.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Vilket kort har jag? (endast länkar)
+
+Det den här repon bidrar med är patcharna som får modellen att rymmas i 4 GB samt kvalitetsportarna. För andra kort är den färdiga stable-diffusion.cpp CUDA-releasen ett ALTERNATIV: vi har inte mätt den och våra kvalitetsportar har inte körts på den. Våra egna mätningar gäller ett kort (GTX 1050 Ti 4 GB). Allt annat är rapporter från communityn: vi länkar dem och går inte i god för dem.
+
+| Din uppsättning | Var man tittar | Underlag |
+|---|---|---|
+| GTX 1050 Ti 4 GB (vår release-zip) | denna README, `docs/OLCUMLER.md` | [uppmätt] |
+| Andra NVIDIA-kort (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` sätter `f32` automatiskt; färdig stable-diffusion.cpp CUDA-release: ett alternativ, inte mätt av oss [ej provat]) | [användarrapporterat] |
+| RTX 50-serien | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [användarrapporterat, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (communityanteckning, inget officiellt stöd; releasemotorn är CUDA) | [användarrapporterat, PR #4] |
+| En längre film av flera klipp | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [användarrapporterat]; kvaliteten på hopkedjade filmer har vi inte mätt [ej provat] |
+
+Licens: godkännandet av MiniMax H3-licensen (`docs/LISANS_KABUL.txt`) gäller på varje väg; godkännandesteget i `kur.ps1` körs inte med den färdiga releasen.
+
 ## Vad det här är
 En uppsättning små minnes- och schemaläggningspatchar för stable-diffusion.cpp samt körrecept, kontroller och mätningar som gör att MiniMax H3 (33B DiT; vi kör HyperFlow Flash 13.7B Q4_K_M GGUF; textencodern Qwen3-VL på 32B är separat) kan köras på ett Pascal-GPU med 4 GB (GTX 1050 Ti, 16 GB systemminne).
 - Längder i ett enda pass som vi faktiskt har producerat och som passerade våra kvalitetsgrindar: 56, 141, 158, 175, 192, 209 bildrutor i 640x384, 24 fps (209 bildrutor = 8,7 s), med H3:s eget genererade ljud [uppmätt: 209 bildrutor med release-binären via `uret.ps1`, körning U209; latenten är byte-identisk med körningen på utvecklingsbygget; bildrutor och ljud är identiska i videon, filens sha skiljer sig på grund av containern; underlaget förvaras av skaparna och finns inte i det här repot]. 209 är den längsta längd vi har tittat på och funnit jämn [användarrapporterat, 2026-11-19, videon sedd i sin helhet; fil: F209V2-utdata, 8,708 s].
@@ -101,7 +115,7 @@ Grinden kontrollerar inte rörelsekonsekvens (hopp i objektets skala eller posit
 2. Grind för rått brus: medianfilterrester <= 1,5 (skala 0-255).
 3. Texturnormaliserat brus, `scripts/doku_norm.py` (det här repots version): N = medianrest / Sobel-textur, var 6:e bildruta. **Skalanteckning:** i den här versionen ger de 10 uppmätta klippen N = 0,034-0,052 (tabell i `docs/KAPILAR.md`; sista kvartalet av F192/F209V2 når 0,062) och tröskeln för extragrinden är N <= 0,065. En annan implementation mätte 0,028-0,036 på samma klipp, så trösklar är INTE utbytbara mellan versioner. På mycket fina texturer (gräsrader) var rent N 0,075, så tröskeln gäller per scenfamilj. En robust högfrekvensskattare (sigma-HH <= 1,5; rent 0,74-1,19, tillagt brus s=2 ger 2,2-3,0) är den rekommenderade extragrinden.
 
-Omfattning: VideoTurko gäller ETT enda pass (upp till 209 bildrutor, cirka 8,7 s). Att kedja ihop flera delar till ett längre klipp provades; skarvarna syntes (scenen fortsätter inte rent), så det ingår inte i det här projektet. Vill du ha längre klipp får du utforma ett eget upplägg.
+Omfattning: VideoTurko gäller ETT enda pass (upp till 209 bildrutor, cirka 8,7 s). Vårt eget test med hopkedjning visade synliga skarvar (scenen fortsätter inte rent), så längre filmer ingår inte i det vi verifierar. För hopkedjning finns communityguiden `docs/KLIP_ZINCIRI.md` och vårt CPU-hjälpverktyg `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; det startar aldrig motorn); kvaliteten på hopkedjade filmer har vi inte mätt [ej provat], så kontrollera varje skarv med ögat och med `scripts/dikis_denetim.py`.
 Dina inställningar är dina: 209 bildrutor är vår testade standard på ett 4 GB-kort, inte en gräns du måste följa. Välj valfritt antal bildrutor på 17k+5-rastret (56, 73, ... 192, 209; se `docs/KURULUM.md`), ändra prompt, seed, upplösning eller vilken flagga du vill. Kortare klipp kräver mindre minne och tid; större GPU:er kan rymma mer.
 
 ## Varning för modelllicensen
@@ -162,7 +176,7 @@ Körningsnamn som används inom hakparentes (våra egna körningsnamn, inte file
 ## Kända begränsningar
 - **Bytebevis** (så reproducerar du det själv: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verifierat på vårt sm_61-kort, andra GPU:er är kanske inte byte-identiska [gissning]): med vår patchserie (minnesflaggor på) gav en körning med 56 bildrutor sha256 `0979f156d548169b...`, identisk med referensen [uppmätt]; vid 141 bildrutor var latentens sha256 `E5D028F8632BE4FE...` identisk (med flaggorna 0013/0014). För 158 till 209 bildrutor finns ingen direkt byte-referens; grindkedjan är underlaget. Att de numeriska grindarna passeras garanterar inte ett bra klipp: rörelsekonsekvens över tid kontrolleras med ögat (se `docs/KAPILAR.md`).
 - **209 bildrutor, vilken flaggsats:** bytekedjans underlag för 209 bildrutor togs med flaggsatsen F209V2 på utvecklingsbygget (inga block-tail-flaggor, byggt utan patchar 0019/0020); `uret.ps1` använder det receptet för 209 bildrutor [läst: skriptet; en riktig motorkörning via `uret.ps1` gick igenom i körning U209].
-- Verifierat på ett kort (GTX 1050 Ti 4 GB); andra kort har inte provats.
+- Verifierat av oss på ett kort (GTX 1050 Ti 4 GB); externa rapporter om andra kort listas med sina etiketter i `docs/KART_PROFILLERI.md` [användarrapporterat].
 - **Vilken binär som mättes:** latenten för 141 bildrutor och bytekedjan mättes med våra utvecklingsbyggen. Release-binären du laddar ner är ett nytt bygge: dess byte-grind för 56 bildrutor passerades (nästa punkt) och en körning med 209 bildrutor via `uret.ps1` passerade grinden (körning U209, 3414 s, VRAM-topp 3777 MiB) [uppmätt]; mot utvecklingsbyggets körning med 209 bildrutor är latenten byte-identisk; i videon är bildrutorna (md5) och ljudet identiska, AVI-filens sha256 skiljer sig på grund av containern [uppmätt] (se `docs/OLCUMLER.md`, avsnitt 0).
 - **Release-binär, 56 bildrutor:** release-binären (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) gav ett resultat för 56 bildrutor som var byte-identiskt med R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 per bildruta och ljud identiska), körd direkt med standardflaggor (inga `SD_*`-variabler), exit-kod 0, 601 s [uppmätt: körning B56VT2, 2026-11-19; underlaget förvaras av skaparna och finns inte i det här repot]. Omfattning: bara vårt sm_61-kort och 56 bildrutor; inte ett installationstest i tom rotmapp; latenten för 141 bildrutor och 209-kedjan mättes med den äldre binären och upprepades INTE med den här [ej provat]. Ett första försök (B56VT, via ett hjälpskript) tog slut tyst efter 58 s, orsak okänd [gissning: minnestryck]; det andra försöket körde `sd-cli` direkt.
 - Installations- och körskripten har ännu inte verifierats från en tom mapp (test i tom rotmapp återstår).
@@ -176,4 +190,4 @@ Körningsnamn som används inom hakparentes (våra egna körningsnamn, inte file
 - **Test i tom rotmapp återstår:** installations- och körskripten har ännu inte verifierats från en tom mapp med enbart de här instruktionerna; det här avsnittet uppdateras när det testet (inklusive en byte-jämförelse med 56 bildrutor mot referensen) är dokumenterat.
 - Inga genererade videor levereras här.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

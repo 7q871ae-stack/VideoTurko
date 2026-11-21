@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Hansı kartım var? (yalnız keçidlər)
+
+Bu repozitoriyanın dəyəri modeli 4 GB-a sığdıran yamalar və keyfiyyət qapılarıdır. Digər kartlar üçün hazır stable-diffusion.cpp CUDA buraxılışı bir SEÇİMDİR: biz onu ölçməmişik və keyfiyyət qapılarımız onun üzərində işlədilməyib. Öz ölçmələrimiz bir kartı əhatə edir (GTX 1050 Ti 4 GB). Qalan hər şey icma hesabatlarıdır: onlara keçid veririk, lakin zəmanət vermirik.
+
+| Sizin qurğunuz | Haraya baxmalı | Sübut |
+|---|---|---|
+| GTX 1050 Ti 4 GB (bizim buraxılış zip-imiz) | bu README, `docs/OLCUMLER.md` | [ölçülüb] |
+| Digər NVIDIA kartları (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` `f32`-ni avtomatik aktivləşdirir; hazır stable-diffusion.cpp CUDA buraxılışı: seçim, bizim ölçmədiyimiz [sınanmayıb]) | [istifadəçi bildirib] |
+| RTX 50 seriyası | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [istifadəçi bildirib, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (icma qeydi, rəsmi dəstək yoxdur; buraxılışın mühərriki CUDA-dır) | [istifadəçi bildirib, PR #4] |
+| Bir neçə klipdən daha uzun film | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [istifadəçi bildirib]; birləşdirilmiş filmlərin keyfiyyətini biz ölçməmişik [sınanmayıb] |
+
+Lisenziya: MiniMax H3 lisenziyasının qəbulu (`docs/LISANS_KABUL.txt`) hər yolda keçərlidir; `kur.ps1`-in qəbul addımı hazır buraxılışla işləmir.
+
 ## Bu nədir
 MiniMax H3-ün (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF işlədirik; 32B Qwen3-VL mətn kodlayıcısı ayrıdır) 4 GB-lıq Pascal GPU-da (GTX 1050 Ti, 16 GB sistem RAM-i) işləməsinə imkan verən stable-diffusion.cpp üçün kiçik yaddaş/planlaşdırma yamaqları toplusu, həmçinin işə salma resepti, yoxlamalar və ölçmələr.
 - Faktiki olaraq yaratdığımız və keyfiyyət keçidlərimizdən keçən tək-keçid uzunluqları: 640x384, 24 fps ilə 56, 141, 158, 175, 192, 209 kadr (209 kadr = 8,7 san), H3-ün özünün yaratdığı səslə [ölçülüb: `uret.ps1` vasitəsilə buraxılış binarı ilə 209 kadr, U209 işə salınması; latent inkişaf build işə salınması ilə bayt-bayt eynidir; videoda kadrlar və səs eynidir, fayl sha-sı konteynerə görə fərqlənir; sübutu müəlliflər saxlayır, bu repoda yoxdur]. 209 bizim izlədiyimiz və axıcı tapdığımız ən uzun müddətdir [istifadəçi bildirib, 2026-11-19, video tam izlənilib; fayl: F209V2 çıxışı, 8,708 san].
@@ -101,7 +115,7 @@ Bu keçid hərəkət ardıcıllığını (obyektin ölçüsündə və ya mövqey
 2. Xam küy keçidi: median süzgəc qalığı <= 1,5 (0-255 şkalası).
 3. Teksturaya görə normallaşdırılmış küy, `scripts/doku_norm.py` (bu repozitoriyanın versiyası): N = median qalıq / Sobel teksturası, hər 6-cı kadr. **Şkala qeydi:** bu versiyada ölçülmüş 10 klip N = 0,034-0,052 verir (cədvəl `docs/KAPILAR.md` faylındadır; F192/F209V2-nin son rübü 0,062-yə çatır) və əlavə keçid həddi N <= 0,065-dir. Başqa bir implementasiya eyni kliplərdə 0,028-0,036 ölçdü, ona görə hədlər versiyalar arasında dəyişdirilə BİLMƏZ. Çox incə teksturalarda (ot cərgələri) təmiz N 0,075 idi, yəni hədd səhnə ailəsinə görə təyin olunur. Möhkəm yüksək tezlikli qiymətləndirici (sigma-HH <= 1,5; təmiz 0,74-1,19, s=2 əlavə küy 2,2-3,0 verir) tövsiyə olunan əlavə keçiddir.
 
-Əhatə dairəsi: VideoTurko TƏK bir keçid haqqındadır (209 kadra qədər, təxminən 8,7 san). Bir neçə hissəni daha uzun klipdə zəncirləmək sınanıb; tikişlər görünürdü (səhnə təmiz davam etmir), ona görə bu layihənin tərkibində deyil. Daha uzun kliplər istəyirsinizsə, öz yanaşmanızı qurun.
+Əhatə: VideoTurko TƏK bir keçidlə bağlıdır (209 kadra qədər, təxminən 8,7 san). Öz zəncirləmə sınağımızda görünən tikişlər çıxdı (səhnə təmiz davam etmir); buna görə daha uzun filmlər yoxladığımız işə daxil deyil. Zəncirləmək üçün icma bələdçisi `docs/KLIP_ZINCIRI.md` və yalnız CPU işlədən köməkçimiz `scripts/zincir.py` var (`plan`, `son-kare`, `bagla`; mühərriki heç vaxt işə salmır); zəncirlənmiş filmlərin keyfiyyətini ölçməmişik [sınanmayıb], ona görə hər tikişi gözlə və `scripts/dikis_denetim.py` ilə yoxlayın.
 Ayarlar sizindir: 209 kadr 4 GB-lıq kartda sınanmış standartımızdır, məcburi olduğunuz hədd deyil. 17k+5 şəbəkəsindən istənilən kadr sayını seçin (56, 73, ... 192, 209; bax: `docs/KURULUM.md`), istəyi (prompt), seed-i, ayırdetməni və ya istənilən bayrağı öz istəyinizə görə dəyişin. Daha qısa kliplər daha az yaddaş və vaxt tələb edir; daha böyük GPU-lar daha çoxunu götürə bilər.
 
 ## Model lisenziyası xəbərdarlığı
@@ -162,7 +176,7 @@ Mötərizələrdə istifadə olunan işə salınma adları (öz adlarımızdır,
 ## Məlum məhdudiyyətlər
 - **Bayt sübutu** (özünüz necə təkrar etmək olar: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; sm_61 kartımızda yoxlanılıb, digər GPU-lar bayt-bayt eyni olmaya bilər [təxmin]): yamaq seriyamızla (yaddaş bayraqları açıq) 56 kadrlıq işə salınma istinada eyni olan `0979f156d548169b...` sha256-nı verdi [ölçülüb]; 141 kadrda latent sha256 `E5D028F8632BE4FE...` eyni idi (0013/0014 bayraqları ilə). 158-dən 209-a qədər kadrlar üçün birbaşa bayt istinadı yoxdur; sübut keçid zəncirindədir. Rəqəmsal keçidlərdən keçmək yaxşı klipə zəmanət vermir: zamanla hərəkət ardıcıllığı gözlə yoxlanılır (bax: `docs/KAPILAR.md`).
 - **209 kadr, hansı bayraq dəsti:** 209 kadrlıq bayt zənciri sübutu inkişaf build-ində F209V2 bayraq dəsti ilə götürülüb (blok-quyruq bayraqları yoxdur, 0019/0020 yamaqları olmadan qurulub); `uret.ps1` 209 kadr üçün bu reseptdən istifadə edir [oxunub: skript; `uret.ps1` vasitəsilə real mühərrik işə salınması U209 işə salınmasında keçdi].
-- Bir kartda (GTX 1050 Ti 4 GB) yoxlanılıb; digər kartlar sınanmayıb.
+- Bizim tərəfimizdən bir kartda (GTX 1050 Ti 4 GB) yoxlanılıb; digər kartlar haqqında kənar hesabatlar etiketləri ilə `docs/KART_PROFILLERI.md` faylında verilib [istifadəçi bildirib].
 - **Hansı binar ölçülüb:** 141 kadrlıq latent və bayt zənciri inkişaf build-lərimizlə ölçülüb. Yüklədiyiniz buraxılış binarı yeni build-dir: onun 56 kadrlıq bayt keçidi keçdi (növbəti bənd) və `uret.ps1` vasitəsilə 209 kadrlıq işə salınma keçidi keçdi (U209 işə salınması, 3414 san, VRAM zirvəsi 3777 MiB) [ölçülüb]; inkişaf build-indəki 209 işə salınması ilə müqayisədə latent bayt-bayt eynidir; videoda kadrlar (md5) və səs eynidir, AVI faylının sha256-sı konteynerə görə fərqlənir [ölçülüb] (bax: `docs/OLCUMLER.md`, bölmə 0).
 - **Buraxılış binarı, 56 kadr:** buraxılış binarı (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) R0 ilə bayt-bayt eyni 56 kadrlıq nəticə verdi (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; hər kadrın md5-i və səs eynidir), standart bayraqlarla (`SD_*` dəyişənləri olmadan) birbaşa işə salındı, exit kodu 0, 601 san [ölçülüb: B56VT2 işə salınması, 2026-11-19; sübutu müəlliflər saxlayır, bu repoda yoxdur]. Əhatə: yalnız bizim sm_61 kartımız və 56 kadr; təmiz-kök quraşdırma testi deyil; 141 kadrlıq latent və 209 zənciri köhnə binarla ölçülüb və bununla TƏKRARLANMAYIB [sınanmayıb]. İlk cəhd (B56VT, köməkçi skript vasitəsilə) 58 san sonra səssiz bitdi, səbəbi bilinmir [təxmin: yaddaş təzyiqi]; ikinci cəhd `sd-cli` faylını birbaşa işə saldı.
 - Quraşdırma və işə salma skriptləri boş qovluqdan hələ yoxlanılmayıb (təmiz-kök testi gözlənilir).
@@ -176,4 +190,4 @@ Mötərizələrdə istifadə olunan işə salınma adları (öz adlarımızdır,
 - **Təmiz-kök testi gözlənilir:** quraşdırma və işə salma skriptləri yalnız bu təlimatlarla boş qovluqdan hələ yoxlanılmayıb; bu test (istinada qarşı 56 kadrlıq bayt müqayisəsi daxil) qeyd olunduqda bu bölmə yenilənəcək.
 - Burada heç bir yaradılmış video verilmir.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

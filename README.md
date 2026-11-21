@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Which card do I have? (links only)
+
+This repo's value is the patches that fit the model into 4 GB plus the quality gates. For other cards the stock stable-diffusion.cpp CUDA release is an OPTION: we did not measure it and our quality gates were not run on it. Our own measurements cover one card (GTX 1050 Ti 4 GB); everything else is a community report: we link it and do not vouch for it.
+
+| Your setup | Where to look | Evidence |
+|---|---|---|
+| GTX 1050 Ti 4 GB (our release zip) | this README, `docs/OLCUMLER.md` | [measured] |
+| Other NVIDIA cards (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` sets `f32` automatically; stock stable-diffusion.cpp CUDA release: an option, not measured by us [not tried]) | [user-reported] |
+| RTX 50 series | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [user-reported, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (community note, not officially supported; the release engine is CUDA) | [user-reported, PR #4] |
+| A longer film from several clips | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [user-reported]; chained-film quality not measured by us [not tried] |
+
+License: accepting the MiniMax H3 license (`docs/LISANS_KABUL.txt`) applies on every path; the acceptance step of `kur.ps1` does not run with the stock release.
+
 ## What this is
 A set of small memory/scheduling patches for stable-diffusion.cpp plus the run recipe, checks and measurements that let MiniMax H3 (33B DiT; we run the HyperFlow Flash 13.7B Q4_K_M GGUF; the 32B Qwen3-VL text encoder is separate) run on a 4 GB Pascal GPU (GTX 1050 Ti, 16 GB system RAM).
 - Single-pass lengths we actually produced and passed our quality gates: 56, 141, 158, 175, 192, 209 frames at 640x384, 24 fps (209 frames = 8.7 s), with H3's own generated audio [measured: 209 frames with the release binary through `uret.ps1`, run U209; latent byte-identical to the development-build run; frames and audio identical in the video, the file sha differs because of the container; evidence kept by the authors, not in this repo]. 209 is the longest length we watched and found smooth [user-reported, 2026-11-19, video watched in full; file: F209V2 output, 8.708 s].
@@ -101,7 +115,7 @@ This gate does not check motion consistency (object scale or position jumps): wa
 2. Raw noise gate: median-filter residual <= 1.5 (0-255 scale).
 3. Texture-normalised noise, `scripts/doku_norm.py` (this repo's version): N = median residual / Sobel texture, every 6th frame. **Scale note:** in this version the 10 measured clips give N = 0.034-0.052 (table in `docs/KAPILAR.md`; last quarter of F192/F209V2 reaches 0.062) and the extra-gate threshold is N <= 0.065. A different implementation measured 0.028-0.036 on the same clips, so thresholds are NOT interchangeable between versions. On very fine textures (grass rows) clean N was 0.075, so the threshold is per scene family. A robust high-frequency estimator (sigma-HH <= 1.5; clean 0.74-1.19, added noise s=2 gives 2.2-3.0) is the recommended extra gate.
 
-Scope: VideoTurko is about ONE single pass (up to 209 frames, about 8.7 s). Chaining several parts into a longer clip was tried; the seams were visible (the scene does not continue cleanly), so it is not part of this project. If you want longer clips, design your own approach.
+Scope: VideoTurko is about ONE single pass (up to 209 frames, about 8.7 s). Our own chaining test showed visible seams (the scene does not continue cleanly), so longer films are not part of what we verify. For chaining, see the community guide `docs/KLIP_ZINCIRI.md` and our CPU-only helper `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; it never starts the engine); we did not measure the quality of chained films [not tried], so check every seam by eye and with `scripts/dikis_denetim.py`.
 Your settings are yours: 209 frames is our tested default on a 4 GB card, not a limit you must use. Pick any frame count on the 17k+5 grid (56, 73, ... 192, 209; see `docs/KURULUM.md`), change the prompt, seed, resolution or any flag as you like. Shorter clips need less memory and time; larger GPUs may fit more.
 
 ## Model license warning
@@ -162,7 +176,7 @@ Run names used in brackets (our own run names, not files in this repo): U209 = 2
 ## Known limitations
 - **Byte proof** (how to reproduce it yourself: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verified on our sm_61 card, other GPUs may not be byte-identical [guess]): with our patch series (memory flags on) a 56-frame run gave sha256 `0979f156d548169b...`, identical to the reference [measured]; at 141 frames the latent sha256 `E5D028F8632BE4FE...` was identical (with the 0013/0014 flags). Frames 158 to 209 have no direct byte reference; the gate chain is the evidence. Passing the numeric gates does not guarantee a good clip: motion consistency over time is checked by eye (see `docs/KAPILAR.md`).
 - **209 frames, which flag set:** the 209-frame byte-chain evidence was taken with the F209V2 flag set on the development build (no block-tail flags, built without patches 0019/0020); `uret.ps1` uses this recipe for 209 frames [read: the script; a real engine run through `uret.ps1` passed in run U209].
-- Verified on one card (GTX 1050 Ti 4 GB); other cards were not tried.
+- Verified by us on one card (GTX 1050 Ti 4 GB); outside reports for other cards are listed with their labels in `docs/KART_PROFILLERI.md` [user-reported].
 - **Which binary was measured:** the 141-frame latent and the byte chain were measured with our development builds. The release binary you download is a fresh build: its 56-frame byte gate passed (next item) and a 209-frame run through `uret.ps1` passed the gate (run U209, 3414 s, VRAM peak 3777 MiB) [measured]; against the development-build 209 run the latent is byte-identical; in the video the frames (md5) and the audio are identical, the AVI file sha256 differs because of the container [measured] (see `docs/OLCUMLER.md`, section 0).
 - **Release binary, 56 frames:** the release binary (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) gave a 56-frame result byte-identical to R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; per-frame md5 and audio identical), run directly with default flags (no `SD_*` variables), exit code 0, 601 s [measured: run B56VT2, 2026-11-19; evidence kept by the authors, not in this repo]. Scope: our sm_61 card and 56 frames only; not a clean-root install test; the 141-frame latent and the 209 chain were measured with the older binary and NOT repeated with this one [not tried]. A first attempt (B56VT, via a helper script) ended silently after 58 s, cause unknown [guess: memory pressure]; the second attempt ran `sd-cli` directly.
 - The install and run scripts have not been verified from an empty folder yet (clean-root test pending).

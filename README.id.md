@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Kartu apa yang saya punya? (hanya tautan)
+
+Nilai repo ini adalah patch yang membuat model muat di 4 GB beserta gerbang kualitas. Untuk kartu lain, rilis CUDA stable-diffusion.cpp yang sudah jadi adalah sebuah OPSI: kami tidak mengukurnya dan gerbang kualitas kami tidak dijalankan padanya. Pengukuran kami sendiri mencakup satu kartu (GTX 1050 Ti 4 GB). Selebihnya adalah laporan komunitas: kami memberi tautannya dan tidak menjaminnya.
+
+| Perangkat Anda | Di mana melihat | Bukti |
+|---|---|---|
+| GTX 1050 Ti 4 GB (zip rilis kami) | README ini, `docs/OLCUMLER.md` | [terukur] |
+| Kartu NVIDIA lainnya (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` mengatur `f32` secara otomatis; rilis CUDA stable-diffusion.cpp yang sudah jadi: sebuah opsi, tidak kami ukur [belum dicoba]) | [dilaporkan pengguna] |
+| seri RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [dilaporkan pengguna, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (catatan komunitas, tanpa dukungan resmi; mesin rilis adalah CUDA) | [dilaporkan pengguna, PR #4] |
+| Film yang lebih panjang dari beberapa klip | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [dilaporkan pengguna]; kualitas film yang dirangkai tidak kami ukur [belum dicoba] |
+
+Lisensi: persetujuan lisensi MiniMax H3 (`docs/LISANS_KABUL.txt`) berlaku di semua jalur; langkah persetujuan di `kur.ps1` tidak berjalan dengan rilis yang sudah jadi.
+
 ## Apa ini
 Sekumpulan patch kecil memori/penjadwalan untuk stable-diffusion.cpp beserta resep penggunaan, pemeriksaan, dan pengukuran yang memungkinkan MiniMax H3 (DiT 33B; kami menjalankan GGUF HyperFlow Flash 13.7B Q4_K_M; text encoder Qwen3-VL 32B terpisah) berjalan di GPU Pascal 4 GB (GTX 1050 Ti, RAM sistem 16 GB).
 - Panjang satu-proses yang benar-benar kami hasilkan dan lulus gerbang kualitas kami: 56, 141, 158, 175, 192, 209 frame pada 640x384, 24 fps (209 frame = 8,7 dtk), dengan audio buatan H3 sendiri [terukur: 209 frame dengan binary rilis melalui `uret.ps1`, run U209; latent identik byte demi byte dengan run dengan build pengembangan; frame dan audio pada video identik, sha file berbeda karena kontainer; bukti disimpan oleh penulis, tidak ada di repo ini]. 209 adalah panjang terpanjang yang kami tonton dan kami nilai mulus [dilaporkan pengguna, 2026-11-19, video ditonton penuh; file: keluaran F209V2, 8,708 dtk].
@@ -101,7 +115,7 @@ Gerbang ini tidak memeriksa konsistensi gerak (lompatan skala atau posisi objek)
 2. Gerbang noise mentah: residu median-filter <= 1,5 (skala 0-255).
 3. Noise ternormalisasi tekstur, `scripts/doku_norm.py` (versi repo ini): N = residu median / tekstur Sobel, setiap frame ke-6. **Catatan skala:** pada versi ini 10 klip terukur menghasilkan N = 0,034-0,052 (tabel di `docs/KAPILAR.md`; seperempat terakhir F192/F209V2 mencapai 0,062) dan ambang gerbang tambahan adalah N <= 0,065. Implementasi lain mengukur 0,028-0,036 pada klip yang sama, sehingga ambang TIDAK dapat dipertukarkan antarversi. Pada tekstur yang sangat halus (barisan rumput) N bersih adalah 0,075, jadi ambang berlaku per keluarga adegan. Estimator frekuensi tinggi yang kokoh (sigma-HH <= 1,5; bersih 0,74-1,19, noise tambahan s=2 menghasilkan 2,2-3,0) adalah gerbang tambahan yang direkomendasikan.
 
-Cakupan: VideoTurko membahas SATU kali proses (hingga 209 frame, sekitar 8,7 dtk). Menyambung beberapa bagian menjadi klip yang lebih panjang pernah dicoba; sambungannya terlihat (adegan tidak berlanjut dengan mulus), sehingga itu bukan bagian dari proyek ini. Jika Anda menginginkan klip yang lebih panjang, rancanglah pendekatan Anda sendiri.
+Cakupan: VideoTurko membahas SATU kali jalan saja (hingga 209 bingkai, sekitar 8,7 dtk). Uji perangkaian kami sendiri menunjukkan sambungan yang terlihat (adegan tidak berlanjut mulus), jadi film yang lebih panjang tidak termasuk yang kami verifikasi. Untuk merangkai ada panduan komunitas `docs/KLIP_ZINCIRI.md` dan alat bantu kami khusus CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; tidak pernah menjalankan mesin); kualitas film yang dirangkai tidak kami ukur [belum dicoba], jadi periksa setiap sambungan dengan mata dan dengan `scripts/dikis_denetim.py`.
 Pengaturan adalah milik Anda: 209 frame adalah bawaan yang kami uji pada kartu 4 GB, bukan batas yang harus Anda pakai. Pilih jumlah frame mana pun pada kisi 17k+5 (56, 73, ... 192, 209; lihat `docs/KURULUM.md`), ubah prompt, seed, resolusi, atau flag apa pun sesuka Anda. Klip yang lebih pendek butuh lebih sedikit memori dan waktu; GPU yang lebih besar mungkin muat lebih banyak.
 
 ## Peringatan lisensi model
@@ -162,7 +176,7 @@ Nama run yang dipakai dalam tanda kurung (nama run internal kami, bukan file di 
 ## Keterbatasan yang diketahui
 - **Bukti byte** (cara mereproduksinya sendiri: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; diverifikasi pada kartu sm_61 kami, GPU lain mungkin tidak identik byte [perkiraan]): dengan seri patch kami (flag memori aktif) run 56 frame menghasilkan sha256 `0979f156d548169b...`, identik dengan referensi [terukur]; pada 141 frame sha256 latent `E5D028F8632BE4FE...` identik (dengan flag 0013/0014). Frame 158 sampai 209 tidak memiliki referensi byte langsung; rantai gerbang adalah buktinya. Lulus gerbang numerik tidak menjamin klip yang bagus: konsistensi gerak sepanjang waktu diperiksa dengan mata (lihat `docs/KAPILAR.md`).
 - **209 frame, set flag yang mana:** bukti rantai byte 209 frame diambil dengan set flag F209V2 pada build pengembangan (tanpa flag block-tail, dibangun tanpa patch 0019/0020); `uret.ps1` memakai resep ini untuk 209 frame [dibaca: skripnya; run engine nyata melalui `uret.ps1` lulus pada run U209].
-- Diverifikasi pada satu kartu (GTX 1050 Ti 4 GB); kartu lain belum dicoba.
+- Diverifikasi oleh kami pada satu kartu (GTX 1050 Ti 4 GB); laporan dari luar untuk kartu lain didaftar beserta labelnya di `docs/KART_PROFILLERI.md` [dilaporkan pengguna].
 - **Binary mana yang diukur:** latent 141 frame dan rantai byte diukur dengan build pengembangan kami. Binary rilis yang Anda unduh adalah build baru: gerbang byte 56 frame-nya lulus (butir berikutnya) dan run 209 frame melalui `uret.ps1` lulus gerbang (run U209, 3414 dtk, puncak VRAM 3777 MiB) [terukur]; terhadap run 209 frame dengan build pengembangan, latent identik byte demi byte; pada video, frame (md5) dan audio identik, sha256 file AVI berbeda karena kontainer [terukur] (lihat `docs/OLCUMLER.md`, bagian 0).
 - **Binary rilis, 56 frame:** binary rilis (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) menghasilkan keluaran 56 frame identik byte dengan R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 per frame dan audio identik), dijalankan langsung dengan flag bawaan (tanpa variabel `SD_*`), exit code 0, 601 dtk [terukur: run B56VT2, 2026-11-19; bukti disimpan oleh penulis, tidak ada di repo ini]. Cakupan: hanya kartu sm_61 kami dan 56 frame; bukan uji instalasi clean-root; latent 141 frame dan rantai 209 diukur dengan binary yang lebih lama dan TIDAK diulang dengan binary ini [belum dicoba]. Percobaan pertama (B56VT, lewat skrip pembantu) berakhir tanpa suara setelah 58 dtk, penyebab tidak diketahui [perkiraan: tekanan memori]; percobaan kedua menjalankan `sd-cli` secara langsung.
 - Skrip instalasi dan penggunaan belum diverifikasi dari folder kosong (uji clean-root tertunda).
@@ -176,4 +190,4 @@ Nama run yang dipakai dalam tanda kurung (nama run internal kami, bukan file di 
 - **Uji clean-root tertunda:** skrip instalasi dan penggunaan belum diverifikasi dari folder kosong hanya dengan petunjuk ini; bagian ini akan diperbarui saat uji itu (termasuk perbandingan byte 56 frame dengan referensi) dicatat.
 - Tidak ada video hasil generasi yang disertakan di sini.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

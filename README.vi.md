@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Tôi có card nào? (chỉ liên kết)
+
+Giá trị của kho này là các bản vá giúp mô hình vừa trong 4 GB cùng các cổng chất lượng. Với các card khác, bản phát hành CUDA dựng sẵn của stable-diffusion.cpp là một LỰA CHỌN: chúng tôi chưa đo nó và các cổng chất lượng của chúng tôi chưa chạy trên đó. Các phép đo của chính chúng tôi chỉ bao gồm một card (GTX 1050 Ti 4 GB). Mọi thứ khác là báo cáo từ cộng đồng: chúng tôi dẫn liên kết nhưng không bảo đảm.
+
+| Cấu hình của bạn | Xem ở đâu | Bằng chứng |
+|---|---|---|
+| GTX 1050 Ti 4 GB (zip phát hành của chúng tôi) | README này, `docs/OLCUMLER.md` | [đã đo] |
+| Các card NVIDIA khác (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` tự động đặt `f32`; bản phát hành CUDA dựng sẵn của stable-diffusion.cpp: một lựa chọn, chúng tôi chưa đo [chưa thử]) | [người dùng báo cáo] |
+| dòng RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [người dùng báo cáo, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (ghi chú của cộng đồng, không hỗ trợ chính thức; engine bản phát hành là CUDA) | [người dùng báo cáo, PR #4] |
+| Một phim dài hơn từ nhiều clip | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [người dùng báo cáo]; chất lượng phim ghép chúng tôi chưa đo [chưa thử] |
+
+Giấy phép: việc chấp nhận giấy phép MiniMax H3 (`docs/LISANS_KABUL.txt`) áp dụng ở mọi con đường; bước chấp nhận trong `kur.ps1` không chạy với bản dựng sẵn.
+
 ## Đây là gì
 Một bộ các bản vá nhỏ về bộ nhớ/lập lịch cho stable-diffusion.cpp, cùng công thức chạy, các phép kiểm tra và số liệu đo, giúp MiniMax H3 (DiT 33B; chúng tôi chạy bản GGUF HyperFlow Flash 13.7B Q4_K_M; bộ mã hóa văn bản Qwen3-VL 32B là phần riêng) chạy được trên GPU Pascal 4 GB (GTX 1050 Ti, RAM hệ thống 16 GB).
 - Các độ dài một lượt mà chúng tôi thực sự đã tạo ra và vượt qua các cổng chất lượng: 56, 141, 158, 175, 192, 209 khung hình ở 640x384, 24 fps (209 khung hình = 8,7 giây), kèm âm thanh do chính H3 tạo ra [đã đo: 209 khung hình với bản nhị phân release qua `uret.ps1`, lần chạy U209; latent giống hệt từng byte so với lần chạy bản build phát triển; khung hình và âm thanh trong video giống hệt nhau, sha của tệp khác vì container; bằng chứng do tác giả giữ, không có trong repo này]. 209 là độ dài lớn nhất mà chúng tôi đã xem và thấy mượt [người dùng báo cáo, 2026-11-19, đã xem toàn bộ video; tệp: đầu ra F209V2, 8,708 giây].
@@ -101,7 +115,7 @@ Cổng này không kiểm tra tính nhất quán của chuyển động (nhảy 
 2. Cổng nhiễu thô: phần dư của bộ lọc trung vị <= 1,5 (thang 0-255).
 3. Nhiễu chuẩn hóa theo kết cấu, `scripts/doku_norm.py` (phiên bản của repo này): N = phần dư trung vị / kết cấu Sobel, mỗi 6 khung hình lấy một. **Lưu ý về thang đo:** trong phiên bản này, 10 clip đã đo cho N = 0,034-0,052 (bảng trong `docs/KAPILAR.md`; một phần tư cuối của F192/F209V2 đạt 0,062) và ngưỡng của cổng bổ sung là N <= 0,065. Một cách triển khai khác đo được 0,028-0,036 trên cùng các clip, nên các ngưỡng KHÔNG thể hoán đổi giữa các phiên bản. Với kết cấu rất mịn (các hàng cỏ), N của ảnh sạch là 0,075, nên ngưỡng được đặt theo từng họ cảnh. Một bộ ước lượng tần số cao bền vững (sigma-HH <= 1,5; ảnh sạch 0,74-1,19, thêm nhiễu s=2 cho 2,2-3,0) là cổng bổ sung được khuyến nghị.
 
-Phạm vi: VideoTurko chỉ nhắm tới MỘT lượt chạy (tối đa 209 khung hình, khoảng 8,7 giây). Chúng tôi đã thử nối nhiều đoạn thành một clip dài hơn; thấy rõ đường nối (cảnh không tiếp nối gọn gàng), nên việc đó không thuộc dự án này. Nếu bạn muốn clip dài hơn, hãy tự thiết kế cách làm của riêng bạn.
+Phạm vi: VideoTurko chỉ nói về MỘT lượt chạy duy nhất (tối đa 209 khung hình, khoảng 8,7 giây). Thử nghiệm ghép nối của chính chúng tôi cho thấy đường nối lộ rõ (cảnh không tiếp nối sạch), nên phim dài hơn không nằm trong những gì chúng tôi xác minh. Để ghép nối có hướng dẫn của cộng đồng `docs/KLIP_ZINCIRI.md` và công cụ chỉ dùng CPU của chúng tôi `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; nó không bao giờ khởi động engine); chất lượng phim ghép chúng tôi chưa đo [chưa thử], vì vậy hãy kiểm tra từng đường nối bằng mắt và bằng `scripts/dikis_denetim.py`.
 Cài đặt là của bạn: 209 khung hình là mặc định chúng tôi đã thử trên card 4 GB, không phải giới hạn bạn buộc phải dùng. Hãy chọn bất kỳ số khung hình nào trên lưới 17k+5 (56, 73, ... 192, 209; xem `docs/KURULUM.md`), đổi prompt, seed, độ phân giải hoặc bất kỳ cờ nào tùy ý. Clip ngắn hơn cần ít bộ nhớ và thời gian hơn; GPU lớn hơn có thể chứa được nhiều hơn.
 
 ## Cảnh báo giấy phép mô hình
@@ -162,7 +176,7 @@ Tên các lần chạy được dùng trong ngoặc vuông (là tên lần chạ
 ## Hạn chế đã biết
 - **Bằng chứng byte** (cách tự tái tạo: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; đã xác minh trên card sm_61 của chúng tôi, các GPU khác có thể không giống hệt từng byte [phỏng đoán]): với chuỗi bản vá của chúng tôi (bật các cờ bộ nhớ), một lần chạy 56 khung hình cho sha256 `0979f156d548169b...`, giống hệt bản tham chiếu [đã đo]; ở 141 khung hình, sha256 của latent `E5D028F8632BE4FE...` giống hệt (với các cờ 0013/0014). Các khung hình từ 158 đến 209 không có tham chiếu byte trực tiếp; chuỗi các cổng kiểm tra là bằng chứng. Vượt qua các cổng kiểm tra bằng số liệu không bảo đảm clip tốt: tính nhất quán của chuyển động theo thời gian được kiểm tra bằng mắt (xem `docs/KAPILAR.md`).
 - **209 khung hình, dùng bộ cờ nào:** bằng chứng chuỗi byte ở 209 khung hình được lấy với bộ cờ F209V2 trên bản build phát triển (không có cờ block-tail, build không có các bản vá 0019/0020); `uret.ps1` dùng công thức này cho 209 khung hình [đã đọc: script; một lần chạy engine thật qua `uret.ps1` đã đạt ở lần chạy U209].
-- Đã xác minh trên một card (GTX 1050 Ti 4 GB); các card khác chưa được thử.
+- Chúng tôi đã xác minh trên một card (GTX 1050 Ti 4 GB); các báo cáo bên ngoài về card khác được liệt kê kèm nhãn trong `docs/KART_PROFILLERI.md` [người dùng báo cáo].
 - **Đã đo bản nhị phân nào:** latent 141 khung hình và chuỗi byte được đo bằng các bản build phát triển của chúng tôi. Bản nhị phân release bạn tải về là một bản build mới: cổng byte 56 khung hình của nó đã đạt (mục tiếp theo) và một lần chạy 209 khung hình qua `uret.ps1` đã vượt qua cổng kiểm tra (lần chạy U209, 3414 giây, đỉnh VRAM 3777 MiB) [đã đo]; so với lần chạy 209 của bản build phát triển, latent giống hệt từng byte; trong video, các khung hình (md5) và âm thanh giống hệt nhau, sha256 của tệp AVI khác vì container [đã đo] (xem `docs/OLCUMLER.md`, mục 0).
 - **Bản nhị phân release, 56 khung hình:** bản nhị phân release (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) cho kết quả 56 khung hình giống hệt từng byte so với R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 từng khung hình và âm thanh giống hệt), chạy trực tiếp với các cờ mặc định (không có biến `SD_*`), mã thoát 0, 601 giây [đã đo: lần chạy B56VT2, 2026-11-19; bằng chứng do tác giả giữ, không có trong repo này]. Phạm vi: chỉ card sm_61 của chúng tôi và 56 khung hình; không phải bài kiểm tra cài đặt clean-root; latent 141 khung hình và chuỗi 209 được đo bằng bản nhị phân cũ hơn và CHƯA được lặp lại với bản này [chưa thử]. Lần thử đầu tiên (B56VT, qua một script trợ giúp) kết thúc âm thầm sau 58 giây, không rõ nguyên nhân [phỏng đoán: áp lực bộ nhớ]; lần thử thứ hai chạy trực tiếp `sd-cli`.
 - Các script cài đặt và chạy chưa được xác minh từ một thư mục trống (bài kiểm tra clean-root chưa thực hiện).
@@ -176,4 +190,4 @@ Tên các lần chạy được dùng trong ngoặc vuông (là tên lần chạ
 - **Bài kiểm tra clean-root chưa thực hiện:** các script cài đặt và chạy chưa được xác minh từ một thư mục trống chỉ bằng các hướng dẫn này; mục này sẽ được cập nhật khi bài kiểm tra đó (gồm cả phép so sánh byte 56 khung hình với bản tham chiếu) được ghi nhận.
 - Không có video được tạo ra nào đi kèm ở đây.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

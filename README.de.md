@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Welche Karte habe ich? (nur Links)
+
+Der Wert dieses Repos sind die Patches, die das Modell in 4 GB unterbringen, plus die Qualitäts-Gates. Für andere Karten ist die fertige stable-diffusion.cpp-CUDA-Version eine OPTION: Wir haben sie nicht gemessen, und unsere Qualitäts-Gates liefen darauf nicht. Unsere eigenen Messungen decken eine Karte ab (GTX 1050 Ti 4 GB). Alles andere sind Community-Berichte: Wir verlinken sie und bürgen nicht dafür.
+
+| Ihr Setup | Wo nachschauen | Beleg |
+|---|---|---|
+| GTX 1050 Ti 4 GB (unser Release-ZIP) | dieses README, `docs/OLCUMLER.md` | [gemessen] |
+| Andere NVIDIA-Karten (Compute Capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` setzt `f32` automatisch; fertige stable-diffusion.cpp-CUDA-Version: eine Option, von uns nicht gemessen [nicht versucht]) | [vom Nutzer berichtet] |
+| RTX-50-Serie | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [vom Nutzer berichtet, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (Community-Hinweis, nicht offiziell unterstützt; die Release-Engine ist CUDA) | [vom Nutzer berichtet, PR #4] |
+| Ein längerer Film aus mehreren Clips | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [vom Nutzer berichtet]; Qualität verketteter Filme von uns nicht gemessen [nicht versucht] |
+
+Lizenz: Die Annahme der MiniMax-H3-Lizenz (`docs/LISANS_KABUL.txt`) gilt auf jedem Weg; der Annahmeschritt von `kur.ps1` läuft mit der fertigen Version nicht.
+
 ## Was das ist
 Eine Sammlung kleiner Speicher- und Scheduling-Patches für stable-diffusion.cpp samt Ausführungsrezept, Prüfungen und Messungen, mit denen MiniMax H3 (33B DiT; wir betreiben das HyperFlow-Flash-13.7B-Q4_K_M-GGUF; der 32B-Qwen3-VL-Text-Encoder ist separat) auf einer 4-GB-Pascal-GPU (GTX 1050 Ti, 16 GB Systemspeicher) läuft.
 - Längen im Einzeldurchlauf, die wir tatsächlich erzeugt und mit unseren Qualitäts-Gates bestanden haben: 56, 141, 158, 175, 192, 209 Frames bei 640x384, 24 fps (209 Frames = 8,7 s), mit dem von H3 selbst erzeugten Audio [gemessen: 209 Frames mit dem Release-Binary über `uret.ps1`, Lauf U209; Latent byte-identisch zum Lauf mit dem Entwicklungs-Build; Frames und Audio im Video identisch, die Datei-sha unterscheidet sich wegen des Containers; Belege liegen bei den Autoren, nicht in diesem Repo]. 209 ist die längste Länge, die wir angesehen und als flüssig befunden haben [vom Nutzer berichtet, 2026-11-19, Video vollständig angesehen; Datei: Ausgabe F209V2, 8,708 s].
@@ -101,7 +115,7 @@ Dieses Gate prüft die Bewegungskonsistenz nicht (Sprünge bei Objektgröße ode
 2. Gate für rohes Rauschen: Median-Filter-Residuum <= 1,5 (Skala 0-255).
 3. Texturnormiertes Rauschen, `scripts/doku_norm.py` (die Version dieses Repos): N = Median-Residuum / Sobel-Textur, jedes 6. Frame. **Hinweis zur Skala:** In dieser Version ergeben die 10 gemessenen Clips N = 0,034-0,052 (Tabelle in `docs/KAPILAR.md`; das letzte Viertel von F192/F209V2 erreicht 0,062) und der Schwellenwert des Zusatz-Gates ist N <= 0,065. Eine andere Implementierung maß auf denselben Clips 0,028-0,036, die Schwellenwerte sind also zwischen den Versionen NICHT austauschbar. Bei sehr feinen Texturen (Grasreihen) lag das saubere N bei 0,075, der Schwellenwert gilt also pro Szenenfamilie. Ein robuster Hochfrequenz-Schätzer (sigma-HH <= 1,5; sauber 0,74-1,19, hinzugefügtes Rauschen s=2 ergibt 2,2-3,0) ist das empfohlene Zusatz-Gate.
 
-Geltungsbereich: VideoTurko befasst sich mit EINEM einzigen Durchlauf (bis zu 209 Frames, etwa 8,7 s). Mehrere Teile zu einem längeren Clip zu verketten wurde versucht; die Nähte waren sichtbar (die Szene setzt sich nicht sauber fort), deshalb ist es nicht Teil dieses Projekts. Wenn Sie längere Clips wollen, entwerfen Sie Ihren eigenen Ansatz.
+Geltungsbereich: VideoTurko befasst sich mit EINEM einzigen Durchlauf (bis zu 209 Frames, etwa 8,7 s). Unser eigener Verkettungstest zeigte sichtbare Nähte (die Szene setzt sich nicht sauber fort); längere Filme gehören daher nicht zu dem, was wir verifizieren. Zum Verketten gibt es die Community-Anleitung `docs/KLIP_ZINCIRI.md` und unser reines CPU-Hilfsprogramm `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; es startet die Engine nie); die Qualität verketteter Filme haben wir nicht gemessen [nicht versucht], prüfen Sie daher jede Naht mit dem Auge und mit `scripts/dikis_denetim.py`.
 Ihre Einstellungen gehören Ihnen: 209 Frames sind unser getesteter Standard auf einer 4-GB-Karte, keine Grenze, die Sie verwenden müssen. Wählen Sie eine beliebige Frame-Anzahl auf dem 17k+5-Raster (56, 73, ... 192, 209; siehe `docs/KURULUM.md`), ändern Sie Prompt, Seed, Auflösung oder jedes Flag nach Belieben. Kürzere Clips brauchen weniger Speicher und Zeit; größere GPUs können mehr verkraften.
 
 ## Warnung zur Modelllizenz
@@ -162,7 +176,7 @@ In eckigen Klammern verwendete Lauf-Namen (unsere eigenen Lauf-Namen, keine Date
 ## Bekannte Einschränkungen
 - **Byte-Beweis** (wie Sie ihn selbst reproduzieren: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; auf unserer sm_61-Karte verifiziert, andere GPUs sind möglicherweise nicht byte-identisch [Vermutung]): Mit unserer Patch-Serie (Speicher-Flags an) ergab ein 56-Frame-Lauf die sha256 `0979f156d548169b...`, identisch zur Referenz [gemessen]; bei 141 Frames war die Latent-sha256 `E5D028F8632BE4FE...` identisch (mit den Flags 0013/0014). Für 158 bis 209 Frames gibt es keine direkte Byte-Referenz; die Gate-Kette ist der Beleg. Das Bestehen der numerischen Gates garantiert keinen guten Clip: die Bewegungskonsistenz über die Zeit wird mit dem Auge geprüft (siehe `docs/KAPILAR.md`).
 - **209 Frames, welcher Flag-Satz:** Der Beleg der 209-Frame-Byte-Kette wurde mit dem Flag-Satz F209V2 auf dem Entwicklungs-Build erhoben (keine Block-Tail-Flags, ohne die Patches 0019/0020 gebaut); `uret.ps1` verwendet dieses Rezept für 209 Frames [gelesen: das Skript; ein echter Engine-Lauf über `uret.ps1` wurde in Lauf U209 bestanden].
-- Auf einer Karte verifiziert (GTX 1050 Ti 4 GB); andere Karten wurden nicht versucht.
+- Von uns auf einer Karte verifiziert (GTX 1050 Ti 4 GB); Berichte Dritter zu anderen Karten stehen mit ihren Labels in `docs/KART_PROFILLERI.md` [vom Nutzer berichtet].
 - **Welches Binary gemessen wurde:** Das 141-Frame-Latent und die Byte-Kette wurden mit unseren Entwicklungs-Builds gemessen. Das Release-Binary, das Sie herunterladen, ist ein frischer Build: sein 56-Frame-Byte-Gate wurde bestanden (nächster Punkt) und ein 209-Frame-Lauf über `uret.ps1` bestand das Gate (Lauf U209, 3414 s, VRAM-Spitze 3777 MiB) [gemessen]; gegenüber dem 209-Lauf des Entwicklungs-Builds ist das Latent byte-identisch; im Video sind die Frames (md5) und das Audio identisch, die sha256 der AVI-Datei unterscheidet sich wegen des Containers [gemessen] (siehe `docs/OLCUMLER.md`, Abschnitt 0).
 - **Release-Binary, 56 Frames:** Das Release-Binary (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) lieferte ein 56-Frame-Ergebnis, das byte-identisch zu R0 ist (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 pro Frame und Audio identisch), direkt mit Standard-Flags ausgeführt (keine `SD_*`-Variablen), Exit-Code 0, 601 s [gemessen: Lauf B56VT2, 2026-11-19; Belege liegen bei den Autoren, nicht in diesem Repo]. Geltungsbereich: nur unsere sm_61-Karte und 56 Frames; kein Clean-Root-Installationstest; das 141-Frame-Latent und die 209-Kette wurden mit dem älteren Binary gemessen und mit diesem NICHT wiederholt [nicht versucht]. Ein erster Versuch (B56VT, über ein Hilfsskript) endete nach 58 s stillschweigend, Ursache unbekannt [Vermutung: Speicherdruck]; der zweite Versuch führte `sd-cli` direkt aus.
 - Die Installations- und Ausführungsskripte wurden noch nicht aus einem leeren Ordner verifiziert (Clean-Root-Test steht aus).
@@ -176,4 +190,4 @@ In eckigen Klammern verwendete Lauf-Namen (unsere eigenen Lauf-Namen, keine Date
 - **Clean-Root-Test steht aus:** Die Installations- und Ausführungsskripte wurden noch nicht allein mit diesen Anleitungen aus einem leeren Ordner verifiziert; dieser Abschnitt wird aktualisiert, sobald dieser Test (einschließlich eines 56-Frame-Byte-Vergleichs mit der Referenz) dokumentiert ist.
 - Es werden hier keine erzeugten Videos mitgeliefert.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

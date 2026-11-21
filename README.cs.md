@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Jakou mám kartu? (jen odkazy)
+
+Hodnotou tohoto repozitáře jsou záplaty, díky nimž se model vejde do 4 GB, a brány kvality. Pro jiné karty je hotové vydání CUDA stable-diffusion.cpp MOŽNOST: neměřili jsme ho a naše brány kvality na něm neběžely. Naše vlastní měření pokrývá jednu kartu (GTX 1050 Ti 4 GB). Vše ostatní jsou zprávy komunity: odkazujeme na ně, ale neručíme za ně.
+
+| Vaše sestava | Kam se podívat | Důkaz |
+|---|---|---|
+| GTX 1050 Ti 4 GB (náš zip vydání) | tento README, `docs/OLCUMLER.md` | [změřeno] |
+| Ostatní karty NVIDIA (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` nastaví `f32` automaticky; hotové vydání CUDA stable-diffusion.cpp: možnost, námi neměřená [nezkoušeno]) | [hlášeno uživatelem] |
+| řada RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [hlášeno uživatelem, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (poznámka komunity, bez oficiální podpory; motor ve vydání je CUDA) | [hlášeno uživatelem, PR #4] |
+| Delší film z více klipů | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [hlášeno uživatelem]; kvalitu zřetězených filmů jsme neměřili [nezkoušeno] |
+
+Licence: souhlas s licencí MiniMax H3 (`docs/LISANS_KABUL.txt`) platí na každé cestě; krok souhlasu v `kur.ps1` s hotovým vydáním neběží.
+
 ## Co to je
 Sada drobných záplat paměti a plánování pro stable-diffusion.cpp spolu s postupem spuštění, kontrolami a měřeními, díky nimž MiniMax H3 (DiT 33B; spouštíme GGUF HyperFlow Flash 13.7B Q4_K_M; 32B textový enkodér Qwen3-VL je zvlášť) běží na 4GB GPU generace Pascal (GTX 1050 Ti, 16 GB systémové paměti).
 - Délky na jeden průchod, které jsme skutečně vytvořili a které prošly našimi kontrolami kvality: 56, 141, 158, 175, 192, 209 snímků v 640x384 při 24 fps (209 snímků = 8.7 s), se zvukem generovaným samotným H3 [změřeno: 209 snímků s vydanou binárkou přes `uret.ps1`, běh U209; latent shodný bajt po bajtu s během na vývojovém sestavení; snímky a zvuk ve videu shodné, sha souboru se liší kvůli kontejneru; důkazy uchovávají autoři, v tomto repozitáři nejsou]. 209 je nejdelší délka, kterou jsme zhlédli a shledali plynulou [hlášeno uživatelem, 2026-11-19, video zhlédnuto celé; soubor: výstup F209V2, 8.708 s].
@@ -101,7 +115,7 @@ Tato kontrola nehlídá konzistenci pohybu (skoky měřítka nebo polohy objekt�
 2. Kontrola surového šumu: zbytek po mediánovém filtru <= 1.5 (škála 0-255).
 3. Šum normalizovaný vůči textuře, `scripts/doku_norm.py` (verze z tohoto repozitáře): N = mediánový zbytek / Sobelova textura, každý 6. snímek. **Poznámka o škále:** v této verzi dává 10 změřených klipů N = 0.034-0.052 (tabulka v `docs/KAPILAR.md`; v poslední čtvrtině F192/F209V2 dosahuje 0.062) a práh dodatečné kontroly je N <= 0.065. Jiná implementace naměřila na stejných klipech 0.028-0.036, takže prahy mezi verzemi NEJSOU zaměnitelné. U velmi jemných textur (řady trávy) bylo čisté N 0.075, práh se proto volí podle rodiny scén. Doporučená dodatečná kontrola: robustní odhad vysokých frekvencí (sigma-HH <= 1.5; čisté klipy 0.74-1.19, přidaný šum s=2 dává 2.2-3.0).
 
-Rozsah: VideoTurko se týká JEDNOHO průchodu (až 209 snímků, asi 8.7 s). Spojování více částí do delšího klipu bylo zkoušeno; švy byly vidět (scéna na sebe čistě nenavazuje), proto to není součástí projektu. Chcete-li delší klipy, vymyslete si vlastní postup.
+Rozsah: VideoTurko se týká JEDNOHO průchodu (až 209 snímků, asi 8,7 s). Náš vlastní test zřetězení ukázal viditelné spoje (scéna nepokračuje čistě), takže delší filmy nepatří mezi to, co ověřujeme. Ke zřetězení slouží komunitní průvodce `docs/KLIP_ZINCIRI.md` a náš pomocník jen pro CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; motor nikdy nespouští); kvalitu zřetězených filmů jsme neměřili [nezkoušeno], proto každý spoj zkontrolujte okem a pomocí `scripts/dikis_denetim.py`.
 Nastavení je vaše: 209 snímků je naše ověřená výchozí hodnota na kartě se 4 GB, ne limit, který musíte dodržet. Zvolte libovolný počet snímků z mřížky 17k+5 (56, 73, ... 192, 209; viz `docs/KURULUM.md`), měňte prompt, seed, rozlišení nebo jakýkoli přepínač podle potřeby. Kratší klipy potřebují méně paměti a času; větší GPU jich mohou pojmout více.
 
 ## Upozornění k licenci modelu
@@ -162,7 +176,7 @@ Názvy běhů použité v hranatých závorkách (naše vlastní názvy, nejsou 
 ## Známá omezení
 - **Bajtový důkaz** (jak jej sami zopakovat: `docs/KANITLAR.md`, „R0 ve latent referansi nasil uretilir“; ověřeno na naší kartě sm_61, jiná GPU nemusí dávat bajtovou shodu [odhad]): s naší sérií záplat (paměťové přepínače zapnuty) dal běh na 56 snímků sha256 `0979f156d548169b...`, shodný s referencí [změřeno]; při 141 snímcích byl sha256 latentu `E5D028F8632BE4FE...` shodný (s přepínači 0013/0014). Pro snímky 158 až 209 přímá bajtová reference neexistuje; důkazem je řetězec kontrol. Úspěšné číselné kontroly nezaručují dobrý klip: konzistence pohybu v čase se kontroluje okem (viz `docs/KAPILAR.md`).
 - **209 snímků, která sada přepínačů:** důkaz bajtového řetězce pro 209 snímků byl pořízen se sadou přepínačů F209V2 na vývojovém sestavení (bez přepínačů konce bloků, sestaveno bez záplat 0019/0020); `uret.ps1` tento postup pro 209 snímků používá [přečteno: skript; skutečný běh enginu přes `uret.ps1` prošel v běhu U209].
-- Ověřeno na jedné kartě (GTX 1050 Ti 4 GB); jiné karty jsme nezkoušeli.
+- Námi ověřeno na jedné kartě (GTX 1050 Ti 4 GB); externí zprávy o dalších kartách jsou uvedeny i se štítky v `docs/KART_PROFILLERI.md` [hlášeno uživatelem].
 - **Která binárka byla měřena:** latent při 141 snímcích a bajtový řetězec byly změřeny na našich vývojových sestaveních. Vydaná binárka, kterou stahujete, je sestavena znovu: její bajtová kontrola na 56 snímcích prošla (další bod) a běh na 209 snímků přes `uret.ps1` prošel kontrolou (běh U209, 3414 s, špička VRAM 3777 MiB) [změřeno]; vůči běhu na 209 snímků na vývojovém sestavení je latent shodný bajt po bajtu; ve videu jsou snímky (md5) a zvuk shodné, sha256 souboru AVI se liší kvůli kontejneru [změřeno] (viz `docs/OLCUMLER.md`, oddíl 0).
 - **Vydaná binárka, 56 snímků:** vydaná binárka (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) dala výsledek na 56 snímků shodný bajt po bajtu s R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 každého snímku a zvuk shodné), spuštěno přímo s výchozími přepínači (bez proměnných `SD_*`), návratový kód 0, 601 s [změřeno: běh B56VT2, 2026-11-19; důkazy uchovávají autoři, v tomto repozitáři nejsou]. Rozsah: jen naše karta sm_61 a 56 snímků; nejde o test instalace v čisté složce; latent při 141 snímcích a řetězec pro 209 byly změřeny se starší binárkou a s touto NEBYLY zopakovány [nezkoušeno]. První pokus (B56VT, přes pomocný skript) skončil bez hlášky po 58 s, příčina neznámá [odhad: nedostatek paměti]; druhý pokus spustil `sd-cli` přímo.
 - Instalační a spouštěcí skripty zatím nebyly ověřeny z prázdné složky (test v čisté složce teprve čeká).
@@ -176,4 +190,4 @@ Názvy běhů použité v hranatých závorkách (naše vlastní názvy, nejsou 
 - **Test v čisté složce teprve čeká:** instalační a spouštěcí skripty zatím nebyly ověřeny z prázdné složky jen podle těchto pokynů; oddíl bude aktualizován, až bude tento test (včetně bajtového porovnání 56 snímků s referencí) zaznamenán.
 - Vygenerovaná videa zde nejsou dodávána.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

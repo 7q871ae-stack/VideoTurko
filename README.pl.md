@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Jaką mam kartę? (tylko odnośniki)
+
+Wartością tego repozytorium są łatki, dzięki którym model mieści się w 4 GB, oraz bramki jakości. Dla innych kart gotowe wydanie CUDA stable-diffusion.cpp to OPCJA: nie mierzyliśmy go, a nasze bramki jakości nie były na nim uruchamiane. Nasze własne pomiary dotyczą jednej karty (GTX 1050 Ti 4 GB). Wszystko inne to raporty społeczności: podajemy odnośniki, ale za nie nie ręczymy.
+
+| Twój zestaw | Gdzie szukać | Dowód |
+|---|---|---|
+| GTX 1050 Ti 4 GB (nasz zip wydania) | ten README, `docs/OLCUMLER.md` | [zmierzone] |
+| Inne karty NVIDIA (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` włącza `f32` automatycznie; gotowe wydanie CUDA stable-diffusion.cpp: opcja, przez nas niemierzona [nie próbowano]) | [zgłoszone przez użytkownika] |
+| seria RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [zgłoszone przez użytkownika, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (notatka społeczności, bez oficjalnego wsparcia; silnik z wydania to CUDA) | [zgłoszone przez użytkownika, PR #4] |
+| Dłuższy film z kilku klipów | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [zgłoszone przez użytkownika]; jakości połączonych filmów nie mierzyliśmy [nie próbowano] |
+
+Licencja: akceptacja licencji MiniMax H3 (`docs/LISANS_KABUL.txt`) obowiązuje na każdej drodze; krok akceptacji w `kur.ps1` nie działa z gotowym wydaniem.
+
 ## Czym to jest
 Zestaw drobnych łatek pamięci i szeregowania do stable-diffusion.cpp oraz przepis uruchomienia, kontrole i pomiary, dzięki którym MiniMax H3 (DiT 33B; uruchamiamy GGUF HyperFlow Flash 13.7B Q4_K_M; 32B enkoder tekstu Qwen3-VL jest osobny) działa na 4-gigabajtowym GPU generacji Pascal (GTX 1050 Ti, 16 GB pamięci systemowej).
 - Długości w jednym przebiegu, które faktycznie wytworzyliśmy i które przeszły nasze kontrole jakości: 56, 141, 158, 175, 192, 209 klatek w 640x384 przy 24 fps (209 klatek = 8.7 s), z dźwiękiem generowanym przez sam H3 [zmierzone: 209 klatek na binarce wydaniowej przez `uret.ps1`, przebieg U209; latent identyczny bajt w bajt z przebiegiem na kompilacji deweloperskiej; klatki i dźwięk w wideo identyczne, sha pliku różni się z powodu kontenera; dowody przechowują autorzy, nie ma ich w tym repozytorium]. 209 to najdłuższa długość, jaką obejrzeliśmy i uznaliśmy za płynną [zgłoszone przez użytkownika, 2026-11-19, wideo obejrzane w całości; plik: wynik F209V2, 8.708 s].
@@ -101,7 +115,7 @@ Ta kontrola nie sprawdza spójności ruchu (skoków skali lub położenia obiekt
 2. Kontrola surowego szumu: residuum filtra medianowego <= 1.5 (skala 0-255).
 3. Szum znormalizowany względem tekstury, `scripts/doku_norm.py` (wersja z tego repozytorium): N = mediana residuum / tekstura Sobela, co 6. klatka. **Uwaga o skali:** w tej wersji 10 zmierzonych klipów daje N = 0.034-0.052 (tabela w `docs/KAPILAR.md`; w ostatniej ćwiartce F192/F209V2 dochodzi do 0.062), a próg dodatkowej kontroli to N <= 0.065. Inna implementacja na tych samych klipach dała 0.028-0.036, więc progi NIE są wymienne między wersjami. Na bardzo drobnych teksturach (rzędy trawy) czyste N wynosiło 0.075, więc próg ustala się dla każdej rodziny scen. Zalecana dodatkowa kontrola: odporny estymator wysokich częstotliwości (sigma-HH <= 1.5; czyste klipy 0.74-1.19, dodany szum s=2 daje 2.2-3.0).
 
-Zakres: VideoTurko dotyczy JEDNEGO przebiegu (do 209 klatek, około 8.7 s). Sklejanie kilku części w dłuższy klip było próbowane; szwy były widoczne (scena nie kontynuuje się czysto), więc nie jest to częścią projektu. Jeśli potrzebujesz dłuższych klipów, zaprojektuj własne podejście.
+Zakres: VideoTurko dotyczy JEDNEGO przebiegu (do 209 klatek, około 8,7 s). Nasz własny test łączenia pokazał widoczne łączenia (scena nie kontynuuje się czysto), więc dłuższe filmy nie należą do tego, co weryfikujemy. Do łączenia służy przewodnik społeczności `docs/KLIP_ZINCIRI.md` i nasze narzędzie tylko na CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; nigdy nie uruchamia silnika); jakości połączonych filmów nie mierzyliśmy [nie próbowano], więc sprawdzaj każde łączenie okiem i za pomocą `scripts/dikis_denetim.py`.
 Ustawienia są Twoje: 209 klatek to nasza sprawdzona wartość domyślna na karcie 4 GB, a nie limit, którego musisz przestrzegać. Wybierz dowolną liczbę klatek z siatki 17k+5 (56, 73, ... 192, 209; zob. `docs/KURULUM.md`), zmieniaj prompt, seed, rozdzielczość czy dowolną flagę według uznania. Krótsze klipy wymagają mniej pamięci i czasu; większe GPU mogą pomieścić więcej.
 
 ## Ostrzeżenie o licencji modelu
@@ -162,7 +176,7 @@ Nazwy przebiegów używane w nawiasach (nasze własne nazwy, nie pliki tego repo
 ## Znane ograniczenia
 - **Dowód bajtowy** (jak odtworzyć go samodzielnie: `docs/KANITLAR.md`, „R0 ve latent referansi nasil uretilir”; sprawdzone na naszej karcie sm_61, inne GPU mogą nie dawać zgodności bajtowej [przypuszczenie]): z naszą serią łatek (flagi pamięci włączone) przebieg na 56 klatkach dał sha256 `0979f156d548169b...`, identyczny z wzorcem [zmierzone]; przy 141 klatkach sha256 latentu `E5D028F8632BE4FE...` był identyczny (z flagami 0013/0014). Dla klatek od 158 do 209 nie ma bezpośredniego wzorca bajtowego; dowodem jest łańcuch kontroli. Przejście kontroli liczbowych nie gwarantuje dobrego klipu: spójność ruchu w czasie sprawdza się na oko (zob. `docs/KAPILAR.md`).
 - **209 klatek, który zestaw flag:** dowód łańcucha bajtowego dla 209 klatek zebrano z zestawem flag F209V2 na kompilacji deweloperskiej (bez flag końca bloków, zbudowanej bez łatek 0019/0020); `uret.ps1` używa tego przepisu dla 209 klatek [przeczytane: skrypt; prawdziwy przebieg silnika przez `uret.ps1` zaliczony w przebiegu U209].
-- Sprawdzone na jednej karcie (GTX 1050 Ti 4 GB); innych kart nie próbowano.
+- Zweryfikowane przez nas na jednej karcie (GTX 1050 Ti 4 GB); zewnętrzne raporty o innych kartach są wymienione z etykietami w `docs/KART_PROFILLERI.md` [zgłoszone przez użytkownika].
 - **Którą binarkę mierzono:** latent przy 141 klatkach i łańcuch bajtowy zmierzono na naszych kompilacjach deweloperskich. Binarka wydaniowa, którą pobierasz, jest zbudowana od nowa: jej bajtowa kontrola na 56 klatkach przeszła (następny punkt), a przebieg na 209 klatkach przez `uret.ps1` zaliczył kontrolę (przebieg U209, 3414 s, szczyt VRAM 3777 MiB) [zmierzone]; względem przebiegu 209 klatek na kompilacji deweloperskiej latent jest identyczny bajt w bajt; w wideo klatki (md5) i dźwięk są identyczne, sha256 pliku AVI różni się z powodu kontenera [zmierzone] (zob. `docs/OLCUMLER.md`, sekcja 0).
 - **Binarka wydaniowa, 56 klatek:** binarka wydaniowa (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) dała wynik na 56 klatkach identyczny bajt w bajt z R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 każdej klatki i dźwięk identyczne), uruchomiona bezpośrednio z flagami domyślnymi (bez zmiennych `SD_*`), kod wyjścia 0, 601 s [zmierzone: przebieg B56VT2, 2026-11-19; dowody przechowują autorzy, nie ma ich w tym repozytorium]. Zakres: tylko nasza karta sm_61 i 56 klatek; to nie jest test instalacji w czystym folderze; latent przy 141 klatkach i łańcuch dla 209 zmierzono na starszej binarce i NIE powtórzono na tej [nie próbowano]. Pierwsza próba (B56VT, przez skrypt pomocniczy) zakończyła się po cichu po 58 s, przyczyna nieznana [przypuszczenie: brak pamięci]; druga próba uruchamiała `sd-cli` bezpośrednio.
 - Skrypty instalacji i uruchomienia nie zostały jeszcze sprawdzone z pustego folderu (test w czystym folderze przed nami).
@@ -176,4 +190,4 @@ Nazwy przebiegów używane w nawiasach (nasze własne nazwy, nie pliki tego repo
 - **Test w czystym folderze przed nami:** skrypty instalacji i uruchomienia nie zostały jeszcze sprawdzone z pustego folderu wyłącznie według tej instrukcji; sekcja zostanie zaktualizowana, gdy test (łącznie z bajtowym porównaniem 56 klatek z wzorcem) zostanie zapisany.
 - Wygenerowane wideo nie są tu dostarczane.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

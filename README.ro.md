@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Ce placă am? (doar linkuri)
+
+Valoarea acestui depozit sunt patch-urile care fac modelul să încapă în 4 GB și porțile de calitate. Pentru alte plăci, versiunea CUDA gata făcută a stable-diffusion.cpp este o OPȚIUNE: nu am măsurat-o, iar porțile noastre de calitate nu au rulat pe ea. Măsurătorile noastre acoperă o singură placă (GTX 1050 Ti 4 GB). Tot restul sunt rapoarte ale comunității: le trimitem prin link și nu garantăm pentru ele.
+
+| Configurația dvs. | Unde să vă uitați | Dovadă |
+|---|---|---|
+| GTX 1050 Ti 4 GB (zip-ul nostru de release) | acest README, `docs/OLCUMLER.md` | [măsurat] |
+| Alte plăci NVIDIA (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` activează `f32` automat; versiunea CUDA gata făcută a stable-diffusion.cpp: o opțiune, nemăsurată de noi [neîncercat]) | [raportat de utilizator] |
+| seria RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [raportat de utilizator, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (notă a comunității, fără suport oficial; motorul din release este CUDA) | [raportat de utilizator, PR #4] |
+| Un film mai lung din mai multe clipuri | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [raportat de utilizator]; calitatea filmelor înlănțuite nu a fost măsurată de noi [neîncercat] |
+
+Licență: acceptarea licenței MiniMax H3 (`docs/LISANS_KABUL.txt`) este valabilă pe orice cale; pasul de acceptare din `kur.ps1` nu rulează cu versiunea gata făcută.
+
 ## Ce este
 Un set de patch-uri mici de memorie și planificare pentru stable-diffusion.cpp, plus rețeta de rulare, verificările și măsurătorile care permit rularea MiniMax H3 (DiT de 33B; noi rulăm HyperFlow Flash 13.7B Q4_K_M GGUF; encoderul de text Qwen3-VL de 32B este separat) pe un GPU Pascal de 4 GB (GTX 1050 Ti, 16 GB de RAM de sistem).
 - Durate dintr-o singură trecere pe care le-am produs efectiv și care au trecut porțile noastre de calitate: 56, 141, 158, 175, 192, 209 cadre la 640x384, 24 fps (209 cadre = 8,7 s), cu sunetul generat chiar de H3 [măsurat: 209 cadre cu binarul de release prin `uret.ps1`, rularea U209; latentul identic la nivel de octet cu rularea build-ului de dezvoltare; cadrele și sunetul sunt identice în videoclip, sha-ul fișierului diferă din cauza containerului; dovezile sunt păstrate de autori, nu se află în acest depozit]. 209 este cea mai lungă durată pe care am vizionat-o și am găsit-o fluidă [raportat de utilizator, 2026-11-19, videoclip vizionat integral; fișier: ieșirea F209V2, 8,708 s].
@@ -101,7 +115,7 @@ Această poartă nu verifică consistența mișcării (salturi de scară sau de 
 2. Poarta zgomotului brut: reziduul filtrului median <= 1,5 (scara 0-255).
 3. Zgomot normalizat după textură, `scripts/doku_norm.py` (versiunea acestui depozit): N = reziduu median / textură Sobel, la fiecare al 6-lea cadru. **Notă despre scară:** în această versiune cele 10 clipuri măsurate dau N = 0,034-0,052 (tabel în `docs/KAPILAR.md`; ultimul sfert din F192/F209V2 ajunge la 0,062), iar pragul porții suplimentare este N <= 0,065. O altă implementare a măsurat 0,028-0,036 pe aceleași clipuri, deci pragurile NU sunt interschimbabile între versiuni. Pe texturi foarte fine (rânduri de iarbă) N curat a fost 0,075, deci pragul se stabilește pe familie de scene. Un estimator robust de înaltă frecvență (sigma-HH <= 1,5; curat 0,74-1,19, zgomotul adăugat s=2 dă 2,2-3,0) este poarta suplimentară recomandată.
 
-Domeniu: VideoTurko se ocupă de O SINGURĂ trecere (până la 209 cadre, aproximativ 8,7 s). Înlănțuirea mai multor părți într-un clip mai lung a fost încercată; cusăturile erau vizibile (scena nu continuă curat), așa că nu face parte din acest proiect. Dacă doriți clipuri mai lungi, concepeți-vă propria abordare.
+Domeniu: VideoTurko se ocupă de O SINGURĂ trecere (până la 209 cadre, aproximativ 8,7 s). Propriul nostru test de înlănțuire a arătat îmbinări vizibile (scena nu continuă curat), deci filmele mai lungi nu fac parte din ceea ce verificăm. Pentru înlănțuire există ghidul comunității `docs/KLIP_ZINCIRI.md` și utilitarul nostru doar pe CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; nu pornește niciodată motorul); calitatea filmelor înlănțuite nu am măsurat-o [neîncercat], deci verificați fiecare îmbinare cu ochiul și cu `scripts/dikis_denetim.py`.
 Setările sunt ale dumneavoastră: 209 cadre este valoarea implicită testată de noi pe o placă de 4 GB, nu o limită pe care trebuie să o folosiți. Alegeți orice număr de cadre de pe grila 17k+5 (56, 73, ... 192, 209; vedeți `docs/KURULUM.md`), schimbați prompt-ul, seed-ul, rezoluția sau orice opțiune după preferință. Clipurile mai scurte cer mai puțină memorie și timp; GPU-urile mai mari pot suporta mai mult.
 
 ## Avertisment privind licența modelului
@@ -162,7 +176,7 @@ Numele de rulări folosite între paranteze (numele noastre proprii de rulări, 
 ## Limite cunoscute
 - **Dovada la nivel de octet** (cum o reproduceți singur: `docs/KANITLAR.md`, „R0 ve latent referansi nasil uretilir”; verificată pe placa noastră sm_61, alte GPU-uri pot să nu fie identice la nivel de octet [presupunere]): cu seria noastră de patch-uri (opțiunile de memorie active) o rulare de 56 de cadre a dat sha256 `0979f156d548169b...`, identic cu referința [măsurat]; la 141 de cadre sha256-ul latentului `E5D028F8632BE4FE...` a fost identic (cu opțiunile 0013/0014). Pentru cadrele 158-209 nu există referință directă la nivel de octet; lanțul de porți este dovada. Trecerea porților numerice nu garantează un clip bun: consistența mișcării în timp se verifică vizual (vedeți `docs/KAPILAR.md`).
 - **209 cadre, ce set de opțiuni:** dovada prin lanțul de octeți pentru 209 cadre a fost obținută cu setul de opțiuni F209V2 pe build-ul de dezvoltare (fără opțiuni de bloc-final, compilat fără patch-urile 0019/0020); `uret.ps1` folosește această rețetă pentru 209 cadre [citit: scriptul; o rulare reală a motorului prin `uret.ps1` a trecut în rularea U209].
-- Verificat pe o singură placă (GTX 1050 Ti 4 GB); alte plăci nu au fost încercate.
+- Verificat de noi pe o singură placă (GTX 1050 Ti 4 GB); rapoartele externe despre alte plăci sunt listate cu etichetele lor în `docs/KART_PROFILLERI.md` [raportat de utilizator].
 - **Ce binar a fost măsurat:** latentul de 141 de cadre și lanțul de octeți au fost măsurate cu build-urile noastre de dezvoltare. Binarul de release pe care îl descărcați este un build nou: poarta lui de octeți la 56 de cadre a trecut (punctul următor), iar o rulare de 209 cadre prin `uret.ps1` a trecut poarta (rularea U209, 3414 s, vârf VRAM 3777 MiB) [măsurat]; față de rularea de 209 cadre a build-ului de dezvoltare latentul este identic la nivel de octet; în videoclip cadrele (md5) și sunetul sunt identice, sha256-ul fișierului AVI diferă din cauza containerului [măsurat] (vedeți `docs/OLCUMLER.md`, secțiunea 0).
 - **Binar de release, 56 de cadre:** binarul de release (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) a dat un rezultat de 56 de cadre identic la nivel de octet cu R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 pe cadre și sunetul identice), rulat direct cu opțiunile implicite (fără variabile `SD_*`), cod de ieșire 0, 601 s [măsurat: rularea B56VT2, 2026-11-19; dovezile sunt păstrate de autori, nu se află în acest depozit]. Domeniu: numai placa noastră sm_61 și 56 de cadre; nu este un test de instalare pe folder gol; latentul de 141 de cadre și lanțul de 209 au fost măsurate cu binarul mai vechi și NU au fost repetate cu acesta [neîncercat]. O primă încercare (B56VT, printr-un script auxiliar) s-a încheiat în tăcere după 58 s, cauză necunoscută [presupunere: presiune pe memorie]; a doua încercare a rulat `sd-cli` direct.
 - Scripturile de instalare și rulare nu au fost încă verificate dintr-un folder gol (testul în folder curat este în așteptare).
@@ -176,4 +190,4 @@ Numele de rulări folosite între paranteze (numele noastre proprii de rulări, 
 - **Testul în folder curat este în așteptare:** scripturile de instalare și rulare nu au fost încă verificate dintr-un folder gol, folosind numai aceste instrucțiuni; această secțiune se va actualiza când testul (inclusiv o comparare la nivel de octet pe 56 de cadre cu referința) va fi înregistrat.
 - Nu se livrează aici videoclipuri generate.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

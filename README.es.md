@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## ¿Qué tarjeta tengo? (solo enlaces)
+
+El valor de este repositorio son los parches que hacen caber el modelo en 4 GB y las puertas de calidad. Para otras tarjetas, la versión CUDA ya compilada de stable-diffusion.cpp es una OPCIÓN: no la medimos y nuestras puertas de calidad no se ejecutaron sobre ella. Nuestras propias mediciones cubren una tarjeta (GTX 1050 Ti 4 GB). Todo lo demás son informes de la comunidad: los enlazamos y no respondemos por ellos.
+
+| Su equipo | Dónde mirar | Evidencia |
+|---|---|---|
+| GTX 1050 Ti 4 GB (nuestro zip de la release) | este README, `docs/OLCUMLER.md` | [medido] |
+| Otras tarjetas NVIDIA (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` activa `f32` automáticamente; versión CUDA ya compilada de stable-diffusion.cpp: una opción, no medida por nosotros [no probado]) | [reportado por el usuario] |
+| serie RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [reportado por el usuario, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (nota de la comunidad, sin soporte oficial; el motor de la release es CUDA) | [reportado por el usuario, PR #4] |
+| Una película más larga a partir de varios clips | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [reportado por el usuario]; no medimos la calidad de las películas encadenadas [no probado] |
+
+Licencia: la aceptación de la licencia de MiniMax H3 (`docs/LISANS_KABUL.txt`) rige en cualquier camino; el paso de aceptación de `kur.ps1` no se ejecuta con la versión ya compilada.
+
 ## Qué es esto
 Un conjunto de pequeños parches de memoria y planificación para stable-diffusion.cpp, junto con la receta de ejecución, las comprobaciones y las mediciones que permiten ejecutar MiniMax H3 (DiT de 33B; ejecutamos el GGUF HyperFlow Flash 13.7B Q4_K_M; el codificador de texto Qwen3-VL de 32B es aparte) en una GPU Pascal de 4 GB (GTX 1050 Ti, 16 GB de RAM del sistema).
 - Duraciones en una sola pasada que producimos realmente y que superaron nuestras puertas de calidad: 56, 141, 158, 175, 192, 209 fotogramas a 640x384, 24 fps (209 fotogramas = 8,7 s), con el audio generado por el propio H3 [medido: 209 fotogramas con el binario de la versión publicada mediante `uret.ps1`, ejecución U209; latente idéntico byte a byte al de la ejecución con el binario de desarrollo; fotogramas y audio idénticos en el video, el sha del archivo difiere por el contenedor; las pruebas las conservan los autores, no están en este repositorio]. 209 es la duración más larga que vimos y que nos pareció fluida [reportado por el usuario, 2026-11-19, video visto completo; archivo: salida de F209V2, 8,708 s].
@@ -101,7 +115,7 @@ Esta puerta no comprueba la consistencia del movimiento (saltos de escala o de p
 2. Puerta de ruido bruto: residuo del filtro de mediana <= 1,5 (escala 0-255).
 3. Ruido normalizado por textura, `scripts/doku_norm.py` (la versión de este repositorio): N = residuo mediano / textura de Sobel, cada 6.º fotograma. **Nota de escala:** en esta versión los 10 clips medidos dan N = 0,034-0,052 (tabla en `docs/KAPILAR.md`; el último cuarto de F192/F209V2 llega a 0,062) y el umbral de la puerta adicional es N <= 0,065. Otra implementación midió 0,028-0,036 en los mismos clips, así que los umbrales NO son intercambiables entre versiones. En texturas muy finas (filas de césped) el N limpio fue 0,075, por lo que el umbral depende de la familia de escenas. Un estimador robusto de alta frecuencia (sigma-HH <= 1,5; limpio 0,74-1,19, con ruido añadido s=2 da 2,2-3,0) es la puerta adicional recomendada.
 
-Alcance: VideoTurko trata de UNA sola pasada (hasta 209 fotogramas, unos 8,7 s). Se probó encadenar varias partes en un clip más largo; las costuras se veían (la escena no continúa limpiamente), así que no forma parte de este proyecto. Si quieres clips más largos, diseña tu propio enfoque.
+Alcance: VideoTurko trata de UNA sola pasada (hasta 209 fotogramas, unos 8,7 s). Nuestra propia prueba de encadenado mostró costuras visibles (la escena no continúa limpiamente), así que las películas más largas no forman parte de lo que verificamos. Para encadenar hay una guía de la comunidad, `docs/KLIP_ZINCIRI.md`, y nuestra utilidad solo CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; nunca inicia el motor); no medimos la calidad de las películas encadenadas [no probado], así que revise cada costura a ojo y con `scripts/dikis_denetim.py`.
 Tu configuración es tuya: 209 fotogramas es nuestro valor por defecto probado en una tarjeta de 4 GB, no un límite que debas usar. Elige cualquier número de fotogramas de la cuadrícula 17k+5 (56, 73, ... 192, 209; consulta `docs/KURULUM.md`), cambia el prompt, la semilla, la resolución o cualquier opción como prefieras. Los clips más cortos necesitan menos memoria y tiempo; las GPU más grandes pueden admitir más.
 
 ## Advertencia sobre la licencia del modelo
@@ -162,7 +176,7 @@ Nombres de ejecución usados entre corchetes (nuestros propios nombres de ejecuc
 ## Limitaciones conocidas
 - **Prueba byte a byte** (cómo reproducirla tú mismo: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verificada en nuestra tarjeta sm_61, otras GPU pueden no ser idénticas byte a byte [estimación]): con nuestra serie de parches (opciones de memoria activadas) una ejecución de 56 fotogramas dio sha256 `0979f156d548169b...`, idéntico a la referencia [medido]; con 141 fotogramas el sha256 del latente `E5D028F8632BE4FE...` fue idéntico (con las opciones 0013/0014). Los fotogramas 158 a 209 no tienen referencia directa byte a byte; la cadena de puertas es la evidencia. Superar las puertas numéricas no garantiza un buen clip: la consistencia del movimiento en el tiempo se comprueba a ojo (consulta `docs/KAPILAR.md`).
 - **209 fotogramas, con qué conjunto de opciones:** la evidencia de la cadena de bytes de 209 fotogramas se obtuvo con el conjunto de opciones F209V2 en la compilación de desarrollo (sin opciones de cola de bloque, compilada sin los parches 0019/0020); `uret.ps1` usa esta receta para 209 fotogramas [leído: el script; una ejecución real del motor mediante `uret.ps1` pasó en la ejecución U209].
-- Verificado en una sola tarjeta (GTX 1050 Ti de 4 GB); no se probaron otras tarjetas.
+- Verificado por nosotros en una tarjeta (GTX 1050 Ti 4 GB); los informes externos de otras tarjetas se listan con sus etiquetas en `docs/KART_PROFILLERI.md` [reportado por el usuario].
 - **Qué binario se midió:** el latente de 141 fotogramas y la cadena de bytes se midieron con nuestras compilaciones de desarrollo. El binario de la versión publicada que descargas es una compilación nueva: su puerta byte a byte de 56 fotogramas pasó (siguiente punto) y una ejecución de 209 fotogramas mediante `uret.ps1` superó la puerta (ejecución U209, 3414 s, pico de VRAM 3777 MiB) [medido]; frente a la ejecución de 209 con el binario de desarrollo el latente es idéntico byte a byte; en el video los fotogramas (md5) y el audio son idénticos, el sha256 del archivo AVI difiere por el contenedor [medido] (consulta `docs/OLCUMLER.md`, sección 0).
 - **Binario de la versión publicada, 56 fotogramas:** el binario de la versión publicada (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) dio un resultado de 56 fotogramas idéntico byte a byte a R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 por fotograma y audio idénticos), ejecutado directamente con las opciones por defecto (sin variables `SD_*`), código de salida 0, 601 s [medido: ejecución B56VT2, 2026-11-19; las pruebas las conservan los autores, no están en este repositorio]. Alcance: solo nuestra tarjeta sm_61 y 56 fotogramas; no es una prueba de instalación en raíz limpia; el latente de 141 fotogramas y la cadena de 209 se midieron con el binario anterior y NO se repitieron con este [no probado]. Un primer intento (B56VT, mediante un script auxiliar) terminó en silencio tras 58 s, causa desconocida [estimación: presión de memoria]; el segundo intento ejecutó `sd-cli` directamente.
 - Los scripts de instalación y ejecución aún no se han verificado desde una carpeta vacía (prueba en raíz limpia pendiente).
@@ -176,4 +190,4 @@ Nombres de ejecución usados entre corchetes (nuestros propios nombres de ejecuc
 - **Prueba en raíz limpia pendiente:** los scripts de instalación y ejecución aún no se han verificado desde una carpeta vacía usando solo estas instrucciones; esta sección se actualizará cuando se registre esa prueba (incluida una comparación byte a byte de 56 fotogramas con la referencia).
 - Aquí no se incluye ningún video generado.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

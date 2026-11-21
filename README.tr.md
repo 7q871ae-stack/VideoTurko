@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Hangi kartım var? (yalnız bağlantılar)
+
+Bu deponun değeri, modeli 4 GB'a sığdıran yamalar ve kalite kapılarıdır. Diğer kartlar için hazır stable-diffusion.cpp CUDA sürümü bir SEÇENEKTİR: onu ölçmedik ve kalite kapılarımız onun üzerinde koşturulmadı. Kendi ölçümlerimiz tek kartı kapsıyor (GTX 1050 Ti 4 GB). Gerisi topluluk raporudur: bağlantısını veriyoruz, doğruluğunu garanti etmiyoruz.
+
+| Sizin kurulumunuz | Nereye bakılır | Kanıt |
+|---|---|---|
+| GTX 1050 Ti 4 GB (bizim sürüm zip'imiz) | bu README, `docs/OLCUMLER.md` | [ölçtüm] |
+| Diğer NVIDIA kartlar (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` `f32` ayarını kendiliğinden açar; hazır stable-diffusion.cpp CUDA sürümü: bir seçenek, biz ölçmedik [denenmedi]) | [kullanıcı bildirdi] |
+| RTX 50 serisi | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [kullanıcı bildirdi, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (topluluk notu, resmi destek yok; hazır motor CUDA) | [kullanıcı bildirdi, PR #4] |
+| Birkaç klipten daha uzun bir film | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [kullanıcı bildirdi]; zincirlenmiş filmin kalitesini biz ölçmedik [denenmedi] |
+
+Lisans: MiniMax H3 lisans kabulü (`docs/LISANS_KABUL.txt`) her yolda geçerlidir; `kur.ps1` kabul adımı hazır sürümle çalışmaz.
+
 ## Bu nedir
 MiniMax H3'ü (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF'u çalıştırıyoruz; 32B Qwen3-VL metin kodlayıcı ayrıdır) 4 GB'lık Pascal ekran kartında (GTX 1050 Ti, 16 GB RAM) çalıştırmak için küçük bellek/zamanlama yamaları, çalıştırma tarifi, kontroller ve ölçümler.
 - Gerçekten ürettiğimiz ve kalite kapılarından geçen tek geçiş uzunlukları: 640x384, 24 fps, 56, 141, 158, 175, 192, 209 kare (209 kare = 8,7 sn); sesi H3'ün kendisi üretir [ölçtüm: 209 kare, sürüm ikilisiyle, `uret.ps1` üzerinden, koşu U209; latent bayt-aynı; videoda kareler ve ses aynı, dosya sha'sı konteyner nedeniyle farklı; kanıt yazarlarda, bu depoda yok]. 209, izleyip düzgün bulduğumuz en uzun süredir [kullanıcı bildirdi, 2026-11-19, video baştan sona izlendi; dosya: F209V2 çıktısı, 8,708 sn].
@@ -101,7 +115,7 @@ Bu kapı hareket tutarlılığını (nesne ölçeği/konum sıçraması) denetle
 2. Ham gürültü kapısı: medyan süzgeç artığı <= 1,5 (0-255).
 3. Dokuya göre normalize gürültü, `scripts/doku_norm.py` (bu deponun sürümü): N = medyan artık / Sobel doku, her 6. kare. **Ölçek notu:** bu sürümde ölçülen 10 klip N = 0,034-0,052 verir (tablo `docs/KAPILAR.md`; F192/F209V2 son çeyrek 0,062'ye çıkar), ek kapı eşiği N <= 0,065. Başka bir uygulama aynı kliplerde 0,028-0,036 ölçtü, yani eşikler sürümler arasında DEĞİŞTİRİLEMEZ. Çok ince dokuda (çim sırası) temiz N 0,075 çıktı: eşik sahne ailesine göre. Önerilen ek kapı: yüksek frekans bandı sağlam gürültü tahmini (sigma-HH <= 1,5; temiz 0,74-1,19, s=2 gürültüde 2,2-3,0).
 
-Kapsam: VideoTurko TEK geçiş içindir (209 kareye kadar, yaklaşık 8,7 sn). Parçaları birleştirip uzun video yapmak denendi; dikişler belli oldu (sahne temiz devam etmiyor), bu yüzden projenin parçası değil. Daha uzun video isteyen kendi çözümünü geliştirebilir.
+Kapsam: VideoTurko TEK geçiş içindir (209 kareye kadar, yaklaşık 8,7 sn). Kendi zincirleme denememizde dikişler görünür oldu (sahne temiz devam etmiyor); bu yüzden daha uzun filmler doğruladığımız şeyin parçası değil. Zincirleme için topluluk rehberi `docs/KLIP_ZINCIRI.md` ve yalnız CPU kullanan yardımcımız `scripts/zincir.py` var (`plan`, `son-kare`, `bagla`; motoru hiç başlatmaz); zincirlenmiş filmlerin kalitesini ölçmedik [denenmedi], bu yüzden her dikişi gözle ve `scripts/dikis_denetim.py` ile kontrol edin.
 Ayarlar sizin: 209 kare bizim 4 GB kartta denediğimiz varsayılandır, zorunlu değil. 17k+5 dizisinden istediğiniz kare sayısını seçin (56, 73, ... 192, 209; bkz. `docs/KURULUM.md`); istemi, tohumu, çözünürlüğü ya da herhangi bir bayrağı istediğiniz gibi değiştirin. Kısa video daha az bellek ve süre ister; büyük kartta daha fazlası sığabilir.
 
 ## Model lisans uyarısı
@@ -162,7 +176,7 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 ## Bilinen sınırlar
 - **Bayt kanıtı** (kendiniz nasıl üretirsiniz: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; sm_61 kartımızda doğrulandı, başka GPU'larda bayt aynı olmayabilir [tahmin]): yama serimizle (bellek bayrakları açık) 56 karelik koşu referansla aynı sha256 `0979f156d548169b...` verdi [ölçtüm]; 141 karede latent sha256 `E5D028F8632BE4FE...` aynı çıktı (0013/0014 bayraklarıyla). 158-209 karede doğrudan bayt referansı yok; kanıt kapı zinciridir. Sayısal kapılardan geçmek iyi klip garantisi vermez: zaman içinde hareket tutarlılığı gözle denetlenir (`docs/KAPILAR.md`).
 - **209 kare, hangi bayrak seti:** 209 karelik bayt zinciri kanıtı geliştirme derlemesinde F209V2 bayrak setiyle alındı (blok-sonu bayrağı yok, 0019/0020 yamasız derleme); `uret.ps1` 209 kare için bu tarifi kullanır [okudum: betik; `uret.ps1` üzerinden gerçek motor koşusu U209'da geçti].
-- Tek kartta doğrulandı (GTX 1050 Ti 4 GB); başka kartlar denenmedi.
+- Tek kartta (GTX 1050 Ti 4 GB) tarafımızca doğrulandı; diğer kartlara ait dış raporlar etiketleriyle `docs/KART_PROFILLERI.md` içinde listelenir [kullanıcı bildirdi].
 - **Hangi ikili ölçüldü:** 141 kare latent ve bayt zinciri geliştirme derlemelerimizle ölçüldü. İndirdiğiniz sürüm ikilisi yeni bir derlemedir: 56 kare bayt kapısı geçti (sonraki madde) ve `uret.ps1` üzerinden 209 kare koşusu kapıyı geçti (koşu U209, 3414 sn, VRAM tepesi 3777 MiB) [ölçtüm]; geliştirme derlemesi 209 koşusuyla latent bayt-aynı; videoda kareler (md5) ve ses aynı, AVI dosya sha256'sı konteyner nedeniyle farklı [ölçtüm] (`docs/OLCUMLER.md`, bölüm 0).
 - **Sürüm ikilisi, 56 kare:** sürüm ikilisi (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) 56 karede R0 ile bayt aynı sonuç verdi (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; kare md5 ve ses aynı); doğrudan, varsayılan bayraklarla (hiç `SD_*` yok), çıkış kodu 0, 601 sn [ölçtüm: koşu B56VT2, 2026-11-19; kanıt yazarlarda, bu depoda yok]. Kapsam: yalnız sm_61 kartımız ve 56 kare; temiz kök kurulum testi değil; 141 kare latent ve 209 zinciri eski ikiliyle ölçüldü, bununla TEKRARLANMADI [denenmedi]. İlk deneme (B56VT, yardımcı betikle) 58 sn'de sessizce bitti, neden bilinmiyor [tahmin: bellek baskısı]; ikinci deneme `sd-cli`'yi doğrudan çalıştırdı.
 - Kurulum ve çalıştırma betikleri boş klasörde henüz doğrulanmadı (temiz kök testi bekliyor).
@@ -176,4 +190,4 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 - **Temiz kök testi bekliyor:** kurulum ve çalıştırma betikleri boş klasörde yalnız bu talimatla henüz doğrulanmadı; test (56 karede referansa bayt kıyası dahil) kaydedilince bu bölüm güncellenir.
 - Çıktı videolar depoda yok.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

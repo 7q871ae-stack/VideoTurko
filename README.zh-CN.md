@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## 我用的是哪张显卡？（仅链接）
+
+本仓库的价值在于让模型装进 4 GB 的补丁和质量关卡。对于其他显卡，现成的 stable-diffusion.cpp CUDA 发布版只是一个选项：我们没有测量过它，质量关卡也没有在它上面运行过。 我们自己的测量只覆盖一张显卡（GTX 1050 Ti 4 GB）。其余全部是社区报告：我们只提供链接，不作担保。
+
+| 你的配置 | 去哪里看 | 证据 |
+|---|---|---|
+| GTX 1050 Ti 4 GB (我们的发布 zip) | 本 README, `docs/OLCUMLER.md` | [实测] |
+| 其他 NVIDIA 显卡 (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` 自动设置 `f32`; 现成的 stable-diffusion.cpp CUDA 发布版：一个选项，我们没有测量 [未尝试]) | [用户反馈] |
+| RTX 50 系列 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [用户反馈, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (社区说明，无官方支持；发布版引擎为 CUDA) | [用户反馈, PR #4] |
+| 由多个片段拼成的更长影片 | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [用户反馈]; 拼接影片的质量我们没有测量 [未尝试] |
+
+许可：MiniMax H3 许可的接受（`docs/LISANS_KABUL.txt`）在任何路径上都适用；`kur.ps1` 的接受步骤不会在现成发布版上运行。
+
 ## 这是什么
 一组面向 stable-diffusion.cpp 的小型内存/调度补丁，加上运行方案、检查和实测数据，使 MiniMax H3（33B 的 DiT；我们运行的是 HyperFlow Flash 13.7B Q4_K_M GGUF；32B 的 Qwen3-VL 文本编码器是独立的）能在 4 GB 的 Pascal GPU（GTX 1050 Ti，16 GB 系统内存）上运行。
 - 我们实际生成并通过质量门禁的单次长度：640x384、24 fps 下的 56、141、158、175、192、209 帧（209 帧 = 8.7 秒），带有 H3 自己生成的音频 [实测: 使用 release 二进制，经 `uret.ps1` 生成 209 帧，运行 U209；latent 与开发版构建的运行逐字节一致；视频中的帧和音频一致，文件 sha 因容器不同而不同；证据由作者保存，不在本仓库中]。209 是我们看过并认为流畅的最长长度 [用户反馈, 2026-11-19，完整观看了视频；文件：F209V2 输出，8.708 秒]。
@@ -101,7 +115,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 2. 原始噪声门禁：中值滤波残差 <= 1.5（0-255 尺度）。
 3. 纹理归一化噪声，`scripts/doku_norm.py`（本仓库的版本）：N = 残差中值 / Sobel 纹理，每 6 帧取一次。**尺度说明：** 在这个版本中，10 个已测量的片段得到 N = 0.034-0.052（表见 `docs/KAPILAR.md`；F192/F209V2 的最后四分之一达到 0.062），额外门禁的阈值是 N <= 0.065。另一种实现在同样的片段上测得 0.028-0.036，所以不同版本之间的阈值“不能”互换。在非常细的纹理（成行的草地纹理）上，干净画面的 N 为 0.075，所以阈值要按场景类别来定。推荐使用稳健的高频估计量作为额外门禁（sigma-HH <= 1.5；干净画面为 0.74-1.19，加入 s=2 的噪声后为 2.2-3.0）。
 
-适用范围：VideoTurko 只针对一次单次生成（最多 209 帧，约 8.7 秒）。我们也试过把多个片段串接成更长的视频，但接缝清晰可见（场景无法干净地衔接），所以它不在本项目的范围内。如果你想要更长的视频，请自行设计方案。
+范围：VideoTurko 针对的是单次生成（最多 209 帧，约 8.7 秒）。我们自己的拼接测试出现了可见接缝（场景无法干净地延续），因此更长的影片不属于我们验证的内容。拼接可参考社区指南 `docs/KLIP_ZINCIRI.md` 和我们仅用 CPU 的辅助脚本 `scripts/zincir.py`（`plan`、`son-kare`、`bagla`；它从不启动引擎）；拼接影片的质量我们没有测量 [未尝试]，请用眼睛并配合 `scripts/dikis_denetim.py` 检查每一处接缝。
 设置由你自己决定：209 帧是我们在 4 GB 显卡上测试过的默认值，不是你必须遵守的上限。可以在 17k+5 网格（56、73、... 192、209；见 `docs/KURULUM.md`）上任选帧数，也可以随意更改提示词、种子、分辨率或任何参数。更短的片段需要更少的内存和时间；更大的 GPU 也许能容纳更多。
 
 ## 模型许可证警告
@@ -162,7 +176,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 ## 已知限制
 - **字节证明**（如何自行复现：见 `docs/KANITLAR.md`，“R0 ve latent referansi nasil uretilir”；已在我们的 sm_61 显卡上验证，其他 GPU 可能不会逐字节一致 [推测]）：使用我们的补丁系列（开启内存参数）时，一次 56 帧的运行得到 sha256 `0979f156d548169b...`，与基准一致 [实测]；在 141 帧时，latent 的 sha256 `E5D028F8632BE4FE...` 一致（带 0013/0014 参数）。158 到 209 帧没有直接的字节基准；证据是门禁链。通过数值门禁并不保证片段质量好：随时间变化的运动一致性需要靠肉眼检查（见 `docs/KAPILAR.md`）。
 - **209 帧，使用哪组参数：** 209 帧字节链的证据取自开发版构建上的 F209V2 参数组（没有 block-tail 参数，构建时未包含补丁 0019/0020）；`uret.ps1` 对 209 帧使用这套方案 [已读: 该脚本；经 `uret.ps1` 的真实引擎运行在运行 U209 中通过]。
-- 仅在一张显卡（GTX 1050 Ti 4 GB）上验证过；未尝试其他显卡。
+- 我们只在一张显卡（GTX 1050 Ti 4 GB）上验证过；其他显卡的外部报告连同标签列在 `docs/KART_PROFILLERI.md` 中 [用户反馈]。
 - **测量的是哪个二进制：** 141 帧的 latent 和字节链是用我们的开发版构建测量的。你下载的 release 二进制是一次全新构建：它的 56 帧字节门禁已通过（见下一条），经 `uret.ps1` 的 209 帧运行也通过了门禁（运行 U209，3414 秒，显存峰值 3777 MiB）[实测]；与开发版构建的 209 运行相比，latent 逐字节一致；视频中的帧（md5）和音频一致，AVI 文件的 sha256 因容器不同而不同 [实测]（见 `docs/OLCUMLER.md` 第 0 节）。
 - **release 二进制，56 帧：** release 二进制（sd-cli `c5cebe78...`，stable-diffusion.dll `e5d3d329...`）得到的 56 帧结果与 R0 逐字节一致（sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`；逐帧 md5 和音频一致），直接以默认参数运行（没有 `SD_*` 变量），退出码 0，601 秒 [实测: 运行 B56VT2，2026-11-19；证据由作者保存，不在本仓库中]。范围：仅限我们的 sm_61 显卡和 56 帧；不是 clean-root 安装测试；141 帧的 latent 和 209 的链是用旧的二进制测量的，没有用这个二进制重复 [未尝试]。第一次尝试（B56VT，通过辅助脚本）在 58 秒后悄无声息地结束，原因不明 [推测: 内存压力]；第二次尝试直接运行了 `sd-cli`。
 - 安装和运行脚本尚未从空文件夹验证过（clean-root 测试待完成）。
@@ -176,4 +190,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 - **clean-root 测试待完成：** 安装和运行脚本尚未仅按这些说明从空文件夹验证过；当该测试（包括与基准的 56 帧字节比较）记录完成后，本节会随之更新。
 - 这里不附带任何生成的视频。
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

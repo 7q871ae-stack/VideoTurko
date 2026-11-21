@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Welke kaart heb ik? (alleen links)
+
+De waarde van deze repo zijn de patches die het model in 4 GB laten passen, plus de kwaliteitspoorten. Voor andere kaarten is de kant-en-klare stable-diffusion.cpp CUDA-release een OPTIE: wij hebben die niet gemeten en onze kwaliteitspoorten zijn er niet op uitgevoerd. Onze eigen metingen betreffen één kaart (GTX 1050 Ti 4 GB). Al het andere zijn meldingen uit de community: we linken ernaar en staan er niet voor in.
+
+| Uw opstelling | Waar kijken | Bewijs |
+|---|---|---|
+| GTX 1050 Ti 4 GB (onze release-zip) | deze README, `docs/OLCUMLER.md` | [gemeten] |
+| Andere NVIDIA-kaarten (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` zet `f32` automatisch aan; kant-en-klare stable-diffusion.cpp CUDA-release: een optie, door ons niet gemeten [niet geprobeerd]) | [gemeld door gebruiker] |
+| RTX 50-serie | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [gemeld door gebruiker, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (community-notitie, niet officieel ondersteund; de release-engine is CUDA) | [gemeld door gebruiker, PR #4] |
+| Een langere film van meerdere clips | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [gemeld door gebruiker]; kwaliteit van aaneengeschakelde films door ons niet gemeten [niet geprobeerd] |
+
+Licentie: het accepteren van de MiniMax H3-licentie (`docs/LISANS_KABUL.txt`) geldt op elke route; de acceptatiestap van `kur.ps1` draait niet met de kant-en-klare release.
+
 ## Wat dit is
 Een set kleine geheugen- en planningspatches voor stable-diffusion.cpp, plus het runrecept, de controles en de metingen waarmee MiniMax H3 (33B DiT; wij draaien de HyperFlow Flash 13.7B Q4_K_M GGUF; de Qwen3-VL-tekstencoder van 32B staat apart) op een Pascal-GPU van 4 GB (GTX 1050 Ti, 16 GB systeem-RAM) kan draaien.
 - Lengtes in één pass die we echt hebben gemaakt en die onze kwaliteitspoorten hebben gehaald: 56, 141, 158, 175, 192, 209 frames op 640x384, 24 fps (209 frames = 8,7 s), met de eigen gegenereerde audio van H3 [gemeten: 209 frames met de release-binary via `uret.ps1`, run U209; latent byte-identiek aan de run met de ontwikkelbuild; frames en audio in de video identiek, de sha van het bestand verschilt door de container; het bewijs wordt bewaard door de auteurs, niet in deze repo]. 209 is de langste lengte die we hebben bekeken en vloeiend vonden [gemeld door gebruiker, 2026-11-19, video volledig bekeken; bestand: uitvoer F209V2, 8,708 s].
@@ -101,7 +115,7 @@ Deze poort controleert de bewegingsconsistentie (sprongen in schaal of positie v
 2. Poort voor ruwe ruis: residu van het medianfilter <= 1,5 (schaal 0-255).
 3. Textuurgenormaliseerde ruis, `scripts/doku_norm.py` (de versie van deze repo): N = mediaan van het residu / Sobel-textuur, elk 6e frame. **Opmerking over de schaal:** in deze versie geven de 10 gemeten clips N = 0,034-0,052 (tabel in `docs/KAPILAR.md`; het laatste kwart van F192/F209V2 komt op 0,062) en de drempel van de extra poort is N <= 0,065. Een andere implementatie mat 0,028-0,036 op dezelfde clips, dus drempels zijn NIET uitwisselbaar tussen versies. Bij zeer fijne texturen (rijen gras) was een schone N 0,075, dus de drempel geldt per scènefamilie. Een robuuste hoogfrequentieschatter (sigma-HH <= 1,5; schoon 0,74-1,19, toegevoegde ruis s=2 geeft 2,2-3,0) is de aanbevolen extra poort.
 
-Reikwijdte: VideoTurko gaat over ÉÉN enkele pass (tot 209 frames, ongeveer 8,7 s). Meerdere delen aan elkaar koppelen tot een langere clip is geprobeerd; de naden waren zichtbaar (de scène loopt niet netjes door), dus het hoort niet bij dit project. Wil je langere clips, bedenk dan je eigen aanpak.
+Reikwijdte: VideoTurko gaat over ÉÉN enkele doorgang (tot 209 frames, ongeveer 8,7 s). Onze eigen test met aaneenschakelen liet zichtbare naden zien (de scène loopt niet netjes door), dus langere films horen niet bij wat wij verifiëren. Voor aaneenschakelen is er de community-gids `docs/KLIP_ZINCIRI.md` en onze hulptool alleen voor CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; hij start de engine nooit); de kwaliteit van aaneengeschakelde films hebben we niet gemeten [niet geprobeerd], controleer dus elke naad met het oog en met `scripts/dikis_denetim.py`.
 Je instellingen zijn van jou: 209 frames is onze geteste standaard op een kaart van 4 GB, geen grens die je moet aanhouden. Kies elk aantal frames op het 17k+5-raster (56, 73, ... 192, 209; zie `docs/KURULUM.md`), pas de prompt, seed, resolutie of elke vlag aan zoals je wilt. Kortere clips vragen minder geheugen en tijd; grotere GPU's kunnen er meer in kwijt.
 
 ## Waarschuwing over de modellicentie
@@ -162,7 +176,7 @@ Gebruikte runnamen tussen haakjes (onze eigen runnamen, geen bestanden in deze r
 ## Bekende beperkingen
 - **Bytebewijs** (zelf reproduceren: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; geverifieerd op onze sm_61-kaart, andere GPU's zijn mogelijk niet byte-identiek [gok]): met onze patchreeks (geheugenvlaggen aan) gaf een run van 56 frames sha256 `0979f156d548169b...`, identiek aan de referentie [gemeten]; bij 141 frames was de latent-sha256 `E5D028F8632BE4FE...` identiek (met de vlaggen 0013/0014). Voor 158 tot 209 frames is er geen directe bytereferentie; de keten van poorten is het bewijs. Het halen van de numerieke poorten garandeert geen goede clip: bewegingsconsistentie in de tijd wordt met het oog gecontroleerd (zie `docs/KAPILAR.md`).
 - **209 frames, welke vlaggenset:** het bytekettingbewijs voor 209 frames is verzameld met de vlaggenset F209V2 op de ontwikkelbuild (geen blokstaartvlaggen, gebouwd zonder patches 0019/0020); `uret.ps1` gebruikt dit recept voor 209 frames [gelezen: het script; een echte engine-run via `uret.ps1` slaagde in run U209].
-- Geverifieerd op één kaart (GTX 1050 Ti 4 GB); andere kaarten zijn niet geprobeerd.
+- Door ons geverifieerd op één kaart (GTX 1050 Ti 4 GB); externe meldingen over andere kaarten staan met hun labels in `docs/KART_PROFILLERI.md` [gemeld door gebruiker].
 - **Welke binary is gemeten:** de latent van 141 frames en de bytereeks zijn gemeten met onze ontwikkelbuilds. De release-binary die je downloadt is een verse build: de bytepoort voor 56 frames slaagde (volgend punt) en een run van 209 frames via `uret.ps1` haalde de poort (run U209, 3414 s, VRAM-piek 3777 MiB) [gemeten]; ten opzichte van de run van 209 frames met de ontwikkelbuild is de latent byte-identiek; in de video zijn de frames (md5) en de audio identiek, de sha256 van het AVI-bestand verschilt door de container [gemeten] (zie `docs/OLCUMLER.md`, sectie 0).
 - **Release-binary, 56 frames:** de release-binary (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) gaf een resultaat van 56 frames dat byte-identiek is aan R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 per frame en audio identiek), direct gedraaid met standaardvlaggen (geen `SD_*`-variabelen), exitcode 0, 601 s [gemeten: run B56VT2, 2026-11-19; het bewijs wordt bewaard door de auteurs, niet in deze repo]. Reikwijdte: alleen onze sm_61-kaart en 56 frames; geen clean-root-installatietest; de latent van 141 frames en de keten van 209 zijn met de oudere binary gemeten en daarmee NIET herhaald [niet geprobeerd]. Een eerste poging (B56VT, via een hulpscript) eindigde na 58 s zonder melding, oorzaak onbekend [gok: geheugendruk]; de tweede poging draaide `sd-cli` direct.
 - De installatie- en runscripts zijn nog niet vanuit een lege map geverifieerd (clean-root-test staat nog open).
@@ -176,4 +190,4 @@ Gebruikte runnamen tussen haakjes (onze eigen runnamen, geen bestanden in deze r
 - **Clean-root-test staat nog open:** de installatie- en runscripts zijn nog niet vanuit een lege map geverifieerd met alleen deze instructies; deze sectie wordt bijgewerkt wanneer die test (inclusief een bytevergelijking van 56 frames met de referentie) is vastgelegd.
 - Hier worden geen gegenereerde video's meegeleverd.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->

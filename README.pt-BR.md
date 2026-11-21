@@ -80,6 +80,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Qual placa eu tenho? (só links)
+
+O valor deste repositório são os patches que fazem o modelo caber em 4 GB e as portas de qualidade. Para outras placas, a versão CUDA pronta do stable-diffusion.cpp é uma OPÇÃO: não a medimos e nossas portas de qualidade não foram executadas nela. Nossas próprias medições cobrem uma placa (GTX 1050 Ti 4 GB). Todo o resto é relato da comunidade: colocamos o link e não garantimos.
+
+| Seu equipamento | Onde olhar | Evidência |
+|---|---|---|
+| GTX 1050 Ti 4 GB (nosso zip da release) | este README, `docs/OLCUMLER.md` | [medido] |
+| Outras placas NVIDIA (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` ativa `f32` automaticamente; versão CUDA pronta do stable-diffusion.cpp: uma opção, não medida por nós [não testado]) | [relatado pelo usuário] |
+| série RTX 50 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [relatado pelo usuário, PR #3] |
+| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (nota da comunidade, sem suporte oficial; o motor da release é CUDA) | [relatado pelo usuário, PR #4] |
+| Um filme mais longo a partir de vários clipes | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [relatado pelo usuário]; qualidade de filmes encadeados não medida por nós [não testado] |
+
+Licença: a aceitação da licença do MiniMax H3 (`docs/LISANS_KABUL.txt`) vale em qualquer caminho; a etapa de aceitação do `kur.ps1` não roda com a versão pronta.
+
 ## O que é isto
 Um conjunto de pequenos patches de memória e agendamento para o stable-diffusion.cpp, mais a receita de execução, as verificações e as medições que permitem rodar o MiniMax H3 (DiT de 33B; rodamos o GGUF HyperFlow Flash 13.7B Q4_K_M; o codificador de texto Qwen3-VL de 32B é separado) em uma GPU Pascal de 4 GB (GTX 1050 Ti, 16 GB de RAM do sistema).
 - Durações em uma única passada que de fato produzimos e que passaram em nossos portões de qualidade: 56, 141, 158, 175, 192, 209 quadros em 640x384, 24 fps (209 quadros = 8,7 s), com o áudio gerado pelo próprio H3 [medido: 209 quadros com o binário da versão publicada por meio do `uret.ps1`, execução U209; latente idêntico byte a byte ao da execução com o binário de desenvolvimento; quadros e áudio idênticos no vídeo, o sha do arquivo difere por causa do contêiner; as evidências ficam com os autores, não estão neste repositório]. 209 é a duração mais longa que assistimos e achamos fluida [relatado pelo usuário, 2026-11-19, vídeo assistido por inteiro; arquivo: saída do F209V2, 8,708 s].
@@ -101,7 +115,7 @@ Este portão não verifica a consistência do movimento (saltos de escala ou de 
 2. Portão de ruído bruto: resíduo do filtro de mediana <= 1,5 (escala 0-255).
 3. Ruído normalizado por textura, `scripts/doku_norm.py` (a versão deste repositório): N = resíduo mediano / textura de Sobel, a cada 6º quadro. **Nota de escala:** nesta versão os 10 clipes medidos dão N = 0,034-0,052 (tabela em `docs/KAPILAR.md`; o último quarto de F192/F209V2 chega a 0,062) e o limiar do portão extra é N <= 0,065. Outra implementação mediu 0,028-0,036 nos mesmos clipes, então os limiares NÃO são intercambiáveis entre versões. Em texturas muito finas (fileiras de grama) o N limpo foi 0,075, então o limiar é por família de cenas. Um estimador robusto de alta frequência (sigma-HH <= 1,5; limpo 0,74-1,19, com ruído adicionado s=2 dá 2,2-3,0) é o portão extra recomendado.
 
-Escopo: o VideoTurko trata de UMA única passada (até 209 quadros, cerca de 8,7 s). Encadear várias partes em um clipe mais longo foi testado; as emendas ficaram visíveis (a cena não continua de forma limpa), então isso não faz parte deste projeto. Se você quiser clipes mais longos, projete sua própria abordagem.
+Escopo: o VideoTurko trata de UMA única passagem (até 209 quadros, cerca de 8,7 s). Nosso próprio teste de encadeamento mostrou emendas visíveis (a cena não continua de forma limpa), então filmes mais longos não fazem parte do que verificamos. Para encadear há o guia da comunidade `docs/KLIP_ZINCIRI.md` e nosso utilitário só de CPU `scripts/zincir.py` (`plan`, `son-kare`, `bagla`; ele nunca inicia o motor); não medimos a qualidade de filmes encadeados [não testado], por isso confira cada emenda a olho e com `scripts/dikis_denetim.py`.
 Suas configurações são suas: 209 quadros é o nosso padrão testado em uma placa de 4 GB, não um limite que você precise usar. Escolha qualquer número de quadros da grade 17k+5 (56, 73, ... 192, 209; veja `docs/KURULUM.md`), mude o prompt, a seed, a resolução ou qualquer opção como quiser. Clipes mais curtos usam menos memória e tempo; GPUs maiores podem comportar mais.
 
 ## Aviso sobre a licença do modelo
@@ -162,7 +176,7 @@ Nomes de execução usados entre colchetes (nossos próprios nomes de execução
 ## Limitações conhecidas
 - **Prova byte a byte** (como reproduzi-la você mesmo: `docs/KANITLAR.md`, "R0 ve latent referansi nasil uretilir"; verificada em nossa placa sm_61, outras GPUs podem não ser idênticas byte a byte [estimativa]): com nossa série de patches (opções de memória ligadas) uma execução de 56 quadros deu sha256 `0979f156d548169b...`, idêntico à referência [medido]; com 141 quadros o sha256 do latente `E5D028F8632BE4FE...` foi idêntico (com as opções 0013/0014). Os quadros de 158 a 209 não têm referência direta byte a byte; a cadeia de portões é a evidência. Passar nos portões numéricos não garante um bom clipe: a consistência do movimento ao longo do tempo é conferida a olho (veja `docs/KAPILAR.md`).
 - **209 quadros, com qual conjunto de opções:** a evidência da cadeia de bytes de 209 quadros foi obtida com o conjunto de opções F209V2 no build de desenvolvimento (sem opções de cauda de bloco, compilado sem os patches 0019/0020); o `uret.ps1` usa essa receita para 209 quadros [lido: o script; uma execução real do motor por meio do `uret.ps1` passou na execução U209].
-- Verificado em uma única placa (GTX 1050 Ti de 4 GB); outras placas não foram testadas.
+- Verificado por nós em uma placa (GTX 1050 Ti 4 GB); relatos externos de outras placas estão listados com seus rótulos em `docs/KART_PROFILLERI.md` [relatado pelo usuário].
 - **Qual binário foi medido:** o latente de 141 quadros e a cadeia de bytes foram medidos com nossos builds de desenvolvimento. O binário da versão publicada que você baixa é um build novo: seu portão byte a byte de 56 quadros passou (próximo item) e uma execução de 209 quadros por meio do `uret.ps1` passou no portão (execução U209, 3414 s, pico de VRAM 3777 MiB) [medido]; em relação à execução de 209 com o binário de desenvolvimento o latente é idêntico byte a byte; no vídeo os quadros (md5) e o áudio são idênticos, o sha256 do arquivo AVI difere por causa do contêiner [medido] (veja `docs/OLCUMLER.md`, seção 0).
 - **Binário da versão publicada, 56 quadros:** o binário da versão publicada (sd-cli `c5cebe78...`, stable-diffusion.dll `e5d3d329...`) deu um resultado de 56 quadros idêntico byte a byte ao R0 (sha256 `0979f156d548169be03acd1a9d7617102a75333aa48a28d6bbfd1cc5fa3f604d`; md5 por quadro e áudio idênticos), executado diretamente com as opções padrão (sem variáveis `SD_*`), código de saída 0, 601 s [medido: execução B56VT2, 2026-11-19; as evidências ficam com os autores, não estão neste repositório]. Escopo: apenas nossa placa sm_61 e 56 quadros; não é um teste de instalação em raiz limpa; o latente de 141 quadros e a cadeia de 209 foram medidos com o binário anterior e NÃO foram repetidos com este [não testado]. Uma primeira tentativa (B56VT, por meio de um script auxiliar) terminou em silêncio após 58 s, causa desconhecida [estimativa: pressão de memória]; a segunda tentativa executou o `sd-cli` diretamente.
 - Os scripts de instalação e execução ainda não foram verificados a partir de uma pasta vazia (teste em raiz limpa pendente).
@@ -176,4 +190,4 @@ Nomes de execução usados entre colchetes (nossos próprios nomes de execução
 - **Teste em raiz limpa pendente:** os scripts de instalação e execução ainda não foram verificados a partir de uma pasta vazia usando só estas instruções; esta seção será atualizada quando esse teste (incluindo uma comparação byte a byte de 56 quadros com a referência) for registrado.
 - Nenhum vídeo gerado é distribuído aqui.
 
-<!-- i18n-source: README.md sha256:3ec3d0b8e9f1 -->
+<!-- i18n-source: README.md sha256:322506e84cdc -->
