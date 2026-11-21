@@ -57,7 +57,47 @@ A different prompt (an aerial dawn shot) and seed 101 were used here, so these a
 - Two-stage sampling (`--hires --hires-upscaler "Latent (bicubic)" --hires-width 1344 --hires-height 768 --hires-steps 4 --hires-denoising-strength 0.4`) at 56 frames: 176.4 s, first pass at 640x384 43.5 s; the second pass uses the same 4267.0 MB buffer, so it has the same frame limit [measured].
 - 640x384 at 8 GB is not limited by speed but by frame count at larger sizes; a card with more free VRAM should go further [guess].
 
+## Image-to-video with your own first frame / Kendi ilk karenle resimden video (`--init-img`)
+
+**EN** Added after PR #6, same machine, same engine and command as above plus `--init-img`; started with `sd-cli` directly, not through `scripts/uret.ps1`, gate not run.
+
+| Run | Prompt | Frames | `generate_video` | Sampling | DiT compute buffer (VRAM) | Result |
+|---|---|---|---|---|---|---|
+| text only, seed 202 | the whole scene: a fisherman on the Galata Bridge, the Golden Horn and the old city skyline behind him | 189 | not recorded here | - | - | a made-up skyline, no Galata Tower [measured: visual check, frames 0, 94, 185] |
+| `--init-img`, seed 202 | only the motion and the sound: the fisherman casts, "the background stays still and unchanged"; the init image shows the Galata Tower | 189 requested, 192 written | 175.4 s | 130.0 s | 3510.8 MB | the tower and the skyline of the init image stay for the whole 8 s; the fisherman casts [measured: visual check, frames 0, 94, 185] |
+
+- The init image was a 1280x768 still made with another open model (Z-Image Turbo, Apache-2.0), scaled to 640x384 PNG before the run [measured].
+- 189 is not on the 17k+5 grid; the engine wrote 192 frames, as `AGENTS.md` says [measured: ffprobe].
+- What helped: put the scene (who is where, which landmark, what is in the background) into the still, and let the prompt describe only the motion and the sound. A text-only prompt that named the landmark ("a single Galata Tower, only one tower") gave one tower but almost no motion in a run on another stack (ComfyUI, pruned Q4_K model) [measured, other stack, not this engine].
+
+**TR** PR #6'dan sonra eklendi; aynı makine, yukarıdaki motor ve komut, üstüne `--init-img`. `sd-cli` doğrudan başlatıldı, `scripts/uret.ps1` kullanılmadı, kapı çalıştırılmadı.
+
+- Sahnenin tamamını anlatan istemle (seed 202) siluet uydurma, Galata Kulesi yok [ölçtüm: 0, 94 ve 185. kareler]. Aynı seed ile `--init-img` verilince ilk karedeki kule ve siluet 8 sn boyunca duruyor, balıkçı oltayı atıyor; 175,4 sn, örnekleme 130,0 sn, DiT tamponu 3510,8 MB [ölçtüm].
+- İlk kare başka bir açık modelle (Z-Image Turbo, Apache-2.0) 1280x768 üretildi, koşudan önce 640x384 PNG'ye küçültüldü. 189 kare istendi, motor 192 yazdı.
+- İşe yarayan: sahneyi (kim nerede, hangi yapı, arkada ne var) ilk kareye koy, istem yalnız hareketi ve sesi anlatsın.
+
+## Upscaling to 1080p / 1080p'ye büyütme
+
+**EN** VideoTurko writes 640x384. These are the upscalers I ran on the same RTX 3070 8 GB on H3 output from this engine; none of them is part of this repo, check each project's licence yourself. Times are from my run logs [measured].
+
+| Tool | Setting | Input | Time | What I saw |
+|---|---|---|---|---|
+| Real-ESRGAN ncnn-vulkan, `realesrgan-x4plus` | x4, PNG frames | 30 s film, 720 frames | 622 s | slow |
+| Real-ESRGAN ncnn-vulkan, `realesr-general-x4v3` (official weight converted to ncnn) | x4, `-j 2:4:4`, JPG frames | 30 s film, 720 frames | 38.6 s | fast, leaves halos at edges [measured: visual check] |
+| SeedVR2 (`numz/ComfyUI-SeedVR2_VideoUpscaler` `4490bd1`, `inference_cli.py`, 3B fp8) | `--resolution 768`, batch 9, DiT on CPU, `--blocks_to_swap 32`, tiled VAE 512/32 | one 8 s shot, 189 frames | 373 s | best on faces, beard and fabric |
+| FlashVSR v1.1 (`lihaoyun6/ComfyUI-FlashVSR_Ultra_Fast` `4820b3f`) | mode `tiny`, scale 2, tiled DiT 256 / overlap 24, tiled VAE, `sparse_sage_attention` | one 8 s shot, 192 frames | 125-130 s (5 runs) | close to SeedVR2; tile 512 ran out of memory |
+
+- My pick: FlashVSR x2 to 1280x768, then `ffmpeg` lanczos to 1920x1152 and a crop to 1920x1080. FlashVSR writes no audio; take it from the H3 file [measured].
+- In a side-by-side look FlashVSR x2 beat a mix of SeedVR2 (faces) and general-x4v3 (background) [user-reported: my own visual judgement].
+- Watch wide water shots: FlashVSR can leave a fine grid pattern there [measured: one shot].
+
+**TR** Aynı RTX 3070 8 GB'ta, bu motorun H3 çıktısında çalıştırdığım büyütücüler. Hiçbiri bu reponun parçası değil; lisanslarına kendin bak. Süreler koşu günlüklerimden [ölçtüm].
+
+- Real-ESRGAN `x4plus`: 30 sn'lik film (720 kare) 622 sn. `general-x4v3` (resmi ağırlık ncnn'e çevrildi): aynı film 38,6 sn, kenarlarda hare bırakıyor.
+- SeedVR2 (`--resolution 768`): 8 sn'lik çekim (189 kare) 373 sn, yüzde ve kumaşta en iyisi.
+- FlashVSR v1.1 `tiny`, 2 kat, tile 256: 8 sn'lik çekim (192 kare) 125-130 sn; tile 512 belleğe sığmadı. Seçimim bu: 2 kat 1280x768, sonra `ffmpeg` lanczos ile 1920x1152 ve 1080p'ye kırpma; ses H3 dosyasından alınır. Geniş su çekimlerinde ince ızgara desenine bak.
+
 ## Not covered / Kapsanmayan
 
-- No quality gate run, no byte comparison with the R0 reference, no `-InitImg` run.
+- No quality gate run, no byte comparison with the R0 reference; `--init-img` was run with `sd-cli` directly, not through `uret.ps1 -InitImg`.
 - Fast hand movement (a fish being lifted) jumped in a few frames in one 640x384 clip; I have no tested fix [measured: visual check of one clip].
