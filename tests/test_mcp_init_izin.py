@@ -95,7 +95,21 @@ class Kisitli(Temel):
     def test_girdi_icindeki_dosyalar_gecer(self):
         self.tamam(self.root / "girdi" / "a.png")
         self.tamam("girdi/a.png")
+        self.tamam("girdi/alt/b.png")
+
+    @unittest.skipUnless(WIN, "backslash is a path separator only on Windows")
+    def test_ters_bolu_ayirici_windows(self):
+        # On Linux/macOS a backslash is an ordinary file-name character, so this input is a different (missing) file there.
+        # (Before 2026-11-21 this line sat in the test above and failed on Linux/macOS: measured in WSL Ubuntu.)
         self.tamam("girdi" + BS + "alt" + BS + "b.png")
+
+    @unittest.skipIf(WIN, "POSIX only: backslash is a literal file-name character")
+    def test_posix_ters_bolu_dosya_adi_disari_cikaramaz(self):
+        # The server itself is Windows-only (kernel32); this pins the module's conservative result on POSIX:
+        # a backslash name is one path component, never a way out of (or into) the allowed folder.
+        self.red("girdi" + BS + "alt" + BS + "b.png")
+        self.red("girdi" + BS + ".." + BS + "disarda.png")
+        self.red(str(self.root / "girdi") + BS + "a.png")
 
     def test_disarisi_reddedilir(self):
         self.red(self.root / "disarda.png")
@@ -189,6 +203,23 @@ class Baglar(Temel):
         self.assertIn("birlesim", e)
         # junction'in gercekten disari gittigi (testin anlamli oldugu): dolayli okuma mumkun
         self.assertTrue((self.root / "girdi" / "kavsak" / "gizli.png").is_file())
+
+    def test_realpath_ikinci_savunma_tek_basina_yeter(self):
+        # Mutation guard (denetci 2026-11-21): with the first defense (_bag_mi, lstat per component) blinded, the realpath
+        # check alone must still refuse a link that leaves the folder. Before this test, deleting the realpath check
+        # changed no result (measured: mutant run in WSL Ubuntu), i.e. the second defense was unguarded.
+        try:
+            os.symlink(str(self.dis / "gizli.png"), str(self.root / "girdi" / "bag.png"))
+            os.symlink(str(self.dis), str(self.root / "girdi" / "baglanti"), target_is_directory=True)
+        except (OSError, NotImplementedError, AttributeError):
+            self.skipTest("sembolik bag olusturulamadi (yetki yok)")
+        eski = IZIN._bag_mi
+        IZIN._bag_mi = lambda path: False
+        self.addCleanup(setattr, IZIN, "_bag_mi", eski)
+        e = self.red("girdi/bag.png")
+        self.assertIn("gercek yolu", e)
+        e = self.red("girdi/baglanti/gizli.png")
+        self.assertIn("gercek yolu", e)
 
     def test_izinli_klasorun_kendisi_baglantiysa_kullanici_secimidir(self):
         # yalniz ALTINDAKI baglar reddedilir; kok kullanicinin acik secimi

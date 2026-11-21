@@ -45,7 +45,8 @@ class KuruSahte(unittest.TestCase):
         _, gercek, _ = kos()
         _, sahteli, _ = kos(sahte=SAHTE)
         import re
-        sat = lambda t: [re.sub(r'bos \d+[.,]\d+ GB', 'bos N GB', re.sub(r'kurusahte_\w+', 'K', l)) for l in t.splitlines() if ('GiB' in l or 'RAM' in l or 'HATA' in l or 'bos' in l.lower())]
+        # canli olcum: bos RAM iki kosu arasinda degisir ("bos 8,7 GB" ve uyari satirindaki "su an 8.7 GB"); yalniz o sayilar maskelenir (disk GiB satirlari maskelenmez). 2026-11-21: sahte kirmizi (8.5 != 8.6) goruldu.
+        sat = lambda t: [re.sub(r'(bos|su an) \d+[.,]\d+ GB', lambda m: m.group(1) + ' N GB', re.sub(r'kurusahte_\w+', 'K', l)) for l in t.splitlines() if ('GiB' in l or 'RAM' in l or 'HATA' in l or 'bos' in l.lower())]
         self.assertEqual(sat(gercek), sat(sahteli))
 
     def test_kuru_olmadan_ortam_degiskeni_kurulumu_degistirmez(self):
