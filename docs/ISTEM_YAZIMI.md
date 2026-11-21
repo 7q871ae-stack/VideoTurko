@@ -29,6 +29,7 @@ If you do not want speech, say `no narration, no speech` (add `no music` if you 
 - Cap: 192 frames (8.0 s), slices of 2.0 s each: `[0 to 2.0 s] [2.0 to 4.0 s] [4.0 to 6.0 s] [6.0 to 8.0 s]`. 209 frames did not fit in 4 GB with `-InitImg` (about 17.5 MB of VRAM short) [measured: runs B209 and B192].
 - Add a sentence that keeps the first frame: `Same robot design, colors and text as the first frame throughout` (replace "robot" with your subject; name the text or design that must stay).
 - Describe what moves; the init image already gives the look. Use the init image at the video size (the B192 run used a 640x384 image) [measured: file used in that run].
+- If a landmark or a specific background must appear, put it in the still and let the prompt describe only the motion and the sound: on an RTX 3070 the text-only prompt made up the skyline, the init image kept the tower for 8 s [user-reported, PR #7; details: `docs/RTX3070_STOCK_SDCPP.md`].
 
 ### First and last frame (`-EndImg`, "FLF")
 FLF means first-last frame: you give the frame the clip starts on (`-InitImg`) and the frame it must end on (`-EndImg`); the model fills the motion between them.

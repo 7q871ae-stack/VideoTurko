@@ -90,6 +90,8 @@ A different prompt (an aerial dawn shot) and seed 101 were used here, so these a
 - My pick: FlashVSR x2 to 1280x768, then `ffmpeg` lanczos to 1920x1152 and a crop to 1920x1080. FlashVSR writes no audio; take it from the H3 file [measured].
 - In a side-by-side look FlashVSR x2 beat a mix of SeedVR2 (faces) and general-x4v3 (background) [user-reported: my own visual judgement].
 - Watch wide water shots: FlashVSR can leave a fine grid pattern there [measured: one shot].
+- Maintainer note (after PR #7): the tile settings above belong to the upscalers; VideoTurko's own non-tiled VAE and quality settings do not change. Licences as shown on GitHub (checked 2026-11-21): Real-ESRGAN (`xinntao/Real-ESRGAN`) BSD-3-Clause, SeedVR (`ByteDance-Seed/SeedVR`) Apache-2.0, `numz/ComfyUI-SeedVR2_VideoUpscaler` Apache-2.0, FlashVSR (`OpenImagingLab/FlashVSR`) Apache-2.0, `lihaoyun6/ComfyUI-FlashVSR_Ultra_Fast` GPL-3.0. Model weights may have their own terms. The ncnn-converted `realesr-general-x4v3` weight is not shipped here; convert it from the official release yourself.
+- Bakımcı notu (PR #7 sonrası): yukarıdaki karo (tile) ayarları büyütücülere aittir; VideoTurko'nun karosuz VAE'si ve kalite ayarları değişmez. GitHub'da görünen lisanslar (2026-11-21): Real-ESRGAN BSD-3-Clause, SeedVR Apache-2.0, ComfyUI-SeedVR2 düğümü Apache-2.0, FlashVSR Apache-2.0, ComfyUI-FlashVSR_Ultra_Fast düğümü GPL-3.0. Model ağırlıklarının kendi koşulları olabilir. ncnn'e çevrilmiş `realesr-general-x4v3` ağırlığı burada dağıtılmaz; resmi sürümden kendin çevir.
 
 **TR** Aynı RTX 3070 8 GB'ta, bu motorun H3 çıktısında çalıştırdığım büyütücüler. Hiçbiri bu reponun parçası değil; lisanslarına kendin bak. Süreler koşu günlüklerimden [ölçtüm].
 

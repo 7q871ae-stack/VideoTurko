@@ -75,6 +75,8 @@ python -I -X utf8 scripts\zincir.py bagla klip1.avi klip2.avi klip3.avi klip4.av
   -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a aac -b:a 160k -ar 48000
   ```
 
+- **1080p'ye büyütme / Upscaling to 1080p:** VideoTurko 640x384 yazar; birleştirmeden önce ya da sonra büyütmek isterseniz, bir katkıcının RTX 3070'te ölçtüğü dört araç ve süreleri: `docs/RTX3070_STOCK_SDCPP.md`, "Upscaling to 1080p" [user-reported, PR #7]. Büyütücü bu reponun parçası değildir. / VideoTurko writes 640x384; for upscaling, see the four tools a contributor timed on an RTX 3070 in that file [user-reported, PR #7]; no upscaler is part of this repo.
+
 ---
 
 ## 6. Doğrulama Kontrol Listesi / Verification Checklist
