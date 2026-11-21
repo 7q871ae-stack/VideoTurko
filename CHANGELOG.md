@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+Scope: scripts, documentation and tests only. Quality settings unchanged (6 steps, cfg 1, tile-less VAE, 17k+5 frames).
+
+- `scripts/zincir.py` (CPU only, no GPU, no network): `plan --sure 30` turns a target length into a clip plan, `son-kare <clip> <png>` extracts the REAL last frame (counted with ffprobe, not guessed by time; see `docs/SIK_HATALAR.md` item 9), `bagla <clip1> <clip2> ... -o film.mp4 [--calistir]` prints a PowerShell-safe ffmpeg command (hand-off frame dropped, audio joined or `-an` when all clips are silent) and, with `--calistir`, runs it. Why: first-last-frame chains of several clips were made by users [user-reported, X]. We did not measure the quality of any chained film [not tried]; check seams by eye and with `scripts/dikis_denetim.py`. Tests: `tests/test_zincir.py`.
+- AMD and other non-NVIDIA cards: the `[VT-E-GPU]` line of `kur.ps1` now points to `docs/AMD_ROCM.md` (community note, not officially supported); `tani.ps1` adds the display adapter name when `nvidia-smi` is missing. Exit codes and headings are unchanged.
+- RTX 50 (`[VT-W-BLACKWELL]`) and `[VT-W-GPU-DENENMEDI]`: the messages now name the stock stable-diffusion.cpp CUDA release `master-1106-532d2c1` as a second way. Its build file lists `61;70;75;80;86;89;90;100;120` [read: `build.yml` at that tag], so it includes sm_120; not tried on an RTX 50 card, it has none of our memory patches, quality gate not run by us. The RTX 3070 8 GB report that ran it is in `docs/KART_PROFILLERI.md` [user-reported, PR #6].
+
 ## v0.1.2 (2026-11-21)
 
 Scope: scripts, documentation and tests only; no new engine or model. Quality settings (6 steps, cfg 1, tile-less VAE, 17k+5 frames) are unchanged [read: `git diff v0.1.1` shows no change to `scripts/modeller.json`, and the `uret.ps1` changes are message tags, the RTX 50 warning and the Blackwell/AMD notes]. The 56-frame byte check was last run with v0.1.1; it was not re-run for v0.1.2 [not measured].
