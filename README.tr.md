@@ -80,6 +80,23 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Disk düzeni ve kaldırma
+VideoTurko'nun kurduğu her şey tek kök klasörde, `<VT_ROOT>` altında durur (varsayılan: açtığınız klasör; başka yer için betikleri çalıştırmadan önce `VT_ROOT` ortam değişkenini verin). Sistem PATH'ine, kullanıcı profiline ve registry'ye hiçbir şey yazılmaz.
+
+| `<VT_ROOT>` altındaki klasör | İçinde ne var | Boyut |
+|---|---|---|
+| `engine\bin`, `engine\lisanslar` | GitHub sürümünden motor (exe ve DLL'ler) ve zip'lerinin lisans dosyaları | ölçülmedi |
+| `model` | resmî kaynaktan indirilen, sha256 denetimli model dosyaları | 29,3 GiB [okudum: `AGENTS.md`] |
+| `indirme` | indirilen zip'ler ve açma artıkları | ölçülmedi |
+| `runs` | bitmiş videolarınız | kullandıkça büyür |
+| `.venv` (isteğe bağlı) | kalite kapısı için Python ortamı (opencv-python, numpy) | ölçülmedi |
+
+Kurulum betikleri `pip`, `uv` ya da Hugging Face aracı çalıştırmaz; paket ya da model önbelleği yazmazlar. İsteğe bağlı kapı paketlerini kendiniz kuracaksanız önbelleği de köke koyun: `py -3 -m venv <VT_ROOT>\.venv`, sonra `<VT_ROOT>\.venv\Scripts\python.exe -m pip install --cache-dir <VT_ROOT>\.onbellek\pip opencv-python numpy`; `<VT_ROOT>\.venv` varsa betikler onu kullanır (`VT_PYTHON` verilmedikçe).
+
+**Modeli zaten indirdiniz mi?** Kurulumu `-ModelKlasoru <folder>` ile ona gösterin: sha256'sı eşleşen dosyalar indirilmez, bağlanır. Aynı sürücüde bu bir sert bağdır (veri bir kez durur; kaynak klasörü sonradan silmek yer açmaz); başka sürücüde KOPYADIR (yaklaşık 29 GiB iki kez). sha256'sı doğru tam dosya atlanır, yarım indirme `.part` dosyasından sürer.
+
+**Kaldırma:** VideoTurko'yu kapatın, `runs` içinden saklamak istediğiniz videoları kopyalayın, sonra `<VT_ROOT>` klasörünü silin; kaldırma bu kadar. Bizim silmemiz gerekmeyenler: sistem Python'una yaptığınız `pip install` (bundan kaçınmak için yukarıdaki gibi `.venv` kullanın) ve `winget` ile kurulanlar.
+
 ## Hangi kartım var? (yalnız bağlantılar)
 
 Bu deponun değeri, modeli 4 GB'a sığdıran yamalar ve kalite kapılarıdır. Diğer kartlar için hazır stable-diffusion.cpp CUDA sürümü bir SEÇENEKTİR: onu ölçmedik ve kalite kapılarımız onun üzerinde koşturulmadı. Kendi ölçümlerimiz tek kartı kapsıyor (GTX 1050 Ti 4 GB). Gerisi topluluk raporudur: bağlantısını veriyoruz, doğruluğunu garanti etmiyoruz.
@@ -190,4 +207,4 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 - **Temiz kök testi bekliyor:** kurulum ve çalıştırma betikleri boş klasörde yalnız bu talimatla henüz doğrulanmadı; test (56 karede referansa bayt kıyası dahil) kaydedilince bu bölüm güncellenir.
 - Çıktı videolar depoda yok.
 
-<!-- i18n-source: README.md sha256:322506e84cdc -->
+<!-- i18n-source: README.md sha256:7d01bea18712 -->

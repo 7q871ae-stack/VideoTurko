@@ -169,13 +169,13 @@ if ($GpuCc -ge 7.0 -and -not $env:GGML_CUDA_CUBLAS_COMPUTE_TYPE) { $Env1['GGML_C
 #   Microsoft Store kisayolu WindowsApps\python.exe bulunur ve 9009 ile cikar; Get-Command yetmez). Basarisizsa video uretilmez, cikis 6.
 #   -Kontrol (kur.ps1 kontrol uretimi, kapi yok): atlanir. -Kuru: yalniz bilgi satiri.
 if (-not $Kontrol) {
-    $pyK = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } else { 'python' }); $pyTamam = $false; $pyKod = 'bulunamadi'
+    $pyK = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } elseif (Test-Path -LiteralPath (Join-Path $Root '.venv/Scripts/python.exe')) { Join-Path $Root '.venv/Scripts/python.exe' } else { 'python' }); $pyTamam = $false; $pyKod = 'bulunamadi'
     if (Get-Command $pyK -ErrorAction SilentlyContinue) {
         $eapP = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
         try { $null = & $pyK -I -c "import cv2, numpy" 2>&1; $pyKod = "$LASTEXITCODE"; $pyTamam = ($LASTEXITCODE -eq 0) } catch { $pyKod = 'calistirilamadi' } finally { $ErrorActionPreference = $eapP }
     }
     if (-not $pyTamam) {
-        $pyMesaj = "KAPI CALISAMAZ: [VT-E-PY] python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu, python kurulu degil). Python 3 kurun (python.org), sonra 'py -3 -m pip install opencv-python numpy'; ya da VT_PYTHON ile python.exe yolunu verin."
+        $pyMesaj = "KAPI CALISAMAZ: [VT-E-PY] python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu, python kurulu degil). Python 3 kurun (python.org), sonra 'py -3 -m pip install opencv-python numpy'; ya da VT_PYTHON ile python.exe yolunu verin. Dis iz birakmamak icin: kokte venv kurun ('py -3 -m venv <VT_ROOT>/.venv'), paketi oradan yukleyin ('<VT_ROOT>/.venv/Scripts/python.exe -m pip install --cache-dir <VT_ROOT>/.onbellek/pip opencv-python numpy'); .venv varsa VT_PYTHON gerekmez."
         if ($Kuru) { Write-Output "bilgi: $pyMesaj (-Kuru: yalniz bilgi)" }
         else { Write-Output "$pyMesaj Video uretilmedi: GPU isi baslamadan durduruldu (cikis 6)."; exit 6 }
     }
@@ -317,7 +317,7 @@ try {
     }
     # kalite kapisi: sonuc basari olcutune DAHIL. TAMAM yalniz kapi gecince. Esiklere dokunulmaz (docs\KAPILAR.md). Cikis: 5 = KAPI RED, 6 = kapi calismadi.
     if (-not $Kontrol) {
-        $py = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } else { 'python' })
+        $py = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } elseif (Test-Path -LiteralPath (Join-Path $Root '.venv/Scripts/python.exe')) { Join-Path $Root '.venv/Scripts/python.exe' } else { 'python' })
         if (-not (Get-Command $py -ErrorAction SilentlyContinue)) {
             Write-Output ("VIDEO URETILDI ama KAPI CALISMADI [VT-E-PY] (python yok; VT_PYTHON ayarlayin, opencv-python gerekir): klip kabul edilmedi sayilir: {0}" -f $Cikti)
             exit 6

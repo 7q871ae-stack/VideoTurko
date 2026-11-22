@@ -80,6 +80,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem iste
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\uret.ps1 -Istem istem.txt -Kare 141 -Kuru
 ```
 
+## Disk layout and removal
+
+> Translation of this section is pending; the English text is authoritative. / Bu bölümün çevirisi bekliyor; İngilizce metin esastır.
+
+Everything VideoTurko installs lives in one root folder, `<VT_ROOT>` (default: the folder you extracted; set the environment variable `VT_ROOT` before running the scripts to use another place). Nothing is written to the system PATH, the user profile or the registry.
+
+| Folder under `<VT_ROOT>` | What is in it | Size |
+|---|---|---|
+| `engine\bin`, `engine\lisanslar` | the engine from the GitHub release (exe and DLLs) and the license files of its zips | not measured |
+| `model` | the model files, downloaded from the official source and sha256-checked | 29.3 GiB [read: `AGENTS.md`] |
+| `indirme` | downloaded zips and their unpacking leftovers | not measured |
+| `runs` | your finished videos | grows with use |
+| `.venv` (optional) | the Python environment for the quality gate (opencv-python, numpy) | not measured |
+
+The install scripts run no `pip`, `uv` or Hugging Face tool, so they write no package or model cache. Only if you install the optional gate packages yourself, keep the cache in the root too: `py -3 -m venv <VT_ROOT>\.venv`, then `<VT_ROOT>\.venv\Scripts\python.exe -m pip install --cache-dir <VT_ROOT>\.onbellek\pip opencv-python numpy`; the scripts use `<VT_ROOT>\.venv` when it exists (unless `VT_PYTHON` is set).
+
+**Already downloaded the model?** Point the installer at it with `-ModelKlasoru <folder>`: files whose sha256 matches are linked instead of downloaded. On the same drive this is a hard link (the data exists once, so deleting the source folder later does not free the space); on another drive it is a COPY (about 29 GiB twice). A complete file with the right sha256 is skipped, and an interrupted download continues from its `.part` file.
+
+**Removal:** close VideoTurko, copy out the videos you want to keep from `runs`, then delete the `<VT_ROOT>` folder. That is the whole uninstall. Not ours to remove: a `pip install` you made into the system Python (use a `.venv` as above to avoid that) and anything installed with `winget`.
+
 ## मेरे पास कौन-सा कार्ड है? (केवल लिंक)
 
 इस रिपॉज़िटरी का मूल्य वे पैच हैं जो मॉडल को 4 GB में समा देते हैं, और गुणवत्ता गेट। अन्य कार्डों के लिए तैयार stable-diffusion.cpp CUDA रिलीज़ एक विकल्प है: हमने इसे नहीं मापा और हमारे गुणवत्ता गेट इस पर नहीं चलाए गए। हमारे अपने माप एक ही कार्ड (GTX 1050 Ti 4 GB) को कवर करते हैं। बाकी सब समुदाय की रिपोर्टें हैं: हम उनके लिंक देते हैं, पर उनकी गारंटी नहीं देते।
@@ -190,4 +210,4 @@ stable-diffusion.cpp के लिए छोटे मेमोरी/शेड�
 - **Clean-root परीक्षण बाकी है:** इंस्टॉल और रन स्क्रिप्ट अभी केवल इन निर्देशों से खाली फ़ोल्डर में सत्यापित नहीं हुई हैं; जब वह परीक्षण (संदर्भ से 56-फ़्रेम बाइट तुलना सहित) दर्ज होगा, यह भाग अपडेट होगा।
 - यहाँ कोई बनाया हुआ वीडियो शामिल नहीं है।
 
-<!-- i18n-source: README.md sha256:322506e84cdc -->
+<!-- i18n-source: README.md sha256:7d01bea18712 -->

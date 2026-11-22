@@ -145,13 +145,13 @@ function Adim-Kontrol0 {
     if ($vcVar) { Say ("  VC++ calisma zamani: var (vcruntime140 {0})" -f (Get-Item -LiteralPath $vcDll).VersionInfo.ProductVersion) }
     else { [void]$uyari.Add('[VT-W-VC] Visual C++ 2015-2022 x64 Redistributable bulunamadi (System32\vcruntime140.dll/msvcp140.dll yok): Microsoft sayfasindan kurun (sd-cli acilmazsa nedeni budur).') }
     # Python + OpenCV + numpy: kurulum icin gerekmez; uret.ps1 kalite kapisi icin ister (yoksa video uretilmez, cikis 6)
-    $pyK = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } else { 'python' }); $pyTamam = $false; $pyKod = 'bulunamadi'
+    $pyK = $(if ($env:VT_PYTHON) { $env:VT_PYTHON } elseif (Test-Path -LiteralPath (Join-Path $Root '.venv/Scripts/python.exe')) { Join-Path $Root '.venv/Scripts/python.exe' } else { 'python' }); $pyTamam = $false; $pyKod = 'bulunamadi'
     if ((Sahte-Al 'python' '') -ne 'yok' -and (Get-Command $pyK -ErrorAction SilentlyContinue)) {
         $eapP = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
         try { $null = & $pyK -I -c "import cv2, numpy" 2>&1; $pyKod = "$LASTEXITCODE"; $pyTamam = ($LASTEXITCODE -eq 0) } catch { $pyKod = 'calistirilamadi' } finally { $ErrorActionPreference = $eapP }
     }
     if ($pyTamam) { Say "  Python + opencv + numpy: var ($pyK)" }
-    else { [void]$uyari.Add("[VT-W-PY] Python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu): kurulum etkilenmez ama uret.ps1 kalite kapisi icin ister, yoksa video uretilmez (cikis 6). Python 3 kurun, sonra 'py -3 -m pip install opencv-python numpy' (ya da VT_PYTHON).") }
+    else { [void]$uyari.Add("[VT-W-PY] Python + opencv-python + numpy hazir degil ($pyK, sonuc $pyKod; 9009 = Windows Store kisayolu): kurulum etkilenmez ama uret.ps1 kalite kapisi icin ister, yoksa video uretilmez (cikis 6). Python 3 kurun, sonra 'py -3 -m pip install opencv-python numpy' (ya da VT_PYTHON). Dis iz birakmamak icin: kokte venv kurun ('py -3 -m venv <VT_ROOT>/.venv'), paketi oradan yukleyin ('<VT_ROOT>/.venv/Scripts/python.exe -m pip install --cache-dir <VT_ROOT>/.onbellek/pip opencv-python numpy'); .venv varsa VT_PYTHON gerekmez.") }
     # Yollar
     Yol-Uyar 'Kurulum koku' $Root
     if ($ModelDir -ne (Join-Path $Root 'model')) { Yol-Uyar 'Model klasoru' $ModelDir }
@@ -268,7 +268,7 @@ function Model-Bagla {
         Say "  sha256 hesaplaniyor: $($d.hedef) (buyuk dosya, dakikalar surer)"
         if ((Sha256 $k) -ne $d.sha256.ToLower()) { Say "  UYARI: sha256 eslesmedi, baglanmadi (indirilecek): $($d.hedef)"; continue }
         if ([IO.Path]::GetPathRoot($k) -eq [IO.Path]::GetPathRoot($h)) { & cmd.exe /c mklink /H "$h" "$k" 2>&1 | Out-Null }
-        if (-not (Test-Path -LiteralPath $h)) { Copy-Item -LiteralPath $k -Destination $h }
+        if (-not (Test-Path -LiteralPath $h)) { Say ("  NOT: baska surucu, sert baglanti olmaz: KOPYALANIYOR (ek {0:N1} GiB yer; bagli kalmasini istemiyorsaniz modeli bu surucuye tasiyin): {1}" -f ($d.boyut / 1GB), $d.hedef); Copy-Item -LiteralPath $k -Destination $h }
         Say "  BAGLANDI (yerel dosyadan, indirilmedi): $($d.hedef)"
     }
 }
