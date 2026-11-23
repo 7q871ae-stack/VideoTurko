@@ -1,0 +1,278 @@
+{
+  "kit_surumu": 2,
+  "kurulu_parcalar": {},
+  "repo": {
+    "ad": "VideoTurko",
+    "sahip": "alexturkey",
+    "kisa_ad": "vt",
+    "tur": "yama_paketi",
+    "gpu": true,
+    "platform": [
+      "windows-10",
+      "windows-11"
+    ],
+    "ana_dal": "main",
+    "lisans": "MIT"
+  },
+  "betik_dizini": "scripts",
+  "korumali_yollar": [
+    "tests/*",
+    "conftest.py",
+    "setup.py",
+    "pyproject.toml",
+    "requirements*.txt",
+    "Makefile",
+    ".gitignore"
+  ],
+  "izinli_alan_adlari": [
+    "github.com",
+    "release-assets.githubusercontent.com",
+    "huggingface.co",
+    "hf.co",
+    "us.aws.cdn.hf.co"
+  ],
+  "izinli_paketler": [
+    "opencv-python",
+    "numpy",
+    "mcp"
+  ],
+  "dil": {
+    "kaynak": "README.md",
+    "ceviri_deseni": "README.{dil}.md",
+    "kademe": {
+      "A": [
+        "tr",
+        "zh-CN",
+        "ru",
+        "pt-BR",
+        "es",
+        "hi",
+        "id",
+        "vi",
+        "th",
+        "ar"
+      ],
+      "B": [
+        "de",
+        "fr",
+        "it",
+        "ja",
+        "ko",
+        "pl",
+        "nl",
+        "uk",
+        "fa",
+        "he",
+        "ur",
+        "bn",
+        "el",
+        "cs",
+        "ro",
+        "hu",
+        "sv",
+        "az",
+        "ms"
+      ],
+      "C": []
+    },
+    "rtl": [
+      "ar",
+      "fa",
+      "he",
+      "ur"
+    ],
+    "zwj_izinli": [
+      "bn",
+      "hi",
+      "th",
+      "fa"
+    ],
+    "lrm_izinli": [
+      "ar",
+      "fa",
+      "he",
+      "ur"
+    ],
+    "hukuki_belgeler_ingilizce": true
+  },
+  "kalite_sabitleri": [
+    {
+      "ad": "adim sayisi",
+      "aciklama": "6 adim",
+      "dosyalar": [
+        "scripts/uret.ps1",
+        "scripts/kur.ps1",
+        "scripts/uretim_kapi.ps1",
+        "scripts/doku_norm.py",
+        "mcp/*.py"
+      ],
+      "yasak_desen": "--steps +[0-9]+",
+      "izinli_deger": "6"
+    },
+    {
+      "ad": "cfg",
+      "aciklama": "cfg 1",
+      "dosyalar": [
+        "scripts/uret.ps1",
+        "scripts/kur.ps1",
+        "scripts/uretim_kapi.ps1",
+        "mcp/*.py"
+      ],
+      "yasak_desen": "--cfg-scale +[0-9.]+",
+      "izinli_deger": "1.0"
+    },
+    {
+      "ad": "karosuz VAE",
+      "aciklama": "--vae-tiling eklenmez",
+      "dosyalar": [
+        "scripts/uret.ps1",
+        "scripts/kur.ps1",
+        "scripts/uretim_kapi.ps1",
+        "mcp/*.py"
+      ],
+      "yasak_desen": "--vae-tiling",
+      "izinli_deger": null
+    },
+    {
+      "ad": "zamansal karo",
+      "aciklama": "--temporal-tiling eklenmez",
+      "dosyalar": [
+        "scripts/uret.ps1",
+        "scripts/kur.ps1",
+        "scripts/uretim_kapi.ps1",
+        "mcp/*.py"
+      ],
+      "yasak_desen": "--temporal-tiling",
+      "izinli_deger": null
+    }
+  ],
+  "hata": {
+    "imza_dosyasi": "docs/hata_imzalari.json",
+    "sik_hatalar": "docs/SIK_HATALAR.md",
+    "kod_oneki": "VT"
+  },
+  "betikler": {
+    "kur": "scripts/kur.ps1",
+    "uret": "scripts/uret.ps1",
+    "tani": "scripts/tani.ps1",
+    "on_kontrol": "scripts/on_kontrol.ps1",
+    "denetim": "scripts/denetim.py"
+  },
+  "cikis_kodlari": {
+    "kur.ps1": {
+      "0": "HAZIR",
+      "1": "hata (indirme, sha256, kontrol)",
+      "2": "kullanici girdisi gerek",
+      "3": "donanim ya da disk yetmiyor",
+      "4": "DURDU"
+    },
+    "uret.ps1": {
+      "0": "TAMAM, kapi gecti",
+      "1": "hata ya da gecersiz cikti",
+      "2": "DURDU",
+      "5": "kapi RED",
+      "6": "kapi calisamadi"
+    },
+    "denetim.py": {
+      "0": "hepsi GECTI",
+      "1": "en az bir kapi KIRMIZI",
+      "3": "girdi/ortam eksik",
+      "6": "bir kapi CALISMADI"
+    }
+  },
+  "yer_tutucular": {
+    "REPO_AD": "VideoTurko",
+    "SAHIP_REPO": "alexturkey/VideoTurko",
+    "REPO_URL": "https://github.com/alexturkey/VideoTurko",
+    "KISA_ACIKLAMA_EN": "Patches, scripts and quality gates that run MiniMax H3 text-to-video on a Windows 10/11 PC with a 4 GB NVIDIA GPU (tested: GTX 1050 Ti). The repository contains no model weights and no videos.",
+    "HATA_ONEKI": "VT",
+    "HATA_IMZA_DOSYASI": "docs/hata_imzalari.json",
+    "SIK_HATALAR_YOLU": "docs/SIK_HATALAR.md",
+    "KALITE_SABITLERI": "6 steps, cfg 1, non-tiled VAE, frame counts 17k+5",
+    "DEGISMEZ_KURALLAR_EN": "quality is fixed (6 steps, cfg 1, no tiled VAE, frame counts 17k+5); the model license is accepted by the human, never by an agent; exit codes 5 and 6 of uret.ps1 mean the clip is not accepted",
+    "LISANS_ADI": "MIT",
+    "LISANS_NOTU_EN": "The model and its outputs stay under the MiniMax license (`docs/LISANS_UYARISI.md`).",
+    "LISANS_NOTU_TR": "Model ve çıktıları MiniMax lisansında kalır (`docs/LISANS_UYARISI.md`).",
+    "ONKONTROL_KOMUTU": "python -I -X utf8 scripts/denetim.py --hizli",
+    "DENETIM_BETIGI": "scripts/denetim.py",
+    "ORTAM_ORNEGI": "GTX 1050 Ti 4 GB, driver 581, 16 GB RAM",
+    "GPU_GEREKSINIMI": "no GPU",
+    "GPU_GEREKSINIMI_TR": "ekran kartı istemez",
+    "GPU_KELIMESI": "GPU",
+    "GPU_KELIMESI_TR": "GPU'nuz",
+    "EN_DEGERLI_KATKILAR": "tests on other GPUs (card, driver, frame count, time, VRAM peak, result of the gates; use the Hardware test issue form), clearer install steps, typo and translation fixes, and measured memory improvements.",
+    "TR_DEGERLI_KATKILAR": "başka kartlarda test (kart, sürücü, kare sayısı, süre, VRAM tepesi, kapıların sonucu; Donanım testi formunu kullanın), daha net kurulum adımları, yazım ve çeviri düzeltmeleri, ölçülmüş bellek iyileştirmeleri.",
+    "EN_KABUL_1": "A test report from another GPU, with the log",
+    "TR_KABUL_1": "Başka kartta test raporu (günlükle)",
+    "AJAN_KURALI_EN": "the agent must never accept the model license for you",
+    "AJAN_KURALI_TR": "ajan sizin yerinize model lisansını asla kabul etmez",
+    "GUVENLIK_KAPSAMI_EN": "The scripts in `scripts/`, the MCP server in `mcp/`, the patches in `patches/`, and the release packages built from them.",
+    "GUVENLIK_KAPSAMI_TR": "`scripts/` betikleri, `mcp/` sunucusu, `patches/` yamaları ve bunlardan üretilen sürüm paketleri.",
+    "KAPSAM_DISI_UCUNCU_TARAF_EN": "The MiniMax H3 model, its license and its outputs; stable-diffusion.cpp, ggml and the NVIDIA CUDA runtime (report to their own projects).",
+    "KAPSAM_DISI_UCUNCU_TARAF_TR": "MiniMax H3 modeli, lisansı ve çıktıları; stable-diffusion.cpp, ggml ve NVIDIA CUDA çalışma zamanı (kendi projelerine bildirin).",
+    "TASARIM_NOTLARI_EN": "The installer verifies every download against a pinned sha256 and stops on a mismatch. The scripts open no network port and need no administrator rights.",
+    "TASARIM_NOTLARI_TR": "Kurulum betiği her indirmeyi sabitlenmiş sha256 ile doğrular, uyuşmazlıkta durur. Betikler ağ portu açmaz, yönetici hakkı istemez.",
+    "AG_ADRESLERI_TABLOSU": [
+      "| Host | What | Which script, when |",
+      "|---|---|---|",
+      "| `github.com` (redirects to `release-assets.githubusercontent.com`) | engine zip and CUDA runtime zip of the release | `scripts/kur.ps1`, only in the engine step |",
+      "| `huggingface.co` and `hf.co` sub-hosts | the model files (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1`, only after you accept the model license |"
+    ],
+    "AG_ADRESLERI_TABLOSU_TR": [
+      "| Adres | Ne | Hangi betik, ne zaman |",
+      "|---|---|---|",
+      "| `github.com` (`release-assets.githubusercontent.com`'a yönlenir) | sürümün motor zip'i ve CUDA çalışma zip'i | `scripts/kur.ps1`, yalnız motor adımında |",
+      "| `huggingface.co` ve `hf.co` alt adresleri | model dosyaları (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1`, yalnız model lisansını kabul ettikten sonra |"
+    ],
+    "AG_TARAMA_KOMUTU": "Select-String -Path scripts\\*.ps1,scripts\\*.py,scripts\\*.json,mcp\\*.py -Pattern 'https?://|curl|Invoke-WebRequest|urllib|socket'",
+    "GIZLILIK_EK_YAPMAZ_EN": "No upload of prompts or videos; the optional MCP server talks only over stdio to the program that starts it.",
+    "GIZLILIK_EK_YAPMAZ_TR": "İstem ya da video yüklemez; isteğe bağlı MCP sunucusu yalnız onu başlatan programla stdio üzerinden konuşur.",
+    "YEREL_VERI_EN": "`engine\\`, `model\\` and `runs\\` (videos, logs) inside the install folder, plus a file that records that you accepted the model license, and when.",
+    "YEREL_VERI_TR": "Kurulum klasöründe `engine\\`, `model\\` ve `runs\\` (videolar, günlükler); ayrıca model lisansını kabul ettiğinizi ve zamanını yazan bir dosya.",
+    "DIS_NOTLAR_EN": "The model and its outputs are under the MiniMax license, not under this policy (`docs/LISANS_UYARISI.md`).",
+    "DIS_NOTLAR_TR": "Model ve çıktıları MiniMax lisansındadır, bu metnin kapsamı dışındadır (`docs/LISANS_UYARISI.md`).",
+    "DESTEK_DISI_EN": "other models, other engines, non-NVIDIA cards, quality settings changed to run faster (they are fixed on purpose), and the model license for your country.",
+    "DESTEK_DISI_TR": "başka modeller, başka motorlar, NVIDIA dışı kartlar, hız için değiştirilmiş kalite ayarları (bilerek sabit) ve ülkeniz için model lisansı.",
+    "HEDEF_EN": "MiniMax H3 text-to-video on a Windows 10/11 PC with an NVIDIA card of 4 GB or more",
+    "HEDEF_TR": "Windows 10/11 bilgisayarda, 4 GB ya da üstü NVIDIA kartla MiniMax H3 ile metinden video",
+    "KURU_KOMUT": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\kur.ps1 -Kuru",
+    "KURULUM_KOMUT": "scripts\\kur.ps1",
+    "ILK_KOMUT": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\uret.ps1 -Istem docs\\ornek_istem_R0.txt -Kare 56",
+    "ILK_SURE_EN": "about 11 min on a GTX 1050 Ti [measured by the authors]",
+    "ILK_SURE_TR": "GTX 1050 Ti'de yaklaşık 11 dk [yazarlar ölçtü]",
+    "ONAY_ADIMI_EN": "The model license is the human's decision: show `docs/LISANS_KABUL.txt` to the user and let the user answer",
+    "ONAY_ADIMI_TR": "Model lisansı insanın kararıdır: `docs/LISANS_KABUL.txt`'yi kullanıcıya göster, cevabı kullanıcı versin",
+    "KAPI_SINIRI_EN": "the gate does NOT check license compliance or motion; watch the whole clip.",
+    "KAPI_SINIRI_TR": "kapı lisans uygunluğuna ve harekete BAKMAZ; klibin tamamını izle.",
+    "CIKIS_KODU_TABLOSU_EN": [
+      "| `kur.ps1` | 0 | READY | Go to the first success step | - |",
+      "| `kur.ps1` | 3 | hardware or disk not enough | **Take it to the user**; do not use `-Zorla` | `VT-E-GPU` `VT-E-RAM` `VT-E-DISK` |",
+      "| `uret.ps1` | 5 | gate RED | **Take it to the user**: the clip is not accepted | `VT-E-KAPI-RED` |"
+    ],
+    "CIKIS_KODU_TABLOSU_TR": [
+      "| `kur.ps1` | 0 | HAZIR | İlk başarı adımına geç | - |",
+      "| `kur.ps1` | 3 | donanım ya da disk yetmiyor | **Kullanıcıya götür**; `-Zorla` kullanma | `VT-E-GPU` `VT-E-RAM` `VT-E-DISK` |",
+      "| `uret.ps1` | 5 | kapı RED | **Kullanıcıya götür**: klip kabul edilmez | `VT-E-KAPI-RED` |"
+    ],
+    "KURU_ACIKLAMA_EN": "To see the exact command without using the GPU, add `-Kuru` to it and paste the output.",
+    "KURU_ACIKLAMA_TR": "GPU kullanmadan tam komutu görmek için komuta `-Kuru` ekleyip çıktısını yapıştırabilirsin.",
+    "TANI_KOMUTU_ACIKLAMA": "Run scripts\\tani.ps1 -KartSatiri and paste the result (it is local, hides personal names, sends nothing). / scripts\\tani.ps1 -KartSatiri çıktısını yapıştırın (yereldir, kişisel adları gizler, hiçbir şey göndermez).",
+    "ILK_ISSUE_BILGI_EN": "The project was developed and measured on a single GTX 1050 Ti (4 GB); information from other cards is very valuable to us.",
+    "ILK_ISSUE_BILGI_TR": "Bu proje tek bir GTX 1050 Ti (4 GB) üzerinde ölçülerek geliştirildi; başka kartlardan gelen her bilgi bizim için değerli.",
+    "KOK_ADI": "VT_ROOT",
+    "KOK_VARSAYILAN": "the repository folder",
+    "KOK_DEGISTIRME": "the `VT_ROOT` environment variable (a short ASCII path is recommended)",
+    "ALT_KLASOR_OZETI": "`model/` (weights), `engine/` (sd-cli + CUDA DLLs), `runs/` (clips), `.venv/` (optional quality-gate Python), `.onbellek/` (pip cache), `gecici/` (temporary files)",
+    "ONBELLEK_ENV_LISTESI": "`TMP` and `TEMP` (VideoTurko runs no pip, uv or Hugging Face itself; the optional quality-gate pip command uses `--cache-dir <VT_ROOT>/.onbellek/pip`)",
+    "MODEL_KLASORU_BAYRAGI": "`-ModelKlasoru <folder>`",
+    "DISK_TABLOSU": "| Folder | Holds |\n|---|---|\n| `model/` | the four model files (about 31 GB) |\n| `engine/` | sd-cli and CUDA runtime DLLs |\n| `runs/` | generated clips and logs |\n| `.venv/` | optional Python for the quality gate |\n| `.onbellek/` | pip cache (only if you create it) |\n| `gecici/` | temporary files |",
+    "KENDI_ARTIKLARI": "its own leftovers only: `.part` files, extraction folders and a model file whose sha256 does not match",
+    "DIS_ISTISNALAR": "a model linked with `-ModelKlasoru` is a hard link on the same drive (deleting the root keeps your original) or a copy on another drive",
+    "KALDIRMA_NOTU": "Your own model folder (if you pointed `-ModelKlasoru` at one) and anything you installed yourself (Python, Git) are not removed.",
+    "CHECKOUT_SHA": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+    "SETUP_PYTHON_SHA": "6d4fd22b20465ccc0f7354476588e8df7c9ca0e0"
+  },
+  "atla": {
+    "KL-09": "UYGULANDI, KISITLI: karsilama.yml pull_request_target kullanir (kullanici karari 2026-11-21: yeni PR/issue'ya sicak karsilama). NEDEN: fork PR'ina yorum yazmak yazma izinli jeton ister, sade pull_request fork'ta salt-okunur. GUVENLI BICIM: PR kodu hic getirilmez (checkout'ta ref/repository/token yok, yalniz taban daldan scripts/karsilama.py), permissions contents:read + issues:write + pull-requests:write, olay metni kabuga girmez, eylemler SHA'ya sabit; tests/denetim/test_ci.py bunu mekanik denetler (tetik listesi, ref yasagi). BEDEL: taban dal kodu yazma izniyle kosar. GEVSEME: karsilama istenmezse dosya silinir (git revert). Diger is akislari (denetim.yml) pull_request, salt-okunur, rapor modu; kit_denetle'nin KL-09 'pull_request_target yok' kurali yalniz bu tek dosya yuzunden kirmizi."
+  }
+}

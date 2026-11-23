@@ -122,8 +122,10 @@ fi
 command -v python3 >/dev/null 2>&1 || { echo "HATA: [VT-E-PYTHON] python3 bulunamadi." >&2; exit 1; }
 echo "== Python .venv (opencv-python-headless + numpy)"
 if [[ ! -x "$PY" ]]; then python3 -m venv "$VENV"; fi
-"$PY" -m pip install --quiet --only-binary=:all: --cache-dir "$ROOT/.onbellek/pip" --upgrade pip
-"$PY" -m pip install --quiet --only-binary=:all: --cache-dir "$ROOT/.onbellek/pip" opencv-python-headless numpy
+# sabit numpy 2.2.6 Python 3.10+ ister; eski .venv ya da eski python3 ile hash hatasi yerine acik hata / pinned numpy needs Python 3.10+
+"$PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' || { echo "HATA: [VT-E-PYTHON] Python 3.10+ gerekir ($("$PY" -V 2>&1), $VENV). Daha yeni python3 kurun, $VENV klasorunu silip yeniden calistirin. / Python 3.10+ is required; install a newer python3, delete $VENV and run again." >&2; exit 1; }
+# surum + sha256 sabit (scripts/kapi-gereksinim-linux.txt): herkeste ayni baytlar; pip'in kendisi venv'in paketli surumunde kalir (yukseltilmez)
+"$PY" -m pip install --quiet --require-hashes --only-binary=:all: --cache-dir "$ROOT/.onbellek/pip" -r "$SCRIPT_DIR/kapi-gereksinim-linux.txt"
 "$PY" -c "import cv2, numpy; print('  opencv', cv2.__version__, 'numpy', numpy.__version__)"
 
 # 5) motor (klon + derleme): GPU, disk ve lisans kapilarindan SONRA
