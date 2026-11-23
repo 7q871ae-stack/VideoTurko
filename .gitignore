@@ -8,6 +8,8 @@ __pycache__/
 /build_work/
 /indirme/
 /runs/
+/.venv/
+/.onbellek/
 # kokte duran uretilen videolar (alt klasorlerdeki ornek medya serbest)
 /*.avi
 /*.mp4
