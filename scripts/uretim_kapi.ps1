@@ -21,7 +21,7 @@ foreach($c in $ffAday){ $g=Get-Command $c -ErrorAction SilentlyContinue; if($g){
 $pafta="$d\pafta_$Ad.png"; if(Test-Path $pafta){ Remove-Item $pafta -Force -ErrorAction SilentlyContinue }   # eski kosunun paftasi yeni sanilmasin
 if($ff){ & $ff -v error -y -i $avi -vf "select='not(mod(n,$([int][Math]::Ceiling($Kare/12))))',scale=320:-1,tile=4x3" -frames:v 1 $pafta; if(-not (Test-Path $pafta)){ $pafta='yazilamadi (ffmpeg hata verdi)' } }
 else { $pafta='yok'; Yaz "BILGI: ffmpeg bulunamadi (VT_FFMPEG, motor klasoru, PATH denendi): pafta yazilmadi, kapi karari etkilenmez. Pafta icin: winget install Gyan.FFmpeg ya da VT_FFMPEG=<ffmpeg.exe yolu>" }
-if($DokuNorm){ $dn = (& $py -I "$PSScriptRoot\doku_norm.py" $avi 2>&1 | Out-String).Trim(); Yaz "DOKU_NORM (bilgi, kapi degil): $dn" }
+if($DokuNorm){ $dn = (& $py -I "$PSScriptRoot\doku_norm.py" $avi 2>&1 | Out-String).Trim(); Yaz "DOKU_NORM (bilgi, kapi degil): $dn"; $sk = (& $py -I "$PSScriptRoot\son_kare_denetim.py" $avi 2>&1 | Out-String).Trim(); if($LASTEXITCODE -eq 0 -and $sk){ Yaz $sk } }
 $ok = ($olc -eq $Kare) -and ($gur -le 1.5) -and ($ak -gt 0.05)
 if($ok){ Yaz "KAPI GECTI: kare=$olc gurultu=$gur orta_akis=$ak pafta=$pafta"; exit 0 }
 if(($olc -eq $Kare) -and ($ak -gt 0.05)){ Yaz "BILGI: yalniz gurultu esigi asildi; dokulu sahne (kum, cim, dal) olabilir: DOKU_NORM N degerine ve klibin kendisine bakin (docs\KAPILAR.md 3; 640x384 temiz bant N 0,034-0,052). Esik gevsetilmez." }
