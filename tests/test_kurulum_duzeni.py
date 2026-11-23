@@ -30,7 +30,7 @@ class VenvTercihi(unittest.TestCase):
     def kos(self, venv):
         with tempfile.TemporaryDirectory() as t:
             os.makedirs(os.path.join(t, "scripts"))
-            for f in ("kur.ps1", "modeller.json"):
+            for f in ("kur.ps1", "modeller.json", "kart.ps1", "kart_tablosu.json"):
                 shutil.copy(os.path.join(KOK, "scripts", f), os.path.join(t, "scripts"))
             if venv:
                 subprocess.run([sys.executable, "-I", "-m", "venv", os.path.join(t, ".venv")], check=True, timeout=120)

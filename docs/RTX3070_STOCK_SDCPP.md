@@ -1,5 +1,7 @@
 # RTX 3070 8 GB with the stock stable-diffusion.cpp CUDA release / RTX 3070 8 GB, hazır stable-diffusion.cpp CUDA sürümüyle (EN + TR)
 
+> **Automatic path / Otomatik yol:** `scripts\kur.ps1` now recognises the card class and installs the stock engine itself (`-Kuru` shows the choice, `-MotorTuru` overrides it). The manual steps and measurements below stay as they were measured. / `scripts\kur.ps1` artık kart sınıfını tanıyıp stock motoru kendisi kurar (`-Kuru` seçimi gösterir, `-MotorTuru` ezer). Aşağıdaki elle adımlar ve ölçümler ölçüldükleri gibi kalır.
+
 **EN** Short note from one machine: desktop RTX 3070, 8 GB, 31 GB RAM, Windows, driver 610.88. Label for everything below: [user-reported, PR #6]; each number is [measured] from the engine log unless marked [read], [computed] or [guess]. The runs were made by Claude Code (an AI coding agent) on my PC over SSH; I watched and checked the outputs. They did **not** go through `scripts/uret.ps1` and the quality gate (`scripts/uretim_kapi.ps1`) was **not** run, so the gate result is unknown.
 
 **TR** Tek makineden kısa not: masaüstü RTX 3070, 8 GB, 31 GB RAM, Windows, sürücü 610.88. Aşağıdaki her şey [user-reported, PR #6] etiketlidir; her sayı motor günlüğünden [measured]'dir, aksi belirtilmedikçe ([read], [computed] ya da [guess]). Koşuları Claude Code (yapay zekâ kod ajanı) SSH ile PC'mde çalıştırdı; ben izledim ve çıktıları kontrol ettim. Koşular `scripts/uret.ps1` üzerinden **yapılmadı** ve kalite kapısı (`scripts/uretim_kapi.ps1`) **çalıştırılmadı**; kapı sonucu bilinmiyor.

@@ -5,6 +5,8 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\kur.ps1 -Kuru                (hicbir sey indirmez/kurmaz/yazmaz: tam on rapor, tum HATA ve UYARI tek listede, sonra cikar)
 #   -ModelKlasoru <yol>  (var olan model klasoru: sha256 eslesen dosya hardlink/kopya ile baglanir, indirilmez; eslesmeyen normal indirilir)
 #   -Adim kontrol0,motor,model,kontrol   (varsayilan: hepsi)   -LisansKabul E|Y   -MotorZip <yerel zip>  -CudaZip <yerel zip>  -Zorla
+#   -MotorTuru release_sm61|stock_cuda12|stock_vulkan  (varsayilan: kart sinifina gore otomatik, scripts/kart_tablosu.json; -Kuru ne sececegini soyler.
+#      GTX 1050 Ti / Pascal: hazir release motoru, eski yol aynen. -MotorZip/-CudaZip verirseniz release motoru sayilir.)
 # Her adim tekrar calistirilabilir: dogru sha256'li dosya atlanir. Durdurma: <VT_ROOT>\DUR dosyasi -> DURDU, .part korunur.
 # Ortam / env: VT_ROOT, VT_ENGINE_BIN, VT_MODEL_DIR (bkz. uret.ps1). Kisisel yol yoktur.
 # Cikis kodlari / exit: 0 HAZIR (ya da -Kuru raporu tamam), 1 hata, 2 lisans kabul gerekli, 3 donanim/disk yetersiz, 4 DURDU.
@@ -17,6 +19,7 @@ param(
     [string]$MotorZip = '',
     [string]$CudaZip = '',
     [string]$ModelKlasoru = '',
+    [string]$MotorTuru = '',
     [switch]$Zorla
 )
 $ErrorActionPreference = 'Stop'
@@ -26,6 +29,8 @@ $Root = $(if ($env:VT_ROOT) { $env:VT_ROOT } else { (Resolve-Path (Join-Path $PS
 $Motor = $(if ($env:VT_ENGINE_BIN) { $env:VT_ENGINE_BIN } else { Join-Path $Root 'engine\bin' })
 $ModelDir = $(if ($env:VT_MODEL_DIR) { $env:VT_MODEL_DIR } else { Join-Path $Root 'model' })
 $DurDosya = Join-Path $Root 'DUR'
+. (Join-Path $PSScriptRoot 'kart.ps1')   # kart tanima + scripts/kart_tablosu.json okuma (yalniz okur)
+$KartTabloYol = $(if ($env:VT_KART_TABLOSU) { $env:VT_KART_TABLOSU } else { Join-Path $PSScriptRoot 'kart_tablosu.json' })   # VT_KART_TABLOSU: baska tablo dosyasi (test/gelismis)
 $UyariBosGiB = 40   # 32-40 GiB arasi bos yer: HATA degil UYARI (pay dar; ihtiyac ~31,4 GiB, toplanti 1 karari 2026-11-20)
 $MinBosGiB = 32   # 29,31 GiB model + motor/CUDA zip ve acma payi (en kotu an ~31,4 GiB) [olctum: modeller.json boyutlari + dist/ zip boyutlari]
 
@@ -62,32 +67,75 @@ function Yol-Uyar([string]$ad, [string]$yol) {
     if ($yol.StartsWith('\\')) { [void]$uyari.Add("[VT-W-YOL-UNC] $on bir ag yolu (UNC): denenmedi, disk bos alani olculemez: $yol.") }
     if ($yol.Length -gt 100) { [void]$uyari.Add("[VT-W-YOL-UZUN] $on uzun ($($yol.Length) karakter): Windows 260 karakter siniri payi azalir [tahmin]: $yol. $oneri") }
 }
+# ---------------------------------------------------------------- kart ve motor secimi (scripts/kart_tablosu.json)
+function Kart-Oku {
+    # nvidia-smi; yoksa Windows ekran bagdastiricisi (AMD). Yalniz okur. uretici: nvidia | amd | diger | yok; vram MiB (-1 = bilinmiyor), cc (-1 = okunamadi).
+    $k = @{ uretici = 'yok'; ad = ''; vram = -1.0; surucu = ''; cc = -1.0; sessiz = $false }
+    $sahteGpu = [string](Sahte-Al 'gpu' '')
+    $smi = $null
+    if ($sahteGpu -ne 'yok') { $smi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue }
+    if ($sahteGpu -ne '' -and $sahteGpu -ne 'yok') {
+        # yalniz -Kuru testi: sahte kart. Adi AMD ise amd, Intel ise diger, aksi halde nvidia (eski davranis).
+        $k.ad = $sahteGpu; $k.vram = 4096.0; $k.surucu = 'sahte'; $k.cc = 6.1
+        $k.uretici = $(if ($sahteGpu -match 'Intel') { 'diger' } elseif ((Kart-Uretici $sahteGpu) -eq 'amd') { 'amd' } else { 'nvidia' })
+        if ($k.uretici -ne 'nvidia') { $k.cc = -1.0; $k.vram = -1.0 }
+    }
+    elseif ($smi) {
+        $q = (& nvidia-smi.exe --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits 2>$null | Select-Object -First 1)
+        if (-not $q) { $k.sessiz = $true }
+        else { $c = Kart-Satir-Coz $q; if ($c) { $k.ad = $c.ad; $k.vram = $c.vram; $k.surucu = $c.surucu; $k.cc = $c.cc; $k.uretici = 'nvidia' } else { $k.sessiz = $true } }
+    }
+    if ($k.uretici -eq 'yok' -and -not $k.sessiz) {
+        $adlar = @()
+        if ($Sahte.ContainsKey('amd')) { $adlar = @($Sahte['amd']) }
+        elseif ($sahteGpu -ne 'yok') { try { $adlar = @(Get-CimInstance Win32_VideoController -ErrorAction Stop | ForEach-Object { [string]$_.Name }) } catch { $adlar = @() } }
+        foreach ($a in $adlar) { if ((Kart-Uretici $a) -eq 'amd') { $k.uretici = 'amd'; $k.ad = $a; break } }
+    }
+    if ($Sahte.ContainsKey('vram')) { $k.vram = [double]$Sahte['vram'] }
+    if ($Sahte.ContainsKey('cc')) { $k.cc = Kart-CcOku $Sahte['cc'] }
+    return $k
+}
+$KartTablo = $null
+try { $KartTablo = Kart-Tablo-Oku $KartTabloYol } catch { throw "[VT-E-YOL] scripts/kart_tablosu.json okunamadi: $($_.Exception.Message)" }
+$Kart = Kart-Oku
+$Sinif = $(if ($Kart.uretici -eq 'yok') { $null } else { Kart-Sinif $KartTablo $Kart.uretici $Kart.cc })
+$MotorId = ''; $MotorNeden = ''
+if ($MotorTuru) {
+    if (-not $KartTablo.motorlar.PSObject.Properties[$MotorTuru]) { throw "bilinmeyen -MotorTuru '$MotorTuru' (release_sm61, stock_cuda12, stock_vulkan)" }
+    $MotorId = $MotorTuru; $MotorNeden = 'elle, -MotorTuru'
+}
+elseif ($MotorZip -or $CudaZip) { $MotorId = 'release_sm61'; $MotorNeden = 'yerel release zip verildi' }
+elseif ($Kart.uretici -eq 'diger') { $MotorId = ''; $MotorNeden = 'bu kart icin otomatik motor yok' }
+elseif ($Sinif -and $Sinif.motor) { $MotorId = [string]$Sinif.motor; $MotorNeden = "kart sinifi $($Sinif.id)" }
+else { $MotorId = 'release_sm61'; $MotorNeden = 'kart tanimlanamadi: eski varsayilan yol' }
+$MotorTanim = $(if ($MotorId) { $KartTablo.motorlar.$MotorId } else { $null })
+if ($MotorId -and $MotorId -ne 'release_sm61' -and -not $env:VT_ENGINE_BIN) { $Motor = Join-Path $Root ([string]$MotorTanim.bin -replace '/', '\') }
+
 function Adim-Kontrol0 {
     Say '== kontrol0: donanim ve ortam (hicbir sey indirilmez)'
     if ($Sahte.Count -gt 0) { Say ("  SAHTE OLCUM (yalniz -Kuru testi, VT_KURU_SAHTE): " + (($Sahte.Keys | Sort-Object | ForEach-Object { "$_=$($Sahte[$_])" }) -join ' ')) }
     $os = [Environment]::OSVersion.Version
     Say ("  Windows {0}.{1} build {2}" -f $os.Major, $os.Minor, $os.Build)
     if ($os.Major -lt 10) { Hata-Ekle '[VT-E-OS] Windows 10 ya da ustu gerekir' }
-    # GPU
-    $smi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
-    $sahteGpu = [string](Sahte-Al 'gpu' '')
-    if ($sahteGpu -eq 'yok') { $smi = $null }
-    $sahteVar = ($sahteGpu -ne '' -and $sahteGpu -ne 'yok')   # yalniz -Kuru testi: nvidia-smi'siz makinede (CI) sahte kart
-    if (-not $smi -and -not $sahteVar) { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported).' }
+    # GPU (kart_tablosu.json: kart sinifi -> motor)
+    if ($Kart.uretici -eq 'yok' -or $Kart.uretici -eq 'diger' -or $Kart.sessiz) {
+        if ($Kart.sessiz) { Hata-Ekle '[VT-E-GPU] nvidia-smi cikti vermedi' }
+        else { Hata-Ekle '[VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA/AMD kart yok (hazir sm_61 motor yalniz NVIDIA CUDA; AMD kartta kur.ps1 stock Vulkan motorunu secer). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported).' }
+    }
     else {
-        if ($smi) { $q = (& nvidia-smi.exe --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits 2>$null | Select-Object -First 1) }
-        else { $q = "$sahteGpu, 4096, sahte, 6.1" }
-        if (-not $q) { Hata-Ekle '[VT-E-GPU] nvidia-smi cikti vermedi' }
-        else {
-            $f = $q -split ',' | ForEach-Object { $_.Trim() }
-            $gpuAd = $f[0]; $vram = [double]$f[1]; $surucu = $f[2]; $cc = $(if ($f.Count -ge 4) { $f[3] } else { '' })
-            $vram = [double](Sahte-Al 'vram' $vram); $cc = [string](Sahte-Al 'cc' $cc)
-            Say ("  GPU: {0}, {1:N0} MiB, surucu {2}, compute capability {3}" -f $gpuAd, $vram, $surucu, $cc)
+        $gpuAd = $Kart.ad; $vram = [double]$Kart.vram; $ccV = [double]$Kart.cc
+        $ccYazi = $(if ($ccV -ge 0) { $ccV.ToString('0.#', [Globalization.CultureInfo]::InvariantCulture) } else { '' })
+        if ($Kart.uretici -eq 'amd') { Say ("  GPU: {0} (AMD; VRAM ve compute capability okunmaz)" -f $gpuAd) }
+        else { Say ("  GPU: {0}, {1:N0} MiB, surucu {2}, compute capability {3}" -f $gpuAd, $vram, $Kart.surucu, $ccYazi) }
+        if ($Kart.uretici -eq 'nvidia') {
             if ($vram -lt 3800) { Hata-Ekle '[VT-E-GPU-VRAM] en az 4 GB VRAM gerekir' $true }
-            $ccOk = $false; $ccV = 0.0
-            if ([double]::TryParse(($cc -replace ',', '.'), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$ccV)) { $ccOk = $true }
-            if ($ccOk -and $ccV -lt 6.1) { Hata-Ekle '[VT-E-GPU-CC] compute capability 6.1 (Pascal) ya da ustu gerekir' $true }
-            if ($gpuAd -notmatch '1050 Ti') { [void]$uyari.Add("[VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61). $gpuAd denenmedi; devam edebilirsiniz ama sonuc garanti degil. Dis kullanici raporlari (etiketli): docs/KART_PROFILLERI.md.") }
+            if ($ccV -ge 0 -and $ccV -lt 6.1) { Hata-Ekle '[VT-E-GPU-CC] compute capability 6.1 (Pascal) ya da ustu gerekir' $true }
+        }
+        $durum = Kart-Durum $Sinif $gpuAd
+        Say ("  Motor secimi: {0} ({1}; durum {2})" -f $(if ($MotorId) { $MotorId } else { 'YOK' }), $MotorNeden, $durum)
+        if ($durum -ne 'dogrulanmis') {
+            $kanitNot = $(if ($Sinif -and $Sinif.kanit) { " Kanit: $($Sinif.kanit)" } else { '' })
+            [void]$uyari.Add("[VT-W-GPU-DENENMEDI] Dogrulanmis donanim yalniz GTX 1050 Ti 4 GB (sm_61). $gpuAd icin bakimci olcumu yok (durum: $durum); devam edebilirsiniz ama sonuc garanti degil.$kanitNot Dis kullanici raporlari (etiketli): docs/KART_PROFILLERI.md.")
         }
     }
     # RAM (toplam: kurulum icin; bos: video kosusu icin, motor tepe ~11 GB [olctum: docs/OLCUMLER.md])
@@ -111,7 +159,7 @@ function Adim-Kontrol0 {
     }
     $eksikGiB = [Math]::Round($eksikBayt / 1GB, 2)
     $motorVar = (Test-Path -LiteralPath (Join-Path $Motor 'sd-cli.exe'))
-    $motorGiB = $(if ($motorVar -and -not $MotorZip -and -not $CudaZip) { 0 } else { 2.1 })   # 2 zip (0,56 GiB) + acilmis kopya + engine\bin kopyasi, en kotu an [olctum: dist/ zip boyutlari, 2,1 GiB]
+    $motorGiB = $(if ($motorVar -and -not $MotorZip -and -not $CudaZip) { 0 } elseif ($MotorTanim) { [double]$MotorTanim.disk_gib } else { 2.1 })   # 2 zip (0,56 GiB) + acilmis kopya + engine\bin kopyasi, en kotu an [olctum: dist/ zip boyutlari, 2,1 GiB]
     Say ("  Indirilecek model: {0} GiB (toplam {1:N2} GiB); motor+CUDA zip ve acma payi: {2} GiB" -f $eksikGiB, (($kayit.dosyalar | ForEach-Object { [long]$_.boyut } | Measure-Object -Sum).Sum / 1GB), $motorGiB)
     $surucuHarf = ''
     try { $surucuHarf = (Split-Path -Qualifier ([IO.Path]::GetFullPath($ModelDir))).TrimEnd(':') } catch { $surucuHarf = '' }
@@ -199,21 +247,25 @@ function Zip-Al($z, [string]$yerel, [string]$hedefDizin) {
     return $zipYol
 }
 function Adim-Motor {
-    Say '== motor: sd-cli ikili + CUDA calisma zamani DLL (sha256 dogrulamali)'
+    Say '== motor: sd-cli ikili + calisma zamani DLL (sha256 dogrulamali)'
+    if (-not $MotorId) { Say ("MOTOR ADIMI DURDU: [VT-E-MOTOR] bu kart icin otomatik motor yok ({0}); -MotorTuru release_sm61|stock_cuda12|stock_vulkan ile elle secin (docs/KART_PROFILLERI.md)." -f $Kart.ad); exit 3 }
+    Say ("  Motor secimi: {0} ({1}) -> {2}" -f $MotorId, $MotorNeden, $Motor)
     $sd = Join-Path $Motor 'sd-cli.exe'
-    $dll = @('cudart64_12.dll', 'cublas64_12.dll', 'cublasLt64_12.dll')
+    $dll = @($MotorTanim.gerekli_dosyalar | Where-Object { $_ -ne 'sd-cli.exe' })
+    if ($MotorId -eq 'release_sm61') { $zipListe = @(@($ZipMotor, $MotorZip), @($ZipCuda, $CudaZip)) }
+    else { $zipListe = @(); foreach ($tz in @($MotorTanim.zipler)) { $zipListe += , @(@{ ad = [string]$tz.ad; url = [string]$tz.url; sha = [string]$tz.sha256 }, '') } }
     $var = (Test-Path -LiteralPath $sd) -and (-not ($dll | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Motor $_)) }))
     if ($var -and -not $MotorZip -and -not $CudaZip) { Say '  motor zaten var (atlandi)' }
     else {
         if ($Kuru) {
-            Say "  KURU: motor ve cuda zip indirilecekti -> $($Motor)"
-            foreach ($z in @($ZipMotor, $ZipCuda)) { Say ("  URL: {0}  sha256 {1}" -f $z.url, $z.sha) }
-            if (($ZipMotor.url -like '__*') -or ($ZipCuda.url -like '__*')) { Say '  UYARI: release adresi henuz yok: -MotorZip/-CudaZip ile yerel zip gerekir.' }
+            Say "  KURU: motor zip dosyalari indirilecekti -> $($Motor)"
+            foreach ($zp in $zipListe) { Say ("  URL: {0}  sha256 {1}" -f $zp[0].url, $zp[0].sha) }
+            if ($MotorId -eq 'release_sm61' -and (($ZipMotor.url -like '__*') -or ($ZipCuda.url -like '__*'))) { Say '  UYARI: release adresi henuz yok: -MotorZip/-CudaZip ile yerel zip gerekir.' }
             return
         }
         $tmp = Join-Path $Root 'indirme'
         try {
-        foreach ($p in @(@($ZipMotor, $MotorZip), @($ZipCuda, $CudaZip))) {
+        foreach ($p in $zipListe) {
             Dur-Kontrol
             $zip = Zip-Al $p[0] $p[1] $tmp
             $ac = Join-Path $tmp ('ac_' + $p[0].ad)
@@ -254,6 +306,10 @@ function Adim-Motor {
     try { $sp = Start-Process -FilePath $sd -ArgumentList '--help' -WindowStyle Hidden -PassThru -Wait -RedirectStandardOutput (Join-Path $Root 'runs\yoklama_out.txt') -RedirectStandardError (Join-Path $Root 'runs\yoklama_err.txt') } catch { throw "sd-cli baslatilamadi: $($_.Exception.Message)" } finally { $env:PATH = $eskiPath }
     if ($sp.ExitCode -eq -1073741515) { throw '[VT-E-DLL] sd-cli DLL eksik (0xC0000135): cudart/cublas ve VC++ calisma zamanini kontrol edin' }
     Say "  sd-cli yoklamasi tamam (cikis $($sp.ExitCode))"
+    # Secilen motoru kaydet: uret.ps1 buradan okur (VT_ENGINE_BIN verilmediyse). Yalniz bu repo kokundeki engine\secili_motor.json; baska yere yazmaz.
+    $sec = [ordered]@{ motor = $MotorId; bin = ([string]$MotorTanim.bin); kart_sinifi = $(if ($Sinif) { [string]$Sinif.id } else { '' }); kart = $Kart.ad; tablo_surumu = $KartTablo.surum; tarih = (Get-Date).ToString('s') }
+    New-Item -ItemType Directory -Force (Join-Path $Root 'engine') | Out-Null
+    ($sec | ConvertTo-Json) | Set-Content -LiteralPath (Join-Path (Join-Path $Root 'engine') 'secili_motor.json') -Encoding ASCII
 }
 
 # ---------------------------------------------------------------- model

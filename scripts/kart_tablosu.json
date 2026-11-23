@@ -1,0 +1,124 @@
+{
+  "surum": 1,
+  "aciklama": "Kart sinifi -> motor secimi + olculmus ek ayar: TEK veri tablosu. kur.ps1 (-Kuru dahil) ve uret.ps1 bunu scripts/kart.ps1 ile okur; kalite ayarlari (6 adim, cfg 1, 640x384, karosuz VAE) bu tabloda YOKTUR ve hicbir kartta degismez. Siniflar ustten asagi ilk eslesene kadar denenir. Her satirin durumu: dogrulanmis (yazarlar olctu) | topluluk (disaridan rapor, bakimcilar olcmedi) | denenmemis (kanit yok; [okudum]/[tahmin] ile gerekce). Kartinizi PR ile ekleyin: docs/KART_PROFILLERI.md ve bu dosya.",
+  "motorlar": {
+    "release_sm61": {
+      "ad": "VideoTurko release engine (sm_61 + PTX, repo patches)",
+      "bin": "engine/bin",
+      "iki_asama": true,
+      "gerekli_dosyalar": ["sd-cli.exe", "cudart64_12.dll", "cublas64_12.dll", "cublasLt64_12.dll"],
+      "disk_gib": 2.1,
+      "zipler": "scripts/kur.ps1 icindeki ZipMotor ve ZipCuda (varsayilan yol, degismedi; VT_MOTOR_URL/VT_MOTOR_SHA256/VT_CUDA_URL/VT_CUDA_SHA256 ile ezilir)"
+    },
+    "stock_cuda12": {
+      "ad": "stable-diffusion.cpp master-1106-532d2c1, win-cuda12-x64 (stock, patches yok)",
+      "bin": "engine/stock_cuda12/bin",
+      "iki_asama": false,
+      "gerekli_dosyalar": ["sd-cli.exe", "ggml-cuda.dll", "cudart64_12.dll", "cublas64_12.dll", "cublasLt64_12.dll"],
+      "disk_gib": 3.0,
+      "kaynak": "https://github.com/leejet/stable-diffusion.cpp/releases/tag/master-1106-532d2c1",
+      "zipler": [
+        {"ad": "sd-master-532d2c1-bin-win-cuda12-x64.zip", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-1106-532d2c1/sd-master-532d2c1-bin-win-cuda12-x64.zip", "sha256": "b087219145a382cc1b1e826318289e1f672b9bb6965977734ef0deb85fe2d03a", "boyut": 412365497},
+        {"ad": "cudart-sd-bin-win-cu12-x64.zip", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-1106-532d2c1/cudart-sd-bin-win-cu12-x64.zip", "sha256": "fe20366827d357c00797eebb58244dddab7fd9a348d70090c3871004c320f38d", "boyut": 563452046}
+      ],
+      "kanit": "[okudum] GitHub release digest; derleme dosyasi sm_61;70;75;80;86;89;90;100;120 listeler. [kullanici bildirdi, PR #6] RTX 3070 (8.6) uzerinde uret.ps1 disinda kosuldu."
+    },
+    "stock_vulkan": {
+      "ad": "stable-diffusion.cpp master-1106-532d2c1, win-vulkan-x64 (stock, patches yok; AMD ve Vulkan destekli kartlar)",
+      "bin": "engine/stock_vulkan/bin",
+      "iki_asama": false,
+      "gerekli_dosyalar": ["sd-cli.exe", "ggml-vulkan.dll"],
+      "disk_gib": 0.3,
+      "kaynak": "https://github.com/leejet/stable-diffusion.cpp/releases/tag/master-1106-532d2c1",
+      "zipler": [
+        {"ad": "sd-master-532d2c1-bin-win-vulkan-x64.zip", "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-1106-532d2c1/sd-master-532d2c1-bin-win-vulkan-x64.zip", "sha256": "3e66222c87ca27074e1fd8ce79706eef17a8aaf39949906aa1bee7e060f22ecc", "boyut": 30312081}
+      ],
+      "kanit": "[okudum] GitHub release digest. [kullanici bildirdi] RX 9070 XT, 209 kare (docs/AMD_ROCM.md)."
+    }
+  },
+  "kartlar": [
+    {
+      "id": "pascal",
+      "ad": "NVIDIA Pascal (GTX 10xx), compute capability 6.1 - 6.9",
+      "uretici": "nvidia", "cc_min": 6.1, "cc_max": 7.0,
+      "motor": "release_sm61",
+      "ek_ayar": {},
+      "durum": "dogrulanmis",
+      "dogrulanmis_kartlar": ["GTX 1050 Ti"],
+      "kanit": "[olctum, yazarlar] GTX 1050 Ti 4 GB, docs/OLCUMLER.md. Diger Pascal kartlar ayni mimari ama bakimcilar olcmedi [tahmin].",
+      "belge": "docs/OLCUMLER.md"
+    },
+    {
+      "id": "turing_volta",
+      "ad": "NVIDIA Volta / Turing (RTX 20xx, GTX 16xx), compute capability 7.0 - 7.9",
+      "uretici": "nvidia", "cc_min": 7.0, "cc_max": 8.0,
+      "motor": "stock_cuda12",
+      "ek_ayar": {"env": {"GGML_CUDA_CUBLAS_COMPUTE_TYPE": "f32"}},
+      "durum": "denenmemis",
+      "kanit": "[okudum] stock derleme sm_70 ve sm_75 listeler; bu sinifta hicbir kosu bildirilmedi. f32: uret.ps1'in eski kurali (cc >= 7.0) [okudum].",
+      "belge": "docs/KART_PROFILLERI.md"
+    },
+    {
+      "id": "ampere",
+      "ad": "NVIDIA Ampere (RTX 30xx), compute capability 8.0 - 8.8",
+      "uretici": "nvidia", "cc_min": 8.0, "cc_max": 8.9,
+      "motor": "stock_cuda12",
+      "ek_ayar": {"env": {"GGML_CUDA_CUBLAS_COMPUTE_TYPE": "f32"}},
+      "durum": "topluluk",
+      "kanit": "[kullanici bildirdi, PR #6] RTX 3070 8 GB (8.6): stock motor, 243 kare tek gecis, uret.ps1 disinda; kalite kapisi kosulmadi. Laptop 6 GB kartlar (ornegin RTX 3060 Laptop) icin ayrica olcum yok [tahmin: ayni mimari].",
+      "belge": "docs/RTX3070_STOCK_SDCPP.md"
+    },
+    {
+      "id": "ada",
+      "ad": "NVIDIA Ada (RTX 40xx), compute capability 8.9",
+      "uretici": "nvidia", "cc_min": 8.9, "cc_max": 9.0,
+      "motor": "release_sm61",
+      "ek_ayar": {"env": {"GGML_CUDA_CUBLAS_COMPUTE_TYPE": "f32"}},
+      "durum": "topluluk",
+      "kanit": "[kullanici bildirdi, issue #1] RTX 4070 Ti: hazir sm_61 motor, f32 ile 141 kare (yalniz bu sinifta olculmus yol). [kullanici bildirdi, PR #5] RTX 4060: yerel sm_89 derleme. Stock motor bu sinifta denenmedi: -MotorTuru stock_cuda12 ile elle secilebilir.",
+      "belge": "docs/OLCUMLER.md"
+    },
+    {
+      "id": "nvidia_yeni",
+      "ad": "NVIDIA Hopper ve ustu veri merkezi kartlari, compute capability 9.0 - 11.9",
+      "uretici": "nvidia", "cc_min": 9.0, "cc_max": 12.0,
+      "motor": "stock_cuda12",
+      "ek_ayar": {"env": {"GGML_CUDA_CUBLAS_COMPUTE_TYPE": "f32"}},
+      "durum": "denenmemis",
+      "kanit": "[okudum] stock derleme sm_90 ve sm_100 listeler; kosu yok.",
+      "belge": "docs/KART_PROFILLERI.md"
+    },
+    {
+      "id": "blackwell",
+      "ad": "NVIDIA Blackwell (RTX 50xx), compute capability 12.0 ve uzeri",
+      "uretici": "nvidia", "cc_min": 12.0, "cc_max": 99.0,
+      "motor": "stock_cuda12",
+      "ek_ayar": {"env": {"GGML_CUDA_CUBLAS_COMPUTE_TYPE": "f32"}},
+      "durum": "denenmemis",
+      "kanit": "[okudum] stock derleme sm_120 listeler; stock motorla RTX 50 kosusu YOK. [kullanici bildirdi, PR #3] hazir sm_61 motor bu kartta 56+ karede siyah video verdi (v0.1.0 betigi); yerel sm_120 derleme calisti (docs/RTX5060_SM120_DERLEME.md).",
+      "belge": "docs/RTX5060_SM120_DERLEME.md"
+    },
+    {
+      "id": "amd",
+      "ad": "AMD Radeon (Vulkan)",
+      "uretici": "amd", "cc_min": 0.0, "cc_max": 99.0,
+      "motor": "stock_vulkan",
+      "ek_ayar": {"model_args": {"minimax_h3_attn_chunk_budget": "0.03"}},
+      "durum": "topluluk",
+      "kanit": "[kullanici bildirdi] RX 9070 XT 16 GB: Vulkan, 209 kare; 0.03 butce (0.05 varsayilani uzun istemde VRAM'e sigmadi), docs/AMD_ROCM.md ve docs/SIK_HATALAR.md madde 34. ROCm yolu ek DLL ister (hipblas.dll), otomatik kurulmaz.",
+      "belge": "docs/AMD_ROCM.md"
+    }
+  ],
+  "nvidia_cc_okunamadi": {
+    "id": "bilinmiyor",
+    "motor": "release_sm61",
+    "ek_ayar": {},
+    "durum": "denenmemis",
+    "kanit": "nvidia-smi compute capability vermedi (eski surucu?): eski varsayilan yol (hazir sm_61 motor), f32 yapilmaz."
+  },
+  "diger_uretici": {
+    "motor": null,
+    "durum": "denenmemis",
+    "kanit": "Intel ve diger kartlar: kanit yok; otomatik motor secilmez. Kartinizi PR ile ekleyin."
+  }
+}

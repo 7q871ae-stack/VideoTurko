@@ -4,6 +4,8 @@ Bu liste gercek kosulardan cikmistir (4 GB GTX 1050 Ti, stable-diffusion.cpp `sd
 Her madde: **belirti**, **neden**, **kalici cozum**. Etiketler: [olctum] = bu projede olculdu, [okudum] = kodda/belgede goruldu, [tahmin] = dogrulanmadi.
 This list comes from real runs. Each item: symptom, cause, lasting fix.
 
+> **Otomatik motor / Automatic engine:** `kur.ps1` artik kart sinifini taniyip motoru kendisi secer ve kurar (stock stable-diffusion.cpp dahil); `-Kuru` secimi `Motor secimi:` satiriyla gosterir. Asagidaki maddelerdeki elle adimlar olculdugu gibi kalir. / `kur.ps1` now recognises the card class and picks and installs the engine itself (stock stable-diffusion.cpp included); `-Kuru` shows the choice on the `Motor secimi:` line. The manual steps in the items below stay as measured. Tablo / table: README "Which engine does my card get?".
+
 ## A. Bellek ve kapi (VRAM)
 
 1. <a id="vt-e-vram"></a>**VRAM kapisi `blocks.0` agirlik hazirliginda dusuyor** (`segment 5/52 (blocks.0) failed during weight preparation`) [olctum]

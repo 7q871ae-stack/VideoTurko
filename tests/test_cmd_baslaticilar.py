@@ -68,7 +68,7 @@ class Calistirma(unittest.TestCase):
         (self.ev / "docs").mkdir()
         for ad in ("kur.cmd", "uret.cmd"):
             shutil.copyfile(KOK / ad, self.ev / ad)
-        for ad in ("kur.ps1", "uret.ps1", "modelleri_indir.ps1", "modeller.json"):
+        for ad in ("kur.ps1", "uret.ps1", "modelleri_indir.ps1", "modeller.json", "kart.ps1", "kart_tablosu.json"):
             shutil.copyfile(KOK / "scripts" / ad, self.ev / "scripts" / ad)
         for ad in ("ornek_istem_R0.txt", "LISANS_KABUL.txt"):
             shutil.copyfile(KOK / "docs" / ad, self.ev / "docs" / ad)

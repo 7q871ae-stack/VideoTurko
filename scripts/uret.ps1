@@ -53,6 +53,16 @@ if ($Kare -eq 0) { $Kare = $(if ($InitImg -or $EndImg) { $KareInit } else { $Kar
 $Root = $(if ($env:VT_ROOT) { $env:VT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path })
 $Motor = $(if ($env:VT_ENGINE_BIN) { $env:VT_ENGINE_BIN } else { Join-Path $Root 'engine\bin' })
 $ModelDir = $(if ($env:VT_MODEL_DIR) { $env:VT_MODEL_DIR } else { Join-Path $Root 'model' })
+. (Join-Path $PSScriptRoot 'kart.ps1')   # kart tanima + scripts/kart_tablosu.json (yalniz okur)
+$KartTabloU = Kart-Tablo-Oku (Join-Path $PSScriptRoot 'kart_tablosu.json')
+# kur.ps1 secilen motoru engine\secili_motor.json'a yazar; VT_ENGINE_BIN verilirse o kazanir. Dosya yoksa eski yol (engine\bin): GTX 1050 Ti ve eski kurulumlar degismez.
+$Secili = $null; $SeciliYol = Join-Path (Join-Path $Root 'engine') 'secili_motor.json'
+if (Test-Path -LiteralPath $SeciliYol) { try { $Secili = (Get-Content -LiteralPath $SeciliYol -Raw -Encoding UTF8 | ConvertFrom-Json) } catch { $Secili = $null } }
+$MotorStock = $false
+if ($Secili -and $Secili.motor) {
+    if (-not $env:VT_ENGINE_BIN -and $Secili.bin) { $Motor = Join-Path $Root ([string]$Secili.bin -replace '/', '\') }
+    $MotorStock = ([string]$Secili.motor -like 'stock_*')
+}
 
 # --- GPU bilgisi (yalniz okuma; okunamazsa -1 ve hicbir sey degismez) ---
 $GpuTop = -1; $GpuCc = -1.0; $GpuSayi = 0
@@ -67,7 +77,11 @@ if (Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue) {
 if ($env:VT_GPU_CC) { $tmpC = 0.0; if ([double]::TryParse($env:VT_GPU_CC.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpC)) { $GpuCc = $tmpC } else { Write-Output ("UYARI: VT_GPU_CC='{0}' sayi olarak okunamadi, yok sayildi (ornek: 8.9 ya da 8,9)" -f $env:VT_GPU_CC) } }
 if ($env:VT_GPU_VRAM) { $tmpV = 0.0; if ([double]::TryParse($env:VT_GPU_VRAM.Trim().Replace(',', '.'), $Flt, $Inv, [ref]$tmpV) -and $tmpV -gt 0) { $GpuTop = [int][Math]::Floor($tmpV) } else { Write-Output ("UYARI: VT_GPU_VRAM='{0}' sayi (MiB) olarak okunamadi, yok sayildi (ornek: 12282)" -f $env:VT_GPU_VRAM) } }
 if ($GpuSayi -gt 1) { Write-Output ("bilgi: {0} GPU goruldu; sd-cli CUDA 0'i kullanir. Betik temkinli tarafla karar verir: en kucuk VRAM {1} MiB, en kucuk compute capability {2} (f32 yalniz tum kartlar >= 7.0 ise). Yalniz tek GPU ile olculdu; karti CUDA_VISIBLE_DEVICES ile secebilirsiniz." -f $GpuSayi, $GpuTop, $(if ($GpuCc -lt 0) { 'okunamadi' } else { $GpuCc.ToString($Inv) })) }
-if ($GpuCc -ge 12.0) { Write-Output ("UYARI: [VT-W-BLACKWELL] compute capability {0} (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli; bir kullanici bu kartta 56+ karede siyah video bildirdi (v0.1.0 betigiyle; v0.1.1 f32 ayariyla denenmedi). Once 56 kare deneyin; video siyahsa iki yol var: (a) stable-diffusion.cpp (leejet) hazir CUDA surumu master-1106-532d2c1, derleme dosyasinda sm_120 dahil [okudum], bu kartta denenmedi, bizim bellek yamalarimiz yok: dis rapor docs\KART_PROFILLERI.md; (b) motoru sm_120 icin derleyip VT_ENGINE_BINi ona verin: docs\RTX5060_SM120_DERLEME.md. Kendi sm_120 derlemenizi kullaniyorsaniz bu uyariyi yok sayin." -f $GpuCc.ToString($Inv)) }
+if ($GpuCc -ge 12.0 -and -not $MotorStock) { Write-Output ("UYARI: [VT-W-BLACKWELL] compute capability {0} (RTX 50 serisi / Blackwell): hazir motor yalniz sm_61 icin derli; bir kullanici bu kartta 56+ karede siyah video bildirdi (v0.1.0 betigiyle; v0.1.1 f32 ayariyla denenmedi). Once 56 kare deneyin; video siyahsa iki yol var: (a) stable-diffusion.cpp (leejet) hazir CUDA surumu master-1106-532d2c1, derleme dosyasinda sm_120 dahil [okudum], bu kartta denenmedi, bizim bellek yamalarimiz yok: dis rapor docs\KART_PROFILLERI.md; (b) motoru sm_120 icin derleyip VT_ENGINE_BINi ona verin: docs\RTX5060_SM120_DERLEME.md. Kendi sm_120 derlemenizi kullaniyorsaniz bu uyariyi yok sayin." -f $GpuCc.ToString($Inv)) }
+# Kart sinifi (scripts/kart_tablosu.json): ek ayar (f32, model argumani). NVIDIA: compute capability'den (eski cc >= 7.0 kuraliyla ayni sonuc); cc okunamazsa (AMD) kur.ps1'in yazdigi sinif.
+$SinifU = $null
+if ($GpuCc -ge 0) { $SinifU = Kart-Sinif $KartTabloU 'nvidia' $GpuCc }
+elseif ($Secili -and $Secili.kart_sinifi) { foreach ($ks in $KartTabloU.kartlar) { if ($ks.id -eq [string]$Secili.kart_sinifi) { $SinifU = $ks } } }
 $KucukKart = ($GpuTop -lt $KucukKartMiB)   # VRAM okunamadiysa (-1) kucuk sayilir (temkinli)
 $KareEndTavan = $(if ($KucukKart) { $KareEnd4GB } else { $KareInit })
 if ($EndImg -and $KareVarsayilan) { $Kare = $KareEndTavan }
@@ -109,6 +123,8 @@ if ($VtAktif.Count -gt 0) {
     Write-Output $VtMesaj
     if (-not $Kuru) { try { New-Item -ItemType Directory -Force (Join-Path $Root 'runs') | Out-Null; Add-Content -LiteralPath (Join-Path $Root 'runs\olaylar.txt') -Value ((Get-Date -Format 'HH:mm:ss') + ' | ' + $VtMesaj) -Encoding ASCII } catch { } }
 }
+if (-not $env:VT_ATTN_BUDGET) { $ekB = Kart-Ek-Model-Arg $SinifU 'minimax_h3_attn_chunk_budget'; if ($ekB) { $VtAttn = $ekB } }   # tablodan olculmus ek ayar (bellek butcesi; kalite ayari degil)
+if ($MotorStock) { Write-Output ("bilgi: stable-diffusion.cpp stock motoru ({0}); kart sinifi {1} (durum: {2}); motor klasoru {3}. Tek surec (iki asamali repo yamalari yok); kalite ayarlari ayni, kalite kapisi calisir. Bakimcilar bu kart sinifinda uret.ps1 yolunu olcmedi: docs/KART_PROFILLERI.md." -f $Secili.motor, $(if ($SinifU) { $SinifU.id } else { '?' }), (Kart-Durum $SinifU ''), $Motor) }
 $sd = Join-Path $Motor 'sd-cli.exe'
 $DiT = Join-Path $ModelDir 'minimax_h3_fl2va_hyperflow_flash_14b-Q4_K_M.gguf'
 $TE = Join-Path $ModelDir 'qwen3vl_32b_minimax_h3-Q4_K_M.gguf'
@@ -150,6 +166,7 @@ function Ortak-Arg([string]$Out) {
 # -TekAsama: elle tek surec (buyuk VRAM'li kart); varsayilan degismez.
 # -EndImg kucuk kartta (< $KucukKartMiB) her zaman iki asama: tek asamada 56 karede bile sigmadi [olctum 1050 Ti FLF56; iki asamada FLF56b GECTI].
 $IkiAsama = (($Jeton -gt 7680) -or ($EndImg -and $KucukKart) -or $VtIki) -and -not $TekAsama
+if ($MotorStock) { $IkiAsama = $false }   # stock motorda SD_* yama anahtarlari yok: iki asama anlamsiz, tek surec
 $Env1 = [ordered]@{}
 $Env2 = [ordered]@{}
 $ChunkMB = $VtChunk
@@ -163,7 +180,8 @@ if ($IkiAsama) {
     $Env1['SD_VAE_NO_TILING_FALLBACK'] = '1'
 }
 # cuBLAS f32: compute capability >= 7.0 ve kullanici ayarlamadiysa (sm89'da fp16 >=141 karede tasiyor: siyah video, issue #1). 6.1 (1050 Ti) ve okunamayan cc: dokunulmaz.
-if ($GpuCc -ge 7.0 -and -not $env:GGML_CUDA_CUBLAS_COMPUTE_TYPE) { $Env1['GGML_CUDA_CUBLAS_COMPUTE_TYPE'] = 'f32'; $Env2['GGML_CUDA_CUBLAS_COMPUTE_TYPE'] = 'f32' }
+$EkEnvU = Kart-Ek-Env $SinifU   # kart_tablosu.json: cc >= 7.0 siniflarinda GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32; kullanici kendisi ayarladiysa dokunulmaz
+foreach ($ek in $EkEnvU.Keys) { if (-not [Environment]::GetEnvironmentVariable($ek)) { $Env1[$ek] = $EkEnvU[$ek]; $Env2[$ek] = $EkEnvU[$ek] } }
 
 # Kalite kapisi on kontrolu, GPU isinden ONCE: python + opencv + numpy calistirilarak denenir (Windows'ta python kurulu degilken bile
 #   Microsoft Store kisayolu WindowsApps\python.exe bulunur ve 9009 ile cikar; Get-Command yetmez). Basarisizsa video uretilmez, cikis 6.
@@ -252,7 +270,7 @@ function Vram-Ipucu {
     $bulundu = $false
     foreach ($n in @("ham_out_${Ad}_a1.txt", "ham_err_${Ad}_a1.txt", "ham_out_${Ad}_a2.txt", "ham_err_${Ad}_a2.txt")) {
         $p = Join-Path $Dizin $n
-        if ((Test-Path -LiteralPath $p) -and (Select-String -LiteralPath $p -Pattern 'failed during weight preparation|ALLOC_FAILED|cannot make enough memory|out of memory|vae decode compute failed' -Quiet)) { $bulundu = $true }
+        if ((Test-Path -LiteralPath $p) -and (Select-String -LiteralPath $p -Pattern 'failed during weight preparation|ALLOC_FAILED|cannot make enough memory|out of memory|vae decode compute failed|need [0-9.]+ ?MB.{0,60}budget' -Quiet)) { $bulundu = $true }
     }
     if ($bulundu) {
         Write-Output '[VT-E-VRAM] VRAM yetmedi olabilir (kesin degil): logda bellek ayirma/agirlik hazirlama hatasi var.'

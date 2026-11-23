@@ -85,7 +85,9 @@ VideoTurko'nun kurduğu her şey tek kök klasörde, `<VT_ROOT>` altında durur 
 
 | `<VT_ROOT>` altındaki klasör | İçinde ne var | Boyut |
 |---|---|---|
-| `engine\bin`, `engine\lisanslar` | GitHub sürümünden motor (exe ve DLL'ler) ve zip'lerinin lisans dosyaları | ölçülmedi |
+| `engine\bin`, `engine\lisanslar` | hazır motor (exe ve DLL'ler; GTX 10xx ve RTX 40xx) ve zip'lerinin lisans dosyaları | ölçülmedi |
+| `engine\stock_cuda12\bin` ya da `engine\stock_vulkan\bin` | yalnız biri, kartınız stock stable-diffusion.cpp motorunu alıyorsa (kurulum seçer); lisans dosyaları yanında `lisanslar\` içinde | açılmış yaklaşık 1,2 GiB (CUDA) ya da yaklaşık 0,08 GiB (Vulkan) [ölçtüm: zip merkezi dizini, bakımcılar] |
+| `engine\secili_motor.json` | `kur.ps1`'in seçtiği motor; `uret.ps1` bunu okur (`VT_ENGINE_BIN` verilirse o kazanır) | çok küçük |
 | `model` | resmî kaynaktan indirilen, sha256 denetimli model dosyaları | 29,3 GiB [okudum: `AGENTS.md`] |
 | `indirme` | indirilen zip'ler ve açma artıkları | ölçülmedi |
 | `runs` | bitmiş videolarınız | kullandıkça büyür |
@@ -93,23 +95,56 @@ VideoTurko'nun kurduğu her şey tek kök klasörde, `<VT_ROOT>` altında durur 
 
 Kurulum betikleri `pip`, `uv` ya da Hugging Face aracı çalıştırmaz; paket ya da model önbelleği yazmazlar. İsteğe bağlı kapı paketlerini kendiniz kuracaksanız önbelleği de köke koyun: `py -3 -m venv <VT_ROOT>\.venv`, sonra `<VT_ROOT>\.venv\Scripts\python.exe -m pip install --cache-dir <VT_ROOT>\.onbellek\pip opencv-python numpy`; `<VT_ROOT>\.venv` varsa betikler onu kullanır (`VT_PYTHON` verilmedikçe).
 
+Linux'ta (`./kur.sh`, deneysel) aynı kök şunları barındırır:
+
+| `<VT_ROOT>` altındaki Linux yolu | İçinde ne var |
+|---|---|
+| `.venv`, `.onbellek/pip` | Python ortamı (opencv-python-headless, numpy) ve pip önbelleği; `kur.sh` her zaman oluşturur |
+| `engine/src`, `engine/build` | sabit commit'teki stable-diffusion.cpp kaynağı ve derleme klasörü |
+| `engine/toolchain` | yalnız derleme yerel bir araç zinciri gerektiriyorsa |
+| `engine/bin`, `engine/.yamalar_tamam` | derlenmiş `sd-cli` ve `SHA256SUMS`'ı, ve yamaların uygulandığı işareti |
+| `model/`, `runs/` | Windows'taki gibi |
+
 **Modeli zaten indirdiniz mi?** Kurulumu `-ModelKlasoru <folder>` ile ona gösterin: sha256'sı eşleşen dosyalar indirilmez, bağlanır. Aynı sürücüde bu bir sert bağdır (veri bir kez durur; kaynak klasörü sonradan silmek yer açmaz); başka sürücüde KOPYADIR (yaklaşık 29 GiB iki kez). sha256'sı doğru tam dosya atlanır, yarım indirme `.part` dosyasından sürer.
 
 **Kaldırma:** VideoTurko'yu kapatın, `runs` içinden saklamak istediğiniz videoları kopyalayın, sonra `<VT_ROOT>` klasörünü silin; kaldırma bu kadar. Bizim silmemiz gerekmeyenler: sistem Python'una yaptığınız `pip install` (bundan kaçınmak için yukarıdaki gibi `.venv` kullanın) ve `winget` ile kurulanlar.
 
-## Hangi kartım var? (yalnız bağlantılar)
+## Kartım hangi motoru alır? (otomatik)
 
-Bu deponun değeri, modeli 4 GB'a sığdıran yamalar ve kalite kapılarıdır. Diğer kartlar için hazır stable-diffusion.cpp CUDA sürümü bir SEÇENEKTİR: onu ölçmedik ve kalite kapılarımız onun üzerinde koşturulmadı. Kendi ölçümlerimiz tek kartı kapsıyor (GTX 1050 Ti 4 GB). Gerisi topluluk raporudur: bağlantısını veriyoruz, doğruluğunu garanti etmiyoruz.
+`kur.cmd` kartınızı okur (`nvidia-smi`'den compute capability; AMD için Windows ekran bağdaştırıcı adı) ve motoru kendisi seçer. Bir şey indirilmeden önce `scripts\kur.ps1 -Kuru` seçimi tek satırda gösterir: `Motor secimi: <id> (kart sinifi <class>; durum <status>)`. Karar vermeniz gereken bir şey yok: `kur.cmd`'ye çift tıklayın. Elle seçmek için: `-MotorTuru release_sm61`, `-MotorTuru stock_cuda12` ya da `-MotorTuru stock_vulkan` (`-MotorZip` / `-CudaZip` ile verilen yerel zip hazır motor sayılır). Arkasındaki tablo `scripts/kart_tablosu.json`.
 
-| Sizin kurulumunuz | Nereye bakılır | Kanıt |
-|---|---|---|
-| GTX 1050 Ti 4 GB (bizim sürüm zip'imiz) | bu README, `docs/OLCUMLER.md` | [ölçtüm] |
-| Diğer NVIDIA kartlar (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` `f32` ayarını kendiliğinden açar; hazır stable-diffusion.cpp CUDA sürümü: bir seçenek, biz ölçmedik [denenmedi]) | [kullanıcı bildirdi] |
-| RTX 50 serisi | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [kullanıcı bildirdi, PR #3] |
-| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (topluluk notu, resmi destek yok; hazır motor CUDA) | [kullanıcı bildirdi, PR #4] |
-| Birkaç klipten daha uzun bir film | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [kullanıcı bildirdi]; zincirlenmiş filmin kalitesini biz ölçmedik [denenmedi] |
+Durum sözcükleri: **doğrulanmış** = bakımcılar ölçtü; **topluluk** = bir kullanıcı bildirdi, biz ölçmedik; **denenmemiş** = kimse bir koşu bildirmedi.
 
-Lisans: MiniMax H3 lisans kabulü (`docs/LISANS_KABUL.txt`) her yolda geçerlidir; `kur.ps1` kabul adımı hazır sürümle çalışmaz.
+| Kart sınıfı | Seçilen motor | Durum | Kanıt |
+|---|---|---|---|
+| GTX 10xx (Pascal, compute capability 6.1-6.9) | hazır motor (`sm_61`, bizim yamalarımız) | doğrulanmış, yalnız GTX 1050 Ti | [ölçtüm] `docs/OLCUMLER.md`; diğer Pascal kartlar [tahmin: aynı mimari] |
+| RTX 20xx, GTX 16xx (Turing/Volta, 7.x) | stock CUDA motoru | denenmemiş | [okudum] stock derleme `sm_70` ve `sm_75` listeler; bildirilen koşu yok |
+| RTX 30xx (Ampere, 8.0-8.8) | stock CUDA motoru | topluluk | [user-reported, PR #6] RTX 3070 8 GB, `uret.ps1` dışında koşuldu, kalite kapısı koşulmadı; 6 GB laptop kartlarda ölçüm yok [tahmin: aynı mimari] |
+| RTX 40xx (Ada, 8.9) | hazır motor, `f32` | topluluk | [user-reported, issue #1] RTX 4070 Ti; [user-reported, PR #5] RTX 4060, yerel `sm_89` derleme; stock motor bu sınıfta denenmedi |
+| Hopper ve daha yeni veri merkezi kartları (9.0-11.x) | stock CUDA motoru | denenmemiş | [okudum] stock derleme `sm_90` ve `sm_100` listeler; bildirilen koşu yok |
+| RTX 50xx (Blackwell, 12.0 ve üzeri) | stock CUDA motoru | denenmemiş | [okudum] stock derleme `sm_120` listeler; RTX 50'de stock koşu yok; [user-reported, PR #3] hazır `sm_61` motor 56+ karede siyah video verdi, yerel `sm_120` derleme çalıştı |
+| AMD Radeon | stock Vulkan motoru, `minimax_h3_attn_chunk_budget=0.03` | topluluk | [user-reported] RX 9070 XT 16 GB, 209 kare; ROCm otomatik değil (`hipblas.dll` ister) |
+| Intel, diğer her şey | otomatik motor yok | yok | `kur.ps1` hata verir; `-MotorTuru` ile elle seçin |
+
+`f32` ayarı (`GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32`) compute capability 7.0 ve üzeri NVIDIA kartlarda kendiliğinden uygulanır. Stock motor tek süreçte çalışır (bizim yamalarımızın iki aşamalı anahtarları onda yoktur); kalite ayarları her kartta aynıdır (6 adım, cfg 1, 640x384, karosuz VAE) ve kalite kapısı aynı biçimde çalışır. VRAM yetmezse motor `[VT-E-VRAM]` ile erken durur ve daha kısa bir `-Kare` önerir. Doğrulanmamış bir kart sınıfında durumu ve kanıtıyla birlikte `[VT-W-GPU-DENENMEDI]` uyarısı çıkar. Stock motor `engine\` altında açılmış yaklaşık 1,2 GiB ekler (CUDA; zip'ler 412 MB ve 563 MB) ya da yaklaşık 0,08 GiB (Vulkan; zip 30 MB) [ölçtüm: zip merkezi dizini, bakımcılar]. Kart başına ayrıntı: `docs/KART_PROFILLERI.md`. Birkaç klipten uzun film: `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` [user-reported]; zincirleme film kalitesini biz ölçmedik [not tried].
+
+> **Kartınızı ekleyin (pull request).** Kısa bir PR yeter: (1) `nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits` komutunun bastığı satır; (2) `scripts\kur.ps1 -Kuru` çıktısı; (3) `uret.ps1` koşunuzun özeti (kare, süre, varsa tepe VRAM), her sayı [measured], [read] ya da [guess] etiketli; (4) `docs/KART_PROFILLERI.md`'ye yeni bir satır ve motor seçimi değişmeliyse `scripts/kart_tablosu.json` için öneri. Kalite ayarlarını (6 adım, cfg 1, 640x384, karosuz VAE) değiştiren bir PR kabul edilemez. Bkz. `CONTRIBUTING.md`.
+
+Lisans: MiniMax H3 lisansını (`docs/LISANS_KABUL.txt`) kabul etmek her yolda geçerlidir.
+
+## Linux (deneysel)
+
+**Durum: deneysel.** Bakımcılar Linux'ta GPU koşusu yapmadı. Tek kanıt [user-reported, PR #8]: RTX 4060 Ti 8 GB'ta 56 kare (katkıcı @xmtaha); 141 ve 209 kare Linux'ta ölçülmedi [not tried]. Windows'taki motor seçimi (stock motor, `scripts/kart_tablosu.json`) Linux'ta geçerli değildir: motoru sabitlenmiş kaynaklardan bizim yamalarımızla kendiniz derlersiniz.
+
+Gerekenler: NVIDIA sürücüsü (`nvidia-smi` çalışmalı; 4 GB ya da üstü VRAM), CUDA Toolkit (`nvcc`), `git`, `cmake` ve `python3`; modeller için yaklaşık 29,3 GiB (model sürücüsünde en az 32 GiB boş) ve kök altında kaynak ile derleme için yer [tahmin: kök sürücüsünde yaklaşık 10 GiB daha; ölçülmedi].
+
+```bash
+./kur.sh --kuru
+./kur.sh
+./uret.sh --istem docs/ornek_istem_R0.txt --kare 56
+```
+
+`./kur.sh --kuru` hiçbir şey değiştirmez (yazmaz, indirmez, derlemez) ve hazırlık durumunu çıkış koduyla bildirir. `./kur.sh` GPU'yu (compute capability 6.1 ya da üstü), diski ve model lisansını denetler (size sorar; `--lisans-kabul E` okuyup kabul ettiğiniz anlamına gelir), kökün altında Python ortamı kurar (`.venv`, pip önbelleği `.onbellek/pip`), stable-diffusion.cpp'yi sabit commit'te klonlayıp `patches/SHA256SUMS` ile doğrulanan yamalarla derler (derleme uzun sürer [ölçülmedi]), modelleri sha256 denetimiyle indirir, 5 karelik gerçek bir kontrol üretimi yapar ve yalnız kontrol geçerse HAZIR yazar (`--kontrol-atla` kontrolü atlar ve asla HAZIR yazmaz). `./uret.sh` `uret.ps1` ile aynı kurallara uyar: kare sayısı 17k+5 en fazla 209 (`--init-img` ile 192), varsayılan 640x384, aynı iki aşama eşiği, compute capability 7.0 ve üzeri kartlarda `f32`, aynı kalite kapısı; kalite ayarları her sistemde sabittir (6 adım, cfg 1, karosuz VAE). `kur.sh` çıkış kodları: 0 hazır, 1 hata, 2 lisans gerekli, 3 donanım ya da disk yetmiyor; `uret.sh`: 0 tamam, 1 hata, 2 kullanım hatası ya da durdurma dosyası, 5 kalite kapısı RED, 6 kapı çalışamadı.
 
 ## Bu nedir
 MiniMax H3'ü (33B DiT; biz HyperFlow Flash 13,7B Q4_K_M GGUF'u çalıştırıyoruz; 32B Qwen3-VL metin kodlayıcı ayrıdır) 4 GB'lık Pascal ekran kartında (GTX 1050 Ti, 16 GB RAM) çalıştırmak için küçük bellek/zamanlama yamaları, çalıştırma tarifi, kontroller ve ölçümler.
@@ -207,4 +242,4 @@ Köşeli parantezde geçen koşu adları (bize ait koşu adları, bu depoda dosy
 - **Temiz kök testi bekliyor:** kurulum ve çalıştırma betikleri boş klasörde yalnız bu talimatla henüz doğrulanmadı; test (56 karede referansa bayt kıyası dahil) kaydedilince bu bölüm güncellenir.
 - Çıktı videolar depoda yok.
 
-<!-- i18n-source: README.md sha256:7d01bea18712 -->
+<!-- i18n-source: README.md sha256:d7bba453508a -->

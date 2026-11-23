@@ -1,5 +1,7 @@
 # RTX 5060 Laptop 8 GB (`sm_120`) Kök Neden ve Test Raporu / Root Cause & Test Report (TR + EN)
 
+> **Automatic path / Otomatik yol:** for this class `scripts\kur.ps1` picks the stock CUDA engine, which has NOT been run on an RTX 50 card (status untried). The measured path in this report is the local `sm_120` build. / Bu sınıf için `scripts\kur.ps1` stock CUDA motorunu seçer; o motor RTX 50'de HİÇ koşulmadı (durum: denenmemiş). Bu raporda ölçülen yol yerel `sm_120` derlemesidir.
+
 **Donanım / Hardware:** NVIDIA GeForce RTX 5060 Laptop GPU (8 GB / 8151 MiB VRAM, Blackwell, compute capability `12.0` / `sm_120`), Windows 11 x64.  
 **Tarih / Date:** 2026-11-20  
 **Taban / Base:** `stable-diffusion.cpp` `32d516c` (`master-1088`), `ggml` `d803c238`, `patches/SERIES.txt` (24 yama / 24 patches), NVIDIA CUDA Toolkit 12.8.1.

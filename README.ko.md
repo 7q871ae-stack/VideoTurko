@@ -88,7 +88,9 @@ Everything VideoTurko installs lives in one root folder, `<VT_ROOT>` (default: t
 
 | Folder under `<VT_ROOT>` | What is in it | Size |
 |---|---|---|
-| `engine\bin`, `engine\lisanslar` | the engine from the GitHub release (exe and DLLs) and the license files of its zips | not measured |
+| `engine\bin`, `engine\lisanslar` | the release engine (exe and DLLs; GTX 10xx and RTX 40xx) and the license files of its zips | not measured |
+| `engine\stock_cuda12\bin` or `engine\stock_vulkan\bin` | only one of them, when your card gets the stock stable-diffusion.cpp engine (the installer picks it); its license files sit next to it in `lisanslar\` | about 1.2 GiB unpacked (CUDA) or about 0.08 GiB (Vulkan) [measured: zip central directory, maintainers] |
+| `engine\secili_motor.json` | which engine `kur.ps1` selected; `uret.ps1` reads it (`VT_ENGINE_BIN` wins when set) | tiny |
 | `model` | the model files, downloaded from the official source and sha256-checked | 29.3 GiB [read: `AGENTS.md`] |
 | `indirme` | downloaded zips and their unpacking leftovers | not measured |
 | `runs` | your finished videos | grows with use |
@@ -96,23 +98,60 @@ Everything VideoTurko installs lives in one root folder, `<VT_ROOT>` (default: t
 
 The install scripts run no `pip`, `uv` or Hugging Face tool, so they write no package or model cache. Only if you install the optional gate packages yourself, keep the cache in the root too: `py -3 -m venv <VT_ROOT>\.venv`, then `<VT_ROOT>\.venv\Scripts\python.exe -m pip install --cache-dir <VT_ROOT>\.onbellek\pip opencv-python numpy`; the scripts use `<VT_ROOT>\.venv` when it exists (unless `VT_PYTHON` is set).
 
+On Linux (`./kur.sh`, experimental) the same root holds:
+
+| Linux path under `<VT_ROOT>` | What is in it |
+|---|---|
+| `.venv`, `.onbellek/pip` | the Python environment (opencv-python-headless, numpy) and its pip cache; always created by `kur.sh` |
+| `engine/src`, `engine/build` | the stable-diffusion.cpp source at the pinned commit and the build folder |
+| `engine/toolchain` | only if the build needs a local toolchain |
+| `engine/bin`, `engine/.yamalar_tamam` | the built `sd-cli` with its `SHA256SUMS`, and the marker that the patches were applied |
+| `model/`, `runs/` | as on Windows |
+
 **Already downloaded the model?** Point the installer at it with `-ModelKlasoru <folder>`: files whose sha256 matches are linked instead of downloaded. On the same drive this is a hard link (the data exists once, so deleting the source folder later does not free the space); on another drive it is a COPY (about 29 GiB twice). A complete file with the right sha256 is skipped, and an interrupted download continues from its `.part` file.
 
 **Removal:** close VideoTurko, copy out the videos you want to keep from `runs`, then delete the `<VT_ROOT>` folder. That is the whole uninstall. Not ours to remove: a `pip install` you made into the system Python (use a `.venv` as above to avoid that) and anything installed with `winget`.
 
-## 내 카드는 무엇인가요? (링크만)
+## Which engine does my card get? (automatic)
 
-이 저장소의 가치는 모델을 4 GB에 맞추는 패치와 품질 게이트입니다. 다른 카드에서는 미리 빌드된 stable-diffusion.cpp CUDA 릴리스가 하나의 선택지입니다. 우리는 이를 측정하지 않았고 품질 게이트도 실행하지 않았습니다. 우리가 직접 측정한 것은 카드 한 장(GTX 1050 Ti 4 GB)뿐입니다. 나머지는 모두 커뮤니티 보고이며, 링크만 제공할 뿐 보증하지 않습니다.
+> Translation of this section is pending; the English text is authoritative. / Bu bölümün çevirisi bekliyor; İngilizce metin esastır.
 
-| 사용 환경 | 볼 곳 | 근거 |
-|---|---|---|
-| GTX 1050 Ti 4 GB (우리 릴리스 zip) | 이 README, `docs/OLCUMLER.md` | [측정] |
-| 그 밖의 NVIDIA 카드 (compute capability 7.0+: RTX 20/30/40) | `docs/KART_PROFILLERI.md` (`uret.ps1` 이 `f32` 를 자동으로 설정; 미리 빌드된 stable-diffusion.cpp CUDA 릴리스: 하나의 선택지, 우리는 측정하지 않음 [미시도]) | [사용자 보고] |
-| RTX 50 시리즈 | `docs/KURULUM.md`, `docs/RTX5060_TEST_RAPORU.md` | [사용자 보고, PR #3] |
-| AMD / non-NVIDIA | `docs/AMD_ROCM.md` (커뮤니티 메모, 공식 지원 아님; 릴리스 엔진은 CUDA) | [사용자 보고, PR #4] |
-| 여러 클립을 이은 더 긴 영화 | `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` | [사용자 보고]; 이어 붙인 영화의 품질은 우리가 측정하지 않았습니다 [미시도] |
+`kur.cmd` reads your card (the compute capability from `nvidia-smi`; for AMD the Windows display adapter name) and picks the engine itself. Before anything is downloaded, `scripts\kur.ps1 -Kuru` shows the choice in one line: `Motor secimi: <id> (kart sinifi <class>; durum <status>)`. Nothing else to decide: double-click `kur.cmd`. To choose by hand: `-MotorTuru release_sm61`, `-MotorTuru stock_cuda12` or `-MotorTuru stock_vulkan` (a local zip given with `-MotorZip` / `-CudaZip` counts as the release engine). The table behind this is `scripts/kart_tablosu.json`.
 
-라이선스: MiniMax H3 라이선스 수락(`docs/LISANS_KABUL.txt`)은 어느 경로에서든 유효합니다. `kur.ps1` 의 수락 단계는 미리 빌드된 릴리스에서는 실행되지 않습니다.
+Status words: **verified** = the maintainers measured it; **community** = a user reported it, we did not measure it; **untried** = nobody has reported a run.
+
+| Card class | Engine chosen | Status | Evidence |
+|---|---|---|---|
+| GTX 10xx (Pascal, compute capability 6.1-6.9) | release engine (`sm_61`, our patches) | verified, GTX 1050 Ti only | [measured] `docs/OLCUMLER.md`; other Pascal cards [guess: same architecture] |
+| RTX 20xx, GTX 16xx (Turing/Volta, 7.x) | stock CUDA engine | untried | [read] the stock build lists `sm_70` and `sm_75`; no run reported |
+| RTX 30xx (Ampere, 8.0-8.8) | stock CUDA engine | community | [user-reported, PR #6] RTX 3070 8 GB, run outside `uret.ps1`, quality gate not run; no measurement on 6 GB laptop cards [guess: same architecture] |
+| RTX 40xx (Ada, 8.9) | release engine, `f32` | community | [user-reported, issue #1] RTX 4070 Ti; [user-reported, PR #5] RTX 4060 with a local `sm_89` build; the stock engine was not tried on this class |
+| Hopper and newer data-centre cards (9.0-11.x) | stock CUDA engine | untried | [read] the stock build lists `sm_90` and `sm_100`; no run reported |
+| RTX 50xx (Blackwell, 12.0 and up) | stock CUDA engine | untried | [read] the stock build lists `sm_120`; no stock run on an RTX 50 card; [user-reported, PR #3] the release `sm_61` engine gave a black video at 56+ frames and a local `sm_120` build worked |
+| AMD Radeon | stock Vulkan engine, `minimax_h3_attn_chunk_budget=0.03` | community | [user-reported] RX 9070 XT 16 GB, 209 frames; ROCm is not automatic (it needs `hipblas.dll`) |
+| Intel, anything else | none automatic | n/a | `kur.ps1` stops with an error; choose by hand with `-MotorTuru` |
+
+The `f32` setting (`GGML_CUDA_CUBLAS_COMPUTE_TYPE=f32`) is applied automatically on NVIDIA cards with compute capability 7.0 or higher. The stock engine runs in a single process (the two-stage keys of our patches do not exist in it); the quality settings are the same on every card (6 steps, cfg 1, 640x384, non-tiled VAE) and the quality gate runs the same way. If the VRAM is not enough the engine stops early with `[VT-E-VRAM]`, which suggests a shorter `-Kare`. On a card class that is not verified you get the warning `[VT-W-GPU-DENENMEDI]` with its status and evidence. A stock engine adds about 1.2 GiB unpacked (CUDA; zips 412 MB and 563 MB) or about 0.08 GiB (Vulkan; zip 30 MB) under `engine\` [measured: zip central directory, maintainers]. Details per card: `docs/KART_PROFILLERI.md`. A longer film from several clips: `docs/KLIP_ZINCIRI.md`, `scripts/zincir.py` [user-reported]; chained-film quality not measured by us [not tried].
+
+> **Add your card (pull request).** One short PR is enough: (1) the line printed by `nvidia-smi --query-gpu=name,memory.total,driver_version,compute_cap --format=csv,noheader,nounits`; (2) the output of `scripts\kur.ps1 -Kuru`; (3) a summary of your `uret.ps1` run (frames, time, peak VRAM if you have it), every number labelled [measured], [read] or [guess]; (4) a new row in `docs/KART_PROFILLERI.md` and, if the engine choice should change, a suggestion for `scripts/kart_tablosu.json`. A PR that changes the quality settings (6 steps, cfg 1, 640x384, non-tiled VAE) cannot be accepted. See `CONTRIBUTING.md`.
+
+License: accepting the MiniMax H3 license (`docs/LISANS_KABUL.txt`) applies on every path.
+
+## Linux (experimental)
+
+> Translation of this section is pending; the English text is authoritative. / Bu bölümün çevirisi bekliyor; İngilizce metin esastır.
+
+**Status: experimental.** The maintainers have not run a GPU job on Linux. The only evidence is [user-reported, PR #8] 56 frames on an RTX 4060 Ti 8 GB (contributor @xmtaha); 141 and 209 frames were not measured on Linux [not tried]. The Windows engine choice (the stock engine, `scripts/kart_tablosu.json`) does not apply on Linux: you build the engine yourself from pinned sources with our patches.
+
+Needs: an NVIDIA driver (`nvidia-smi` works; 4 GB of VRAM or more), the CUDA Toolkit (`nvcc`), `git`, `cmake` and `python3`; about 29.3 GiB for the models (at least 32 GiB free on the model drive) plus room for the source and the build under the root [guess: about 10 GiB more on the root drive; not measured].
+
+```bash
+./kur.sh --kuru
+./kur.sh
+./uret.sh --istem docs/ornek_istem_R0.txt --kare 56
+```
+
+`./kur.sh --kuru` changes nothing (it writes, downloads and builds nothing) and reports readiness through its exit code. `./kur.sh` checks the GPU (compute capability 6.1 or higher), the disk and the model license (it asks you; `--lisans-kabul E` means you have read and accepted it yourself), creates a Python environment under the root (`.venv`, pip cache `.onbellek/pip`), clones and builds stable-diffusion.cpp at a pinned commit with the patches checked against `patches/SHA256SUMS` (the build takes a long time [not measured]), downloads the models with sha256 checks, runs a real 5-frame check, and prints READY only if that check passed (`--kontrol-atla` skips the check and never prints READY). `./uret.sh` follows the same rules as `uret.ps1`: frame counts 17k+5 up to 209 (192 with `--init-img`), 640x384 by default, the same two-stage threshold, `f32` on cards with compute capability 7.0 or higher, the same quality gate, and the quality settings are fixed on every system (6 steps, cfg 1, non-tiled VAE). Exit codes of `kur.sh`: 0 ready, 1 error, 2 license needed, 3 hardware or disk not enough; of `uret.sh`: 0 done, 1 error, 2 usage error or stop file, 5 quality gate RED, 6 gate could not run.
 
 ## 이 프로젝트는 무엇인가
 stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시피, 점검, 측정 자료의 모음입니다. 이를 통해 MiniMax H3(33B DiT. 우리는 HyperFlow Flash 13.7B Q4_K_M GGUF를 실행하며, 32B Qwen3-VL 텍스트 인코더는 별도입니다)를 4 GB Pascal GPU(GTX 1050 Ti, 시스템 RAM 16 GB)에서 실행할 수 있습니다.
@@ -210,4 +249,4 @@ stable-diffusion.cpp용 작은 메모리·스케줄링 패치와, 실행 레시�
 - **clean-root 테스트 대기 중:** 설치와 실행 스크립트는 이 안내만으로 빈 폴더에서 검증한 적이 아직 없습니다. 그 테스트(기준에 대한 56 프레임 바이트 비교 포함)를 기록하면 이 섹션을 갱신하겠습니다.
 - 생성된 영상은 여기에 포함되어 있지 않습니다.
 
-<!-- i18n-source: README.md sha256:7d01bea18712 -->
+<!-- i18n-source: README.md sha256:d7bba453508a -->

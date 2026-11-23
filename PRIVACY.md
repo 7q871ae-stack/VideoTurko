@@ -8,7 +8,9 @@
 | Host | What | Which script, when |
 |---|---|---|
 | `github.com` (its release downloads are redirected to `release-assets.githubusercontent.com` [measured: HTTP redirect seen 2026-11-20]) | engine zip and CUDA runtime zip of release v0.1.0 | `scripts/kur.ps1` (via `curl.exe`), only in the engine step; skipped if you give local zips with `-MotorZip` / `-CudaZip` |
-| `huggingface.co` and `hf.co` sub-hosts (a redirect to `us.aws.cdn.hf.co` was seen [measured: 2026-11-20]) | the four model files, about 29.3 GiB (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1`, only after you accept the model license; it refuses non-https and any other host |
+| `github.com` (`leejet/stable-diffusion.cpp`) | Windows: the stock engine zips of release `master-1106-532d2c1`, only when your card class gets the stock engine (sha256 pinned in `scripts/kart_tablosu.json`). Linux: `git clone` of the source (with its submodules) at a pinned commit | `scripts/kur.ps1` (Windows); `scripts/derle_linux.sh` via `git` (Linux, experimental), only when no engine exists yet |
+| `pypi.org` and `files.pythonhosted.org` | Linux: `opencv-python-headless` and `numpy` (and `pip` itself) into the `.venv` under the install root, binary wheels only | `scripts/kur.sh` via `pip` (Linux, experimental) |
+| `huggingface.co` and `hf.co` sub-hosts (a redirect to `us.aws.cdn.hf.co` was seen [measured: 2026-11-20]) | the four model files, about 29.3 GiB (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1` (Windows) or `scripts/modelleri_indir.py` (Linux), only after you accept the model license; it refuses non-https and any other host |
 
 Every download is checked against a pinned sha256 and stops on a mismatch. The zip step uses `curl -L`, which follows redirects without a host list; the sha256 check is what protects it [read: `scripts/kur.ps1`]. If you set `VT_MOTOR_URL` or `VT_CUDA_URL` yourself, you choose the host.
 
@@ -41,7 +43,9 @@ Expected today: the hosts above and nothing else. If you find a call that is not
 | Adres | Ne | Hangi betik, ne zaman |
 |---|---|---|
 | `github.com` (indirmeler `release-assets.githubusercontent.com`'a yönlenir [ölçtüm: yönlendirme 2026-11-20'de görüldü]) | v0.1.0 sürümünün motor zip'i ve CUDA çalışma zip'i | `scripts/kur.ps1` (`curl.exe` ile), yalnız motor adımında; `-MotorZip` / `-CudaZip` ile yerel zip verirseniz atlanır |
-| `huggingface.co` ve `hf.co` alt adresleri (`us.aws.cdn.hf.co`'ya yönlenme görüldü [ölçtüm: 2026-11-20]) | dört model dosyası, yaklaşık 29,3 GiB (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1`, yalnız model lisansını kabul ettikten sonra; https dışını ve başka adresi reddeder |
+| `github.com` (`leejet/stable-diffusion.cpp`) | Windows: kartınızın sınıfı stock motor alıyorsa `master-1106-532d2c1` sürümünün stock motor zip'leri (sha256 `scripts/kart_tablosu.json`'da sabit). Linux: kaynağın sabit commit'te alt modülleriyle `git clone`'u | `scripts/kur.ps1` (Windows); `scripts/derle_linux.sh`, `git` ile (Linux, deneysel), yalnız henüz motor yoksa |
+| `pypi.org` ve `files.pythonhosted.org` | Linux: kurulum kökü altındaki `.venv`'e `opencv-python-headless` ve `numpy` (ve `pip`'in kendisi), yalnız hazır ikili paketler | `scripts/kur.sh`, `pip` ile (Linux, deneysel) |
+| `huggingface.co` ve `hf.co` alt adresleri (`us.aws.cdn.hf.co`'ya yönlenme görüldü [ölçtüm: 2026-11-20]) | dört model dosyası, yaklaşık 29,3 GiB (`scripts/modeller.json`) | `scripts/modelleri_indir.ps1` (Windows) ya da `scripts/modelleri_indir.py` (Linux), yalnız model lisansını kabul ettikten sonra; https dışını ve başka adresi reddeder |
 
 Her indirme sabitlenmiş sha256'ya karşı denetlenir, uyuşmazsa durur. Zip adımı `curl -L` kullanır, yönlendirmeyi adres listesi olmadan izler; koruyan şey sha256 denetimidir [okudum: `scripts/kur.ps1`]. `VT_MOTOR_URL` ya da `VT_CUDA_URL`'yi kendiniz ayarlarsanız adresi siz seçmiş olursunuz.
 

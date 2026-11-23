@@ -37,10 +37,10 @@
     "'nvidia-smi' is not recognized"
    ],
    "ornek_log": [
-    "HATA: [VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA kart yok (bu motor yalniz NVIDIA CUDA). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported)."
+    "HATA: [VT-E-GPU] nvidia-smi yok: NVIDIA sofor/surucu kurulu degil ya da NVIDIA/AMD kart yok (hazir sm_61 motor yalniz NVIDIA CUDA; AMD kartta kur.ps1 stock Vulkan motorunu secer). AMD ya da baska NVIDIA disi kart: docs/AMD_ROCM.md (topluluk notu, resmi destek yok / community note, not officially supported)."
    ],
-   "ilk_adim_en": "Install or update the NVIDIA driver, open a new terminal, run nvidia-smi. The release engine is NVIDIA CUDA only (no CPU mode). On an AMD or other non-NVIDIA card there is a community note, not officially supported: docs/AMD_ROCM.md.",
-   "ilk_adim_tr": "NVIDIA surucusunu kurun ya da guncelleyin, yeni terminal acin, nvidia-smi calistirin. Surum motoru yalniz NVIDIA CUDA (islemci modu yok). AMD ya da baska NVIDIA disi kartta topluluk notu var, resmi destek yok: docs/AMD_ROCM.md.",
+   "ilk_adim_en": "Install or update the NVIDIA driver, open a new terminal, run nvidia-smi. The release sm_61 engine is NVIDIA CUDA only (no CPU mode). On an AMD card kur.ps1 picks the stock Vulkan engine (community report, not officially supported): docs/AMD_ROCM.md.",
+   "ilk_adim_tr": "NVIDIA surucusunu kurun ya da guncelleyin, yeni terminal acin, nvidia-smi calistirin. Hazir sm_61 motor yalniz NVIDIA CUDA (islemci modu yok). AMD kartta kur.ps1 stock Vulkan motorunu secer (topluluk bildirimi, resmi destek yok): docs/AMD_ROCM.md.",
    "capa": "docs/SIK_HATALAR.md#vt-e-gpu"
   },
   {
