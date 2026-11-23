@@ -106,3 +106,19 @@ Ağırlıkları bellek eşlemeli (`--mmap`) olarak RAM'de tutar, metin kodlayıc
 
 - **Otomatik kalite kapısı (`scripts/dikis_denetim.py` / `scripts/doku_norm.py`):** `[denenmedi]` — bu Mac'te `opencv-python` (`cv2`) kurulu olmadığından sayısal gürültü ve orta akış kapısı çalıştırılamadı.
 - **Günlük ve gözle doğrulama `[kullanıcı bildirdi]`:** Başarılı 7 koşunun hiçbirinde `retrying with temporal tiling`, `ALLOC_FAILED`, `[E]` veya swap görülmedi; 56 ve 209 kare çıktılar sesle birlikte baştan sona izlenerek doğrulandı.
+
+
+## 6. MacBook Air M4 (16 GB)
+
+[ölçtüm, 2026-11-23] MacBook Air (`Mac16,12`), Apple M4, 16 GB birleşik bellek, macOS 26.6.2 (`arm64`, build `25G83`). Motor resmî macOS ARM64 Metal sürümü `master-1111-6874e49` ve cihaz `MTL0`. Motor arşivi ve USB4 SSD'deki dört model dosyası SHA-256 ile doğrulandı. Kalite kapısı, depo kökündeki Python ortamında `opencv-python-headless 5.1.0.95` ve `numpy 2.5.5` ile çalıştı.
+
+- Varsayılan `TAM_METAL=0` 56 kare denemesinde ölçüm izleyicisi, sistem diski boş alanı 2,5 GiB altına indiğinde örneklemeyi durdurdu. Başarılı çıktı veya kalite kapısı sonucu yoktu.
+- İkinci koşuda `scripts/mac_uret.sh` ve `TAM_METAL=0` kullanıldı. `VT_ENGINE_BIN` ile verilen yerel uyarlayıcı yalnız bellek yerleşimini değiştirdi: `--offload-to-cpu --backend te=cpu` yerine `--backend MTL0 --params-backend disk --max-vram 6 --disable-prefetch` geçti. `--mmap`, `minimax_h3_attn_chunk_budget=0.03` ve projenin kalite ayarları korundu. Bu, motorun yönetilen GPU bütçesidir. Ölçülen süreç belleği ayrı verilir.
+- Komut: `TAM_METAL=0 VT_MODEL_DIR="<MODEL_DIR>" VT_ENGINE_BIN="<ADAPTER_DIR>" ./scripts/mac_uret.sh docs/ornek_istem_R0.txt 56`. Uzunluk denemesinde yalnız kare argümanı değişir.
+
+| Kare | Motor süresi (`generate_video`) | Betik toplamı | Tepe bellek ayak izi / max RSS | Kalite kapısı |
+|---:|---:|---:|---:|---|
+| 56 | 732,03 sn | 734,25 sn | 6,20 / 7,89 GiB | `KAPI GECTI: kare=56 gurultu=0.68 orta_akis=3.77` |
+| 124 | 1657,04 sn | 1659,88 sn | 6,21 / 8,58 GiB | `KAPI GECTI: kare=124 gurultu=0.64 orta_akis=3.36` |
+
+[ölçtüm] `ffprobe`, her iki kare sayısını, 640×384, 24 fps ve 32 kHz stereo PCM sesi doğruladı. Motor günlüğünde tahsis hatası veya VAE karolama yedeği görülmedi. Bellek değerleri `/usr/bin/time -l` sayaçlarından GiB'ye çevrildi [hesap]. Ham günlükler yerelde saklandı.
