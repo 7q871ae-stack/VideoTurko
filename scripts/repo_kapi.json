@@ -104,6 +104,7 @@
         "scripts/kur.ps1",
         "scripts/uretim_kapi.ps1",
         "scripts/doku_norm.py",
+        "scripts/son_kare_denetim.py",
         "mcp/*.py"
       ],
       "yasak_desen": "--steps +[0-9]+",
