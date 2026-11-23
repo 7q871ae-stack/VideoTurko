@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -33,7 +34,7 @@ def indir(url: str, hedef: Path, beklenen_boyut: int, beklenen_sha: str, dogrula
 
     if hedef.is_file() and hedef.stat().st_size == beklenen_boyut:
         if not dogrula:
-            print(f"  var (boyut doğru): {hedef.name}", flush=True)
+            print(f"  var (boyut doğru; sha256 için --dogrula): {hedef.name}", flush=True)
             return
         if sha256_dosya(hedef) == beklenen_sha:
             print(f"  var (sha256 doğru): {hedef.name}", flush=True)
@@ -54,7 +55,22 @@ def indir(url: str, hedef: Path, beklenen_boyut: int, beklenen_sha: str, dogrula
     else:
         print(f"  indiriliyor ({beklenen_boyut / (1 << 30):.2f} GiB): {hedef.name}", flush=True)
 
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    try:
+        resp_ctx = urllib.request.urlopen(req, timeout=60)
+    except urllib.error.HTTPError as e:
+        if e.code == 416 and mevcut > 0:
+            # Sunucu "istenen aralik gecersiz" dedi: .part zaten tam boyutta ise yalniz sha256 sinanir, degilse bayat sayilip bastan indirilir.
+            if mevcut == beklenen_boyut:
+                print(f"  {hedef.name}.part zaten tam boyutta; sha256 dogrulaniyor...", flush=True)
+                return _bitir(part, hedef, beklenen_boyut, beklenen_sha)
+            print(f"  uyari: sunucu devam araligini reddetti (HTTP 416), .part atiliyor, bastan indiriliyor: {hedef.name}", flush=True)
+            part.unlink()
+            return indir(url, hedef, beklenen_boyut, beklenen_sha, dogrula)
+        raise SystemExit(f"indirme basarisiz ({hedef.name}): HTTP {e.code} {e.reason}; ag/adres sorunu olabilir, yeniden calistirmak kaldigi yerden surdurur")
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        raise SystemExit(f"indirme basarisiz ({hedef.name}): {e}; ag sorunu olabilir, yeniden calistirmak kaldigi yerden surdurur")
+
+    with resp_ctx as resp:
         status = getattr(resp, "status", 200)
         mode = "ab" if (mevcut > 0 and status == 206) else "wb"
         if mode == "wb":
@@ -73,6 +89,10 @@ def indir(url: str, hedef: Path, beklenen_boyut: int, beklenen_sha: str, dogrula
                     son_yuzde = yuzde
                     print(f"    %{yuzde} ({inen / (1 << 20):.0f} / {beklenen_boyut / (1 << 20):.0f} MiB)", flush=True)
 
+    _bitir(part, hedef, beklenen_boyut, beklenen_sha)
+
+
+def _bitir(part: Path, hedef: Path, beklenen_boyut: int, beklenen_sha: str) -> None:
     if part.stat().st_size != beklenen_boyut:
         raise SystemExit(f"boyut tutmadı ({hedef.name}): {part.stat().st_size} != {beklenen_boyut}")
     print(f"  sha256 doğrulanıyor: {hedef.name}...", flush=True)
