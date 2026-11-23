@@ -7,8 +7,8 @@
 # Plan klasoru: istem.txt (zorunlu), ilk.png|jpg|jpeg (istege bagli), son.png|jpg|jpeg (istege bagli; ilk kare ister).
 # Her plana yazilanlar: video.avi, uret.log, kuyruk_sonuc.txt (uret.ps1 cikis kodu).
 # Kalite ayarlarina dokunmaz: yalniz uret.ps1'i cagirir. Sonuc 0 (GECTI) ya da 5 (RED, video duruyor, karar kullanicinin) olan plan
-# yeniden uretilmez. RED bir plani tekrar uretmek icin o klasordeki kuyruk_sonuc.txt dosyasini silin. -Kare/-W/-H ya da istem.txt
-# degistiyse plan atlanmaz, yeniden uretilir (kuyruk_sonuc.txt ikinci satiri: parametre imzasi).
+# yeniden uretilmez. RED bir plani tekrar uretmek icin o klasordeki kuyruk_sonuc.txt dosyasini silin. -Kare/-W/-H, istem.txt ya da ilk/son
+# gorsel degistiyse plan atlanmaz, yeniden uretilir (kuyruk_sonuc.txt ikinci satiri: parametre imzasi).
 # Durdurma: <Klasor>\DUR dosyasi; calisan klip bittikten sonra kuyruk durur. Calisan klibi de kesmek icin <VT_ROOT>\DUR (uret.ps1).
 # Cikis: 0 = hepsi GECTI ya da atlandi; 5 = hepsi uretildi ama en az biri RED (videoyu izleyin); 1 = en az bir plan hata verdi; 2 = durduruldu; 3 = girdi hatasi; 6 = kalite kapisi calisamiyor.
 param(
@@ -43,6 +43,7 @@ foreach ($p in $planlar) {
     $sonucDosya = Join-Path $d 'kuyruk_sonuc.txt'
     $video = Join-Path $d 'video.avi'
     $imza = "kare=$Kare w=$W h=$H istem=" + (Get-FileHash -LiteralPath (Join-Path $d 'istem.txt') -Algorithm SHA256).Hash.Substring(0, 16)
+    foreach ($g in @((Bul-Kare $d 'ilk'), (Bul-Kare $d 'son'))) { if ($g) { $imza += ' ' + (Split-Path -Leaf $g) + '=' + (Get-FileHash -LiteralPath $g -Algorithm SHA256).Hash.Substring(0, 16) } }
     if (-not $Kuru -and (Test-Path -LiteralPath $sonucDosya) -and (Test-Path -LiteralPath $video)) {
         $eskiSatir = @(Get-Content -LiteralPath $sonucDosya -TotalCount 2)
         $eski = $eskiSatir[0]

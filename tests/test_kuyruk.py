@@ -81,6 +81,15 @@ class Kuyruk(unittest.TestCase):
         self.assertIn("YENIDEN: a", o)
         self.assertEqual(self.satirlar()[0].split("|")[1], "73")
 
+    def test_gorsel_degisince_yeniden_uretir(self):
+        d = self.plan("a", ilk=True)
+        self.assertEqual(self.kos()[0], 0)
+        (d / "ilk.png").write_bytes(b"y")
+        self.kayit.unlink()
+        k, o = self.kos()
+        self.assertEqual(k, 0, o)
+        self.assertIn("YENIDEN: a", o)
+
     def test_kare_verilmezse_uret_varsayilani(self):
         self.plan("a")
         k, o = self.kos()
