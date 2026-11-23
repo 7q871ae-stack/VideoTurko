@@ -61,6 +61,11 @@ python -I -X utf8 scripts\zincir.py bagla klip1.avi klip2.avi klip3.avi klip4.av
 
 ---
 
+## 4c. Yardımcı: `scripts/kuyruk.ps1` ve `scripts/son_kare_denetim.py` / Helpers: batch queue and end-of-clip check
+
+- **TR:** `kuyruk.ps1 -Klasor <planlar>` her alt klasördeki `istem.txt`'yi (varsa `ilk.png`, `son.png`) sırayla `uret.ps1` ile üretir, kaldığı yerden sürer. Çıkış 0 = hepsi GEÇTİ ya da atlandı, 5 = en az biri RED (videoyu izleyin), 1 = hata, 2 = durduruldu (`<planlar>\DUR`), 6 = kalite kapısı çalışamadı. `-Kare` verilmezse `uret.ps1`'in varsayılanı geçerlidir; parametre ya da istem değişirse plan yeniden üretilir. `son_kare_denetim.py klip.avi` klibin son karelerindeki ani değişimi bildirir; yalnız bilgidir, kapı kararını değiştirmez, eşikleri 27 klipte seçildi ve genel değildir [kullanıcı bildirdi, PR #9].
+- **EN:** `kuyruk.ps1 -Klasor <plans>` renders each sub-folder's `istem.txt` (plus optional `ilk.png`, `son.png`) with `uret.ps1` in order and resumes where it stopped. Exit 0 = all passed or skipped, 5 = at least one RED (watch the video), 1 = error, 2 = stopped (`<plans>\DUR`), 6 = quality gate could not run. Without `-Kare`, `uret.ps1`'s default applies; a changed parameter or prompt re-renders the plan. `son_kare_denetim.py clip.avi` reports a sudden change in the last frames; it is information only, never changes the gate decision, and its thresholds were picked on 27 clips, not a general rule [user-reported, PR #9].
+
 ## 5. `ffmpeg` ile Birleştirme / Stitching with `ffmpeg`
 - **İlk kareyi at / Drop duplicate first frame:** Devam klibi önceki klibin son karesiyle başlar; video için `trim=start_frame=1`, ses için `atrim=start=0.0417` (1/24 sn) uygulayın.
 - **Bağlama / Concat & audio crossfade:** Videoyu `concat`, sesi `acrossfade=d=0.25` (veya `0.3`) ile bağlayın. Tüm akışlarda `setpts=PTS-STARTPTS`, gerekirse `fps=24,settb=1/24` ve `aresample=48000` kullanın.

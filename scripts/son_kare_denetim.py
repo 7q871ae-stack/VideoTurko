@@ -74,7 +74,7 @@ def main(arg):
             print("HATA: %s okunamadi ya da cok kisa (%d kare, en az %d)" % (os.path.basename(p), len(g), EN_AZ_KARE))
             return 3
         o = olc(g)
-        karar = "SUPHELI: klibin sonunu izle, ilk %d kare tutulabilir" % o["tut"] if o["supheli"] else "normal"
+        karar = "SUPHELI: klibin sonunu izle, ilk %d kare tutulabilir (kirpilan klip 17k+5 kuralina ve kalite kapisina takilir)" % o["tut"] if o["supheli"] else "esik_asilmadi (sonu yine de izleyin)"
         print("SON_KARE (bilgi, kapi degil): %s kare=%d sicrama=%.2f (kare %d) son8=%.2f sonuc=%s" % (
             os.path.basename(p), o["kare"], o["sicrama"], o["tepe_kare"], o["son8"], karar))
     return 0

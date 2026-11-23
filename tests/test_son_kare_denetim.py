@@ -56,7 +56,7 @@ class Olcum(unittest.TestCase):
             klip(p)
             k, o = kos(p)
         self.assertEqual(k, 0, o)
-        self.assertIn("sonuc=normal", o)
+        self.assertIn("sonuc=esik_asilmadi", o)
 
     def test_sonda_degisen_klip_supheli_ve_cikis0(self):
         with tempfile.TemporaryDirectory() as t:

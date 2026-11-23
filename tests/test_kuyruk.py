@@ -44,7 +44,7 @@ class Kuyruk(unittest.TestCase):
         return d
 
     def kos(self, *arg, klasor=None):
-        e = dict(os.environ, VT_KUYRUK_URET=str(self.sahte), VT_TEST_KAYIT=str(self.kayit))
+        e = dict(os.environ, VT_KUYRUK_URET=str(self.sahte), VT_KUYRUK_TEST="1", VT_TEST_KAYIT=str(self.kayit))
         p = subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(KUYRUK),
                             "-Klasor", str(klasor or self.pl)] + list(arg), capture_output=True, text=True, timeout=180,
                            env=e, encoding="utf-8", errors="replace", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
@@ -65,12 +65,27 @@ class Kuyruk(unittest.TestCase):
 
     def test_kaldigi_yerden_devam(self):
         self.plan("a"); self.plan("b", kod=5)
-        self.assertEqual(self.kos()[0], 0)
+        self.assertEqual(self.kos()[0], 5)  # a RED makes the queue exit 5 (maintainers, after PR #9)
         self.kayit.unlink()
         k, o = self.kos()
         self.assertEqual(k, 0, o)
         self.assertEqual(self.satirlar(), [])
         self.assertIn("atlandi=2", o)
+
+    def test_parametre_degisince_yeniden_uretir(self):
+        self.plan("a")
+        self.assertEqual(self.kos("-Kare", "56")[0], 0)
+        self.kayit.unlink()
+        k, o = self.kos("-Kare", "73")
+        self.assertEqual(k, 0, o)
+        self.assertIn("YENIDEN: a", o)
+        self.assertEqual(self.satirlar()[0].split("|")[1], "73")
+
+    def test_kare_verilmezse_uret_varsayilani(self):
+        self.plan("a")
+        k, o = self.kos()
+        self.assertEqual(k, 0, o)
+        self.assertEqual(self.satirlar()[0].split("|")[1], "0")  # -Kare not passed, uret.ps1 default applies
 
     def test_hata_sonraki_plana_gecer_ve_tekrar_dener(self):
         d = self.plan("a", kod=1); self.plan("b")
